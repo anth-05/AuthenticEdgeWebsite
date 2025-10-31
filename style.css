@@ -9,7 +9,7 @@
 }
  
 body {
-  background-image: url('/AuthenticEdgeWebsite/images/homepage_background.jpg');
+  background-image: url('./images/homepage_background.jpg');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
