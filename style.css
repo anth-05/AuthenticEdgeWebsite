@@ -34,6 +34,7 @@ header {
   padding: 1rem 3rem;
   padding-top: 2.5rem;
 }
+
 /* Hide hamburger icon by default (desktop view) */
 .menu-toggle {
   display: none;
@@ -113,101 +114,166 @@ nav a:hover::after {
 
 /* Shop Page */
 .shop {
-  padding: 2rem;
+  padding: 2rem 3rem;
 }
 
 .shop h2 {
-  margin: 1.5rem 0;
-  font-size: 1.4rem;
+  font-family: 'Libre Baskerville', serif;
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin: 2rem 0 1.5rem 0;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: white;
+  text-align: left; /* ✅ Align header to the left */
 }
 
 .product-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); /* up to 4 per row */
+  gap: 1.5rem;
+  justify-items: center;
 }
 
 .product {
-  background: #ccc;
-  height: 150px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 8px;
+  background: white;
+  color: black;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  width: 220px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-/* Contact Page */
-.contact {
-  display: flex;
-  justify-content: space-between;
-  padding: 2rem;
+.product:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
 }
 
-.contact-form {
-  flex: 2;
+.product img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  display: block;
 }
 
-.contact-form form {
-  display: flex;
-  flex-direction: column;
-}
-
-.contact-form label {
-  margin-top: 1rem;
-}
-
-.contact-form input,
-.contact-form textarea {
-  padding: 0.5rem;
-  margin-top: 0.3rem;
-  border: 1px solid #aaa;
-  border-radius: 4px;
-}
-
-.btn {
-  margin-top: 1rem;
-  background: black;
-  color: white;
-  border: none;
-  padding: 0.7rem;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-.btn:hover {
-  background: #333;
-}
-
-.contact-logo {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.logo-placeholder {
-  width: 150px;
-  height: 150px;
-  background: #ddd;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Footer */
-footer {
-  background: #111;
-  color: white;
+.product-info {
+  padding: 0.8rem;
   text-align: center;
-  padding: 1rem;
-  margin-top: 2rem;
-  font-size: 0.9rem;
 }
+
+.product-info h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+}
+
+.product-info p {
+  font-size: 0.9rem;
+  color: #555;
+}
+
+/* --- TABLET VIEW --- */
+@media (max-width: 768px) {
+  .shop {
+    padding: 1rem;
+  }
+
+  .shop h2 {
+    font-size: 1.7rem;
+    text-align: left;
+  }
+
+  .product-grid {
+    grid-template-columns: repeat(2, 1fr); /* ✅ 2 per row on tablets */
+    gap: 1rem;
+    justify-items: center;
+  }
+
+  .product {
+    width: 160px;
+    border-radius: 12px;
+  }
+
+  .product img {
+    height: 130px;
+  }
+
+  .product-info h3 {
+    font-size: 0.9rem;
+  }
+
+  .product-info p {
+    font-size: 0.8rem;
+  }
+}
+
+/* --- SMALL PHONES --- */
+@media screen and (max-width: 480px) {
+  body .shop {
+    padding: 0.8rem 1rem !important;
+  }
+
+  body .shop h2 {
+    font-size: 1.4rem !important;
+    margin: 1rem 0 0.8rem 0 !important;
+    letter-spacing: 0.5px;
+    text-align: left !important;
+  }
+
+  body .product-grid {
+    grid-template-columns: repeat(2, 1fr) !important; /* ✅ two per row */
+    gap: 1.2rem !important;
+    justify-items: center !important;
+  }
+
+  body .product {
+    width: 100% !important;
+    max-width: 180px !important; /* ✅ slightly larger cards */
+    border-radius: 12px !important;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15) !important;
+    padding-bottom: 0.6rem !important;
+    background: #fff !important;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  body .product:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  }
+
+  body .product img {
+    height: 120px !important; /* ✅ taller image for balance */
+    object-fit: contain !important;
+    margin-top: 0.4rem !important;
+    display: block !important;
+    width: 100% !important;
+  }
+
+  body .product-info {
+    padding: 0.6rem !important;
+    text-align: center !important;
+  }
+
+  body .product-info h3 {
+    font-size: 0.9rem !important;
+    margin-bottom: 0.3rem !important;
+    font-weight: 600 !important;
+  }
+
+  body .product-info p {
+    font-size: 0.75rem !important;
+    color: #555 !important;
+  }
+}
+
+
 /* ---------- MODERN MOBILE DROPDOWN (Final Fix) ---------- */
 @media (max-width: 768px) {
   header {
     position: relative;
   }
+
 
   .menu-toggle {
     display: block;
@@ -331,3 +397,103 @@ footer {
   }
 }
 
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* 🖥️ desktop - 4 per row */
+  gap: 1.5rem;
+  justify-items: center;
+  margin-top: 1rem;
+}
+
+/* ✅ Product Card */
+.product {
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  width: 100%;
+  max-width: 250px; /* keeps all cards uniform */
+  height: 340px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.product:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+}
+
+/* ✅ Image Styling */
+.product img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.product:hover img {
+  transform: scale(1.05);
+}
+
+/* ✅ Text Styling */
+.product-info {
+  padding: 0.8rem;
+}
+
+.product-info h3 {
+  font-size: 1rem;
+  color: #222;
+  margin-bottom: 0.4rem;
+}
+
+.product-info p {
+  font-size: 0.9rem;
+  color: #555;
+  margin-bottom: 0.4rem;
+}
+
+.product-info span {
+  font-weight: 700;
+  color: #000;
+}
+
+/* ✅ Responsive Layouts */
+@media (max-width: 1200px) {
+  .product-grid {
+    grid-template-columns: repeat(3, 1fr); /* 🧩 3 per row */
+  }
+}
+
+@media (max-width: 900px) {
+  .product-grid {
+    grid-template-columns: repeat(2, 1fr); /* 📱 2 per row */
+  }
+}
+
+@media (max-width: 600px) {
+  .product-grid {
+    grid-template-columns: 1fr; /* 📱📱 1 per row */
+  }
+
+  .product {
+    max-width: 100%;
+    height: auto;
+  }
+
+  .product img {
+    height: auto;
+    max-height: 220px;
+  }
+
+  .product-info h3 {
+    font-size: 1rem;
+  }
+
+  .product-info p,
+  .product-info span {
+    font-size: 0.9rem;
+  }
+}

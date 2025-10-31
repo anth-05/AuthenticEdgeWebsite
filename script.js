@@ -7,3 +7,4 @@ document.addEventListener("DOMContentLoaded", function() {
     menuToggle.classList.toggle("open");
   });
 });
+
