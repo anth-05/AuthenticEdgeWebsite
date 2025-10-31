@@ -34,6 +34,10 @@ header {
   padding: 1rem 3rem;
   padding-top: 2.5rem;
 }
+/* Hide hamburger icon by default (desktop view) */
+.menu-toggle {
+  display: none;
+}
 
 .logo {
   font-size: 2rem;
