@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Details - Authentic Edge</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1 class="logo">Authentic Edge</h1>
+  <div class="menu-toggle">☰</div>
+  <nav class="nav-menu">
+    <a href="contact.html">Contact</a>
+    <a href="shop.html">Products</a>
+    <a href="index.html">Home</a>
+  </nav>
+  <!-- ✅ Add this below -->
+  <a href="shop.html" class="return-btn">← Return</a>
+</header>
+
+
+  <section class="product-details">
+    <div class="product-container">
+      <div class="image-box">
+        <img id="product-image" src="" alt="Product Image">
+      </div>
+      <div class="details-box">
+        <h2 id="product-name"></h2>
+        <p><strong>Availability:</strong> <span id="product-availability"></span></p>
+        <p><strong>Gender:</strong> <span id="product-gender"></span></p>
+
+        <label for="product-quality"><strong>Quality:</strong></label>
+        <select id="product-quality"></select>
+
+        <div class="contact-btn-container">
+          <a href="contact.html" class="btn">Contact Us</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script src="script.js"></script>
+</body>
+</html>
