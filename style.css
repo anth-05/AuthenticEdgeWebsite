@@ -275,7 +275,7 @@ footer {
 }
 @media (max-width: 768px) {
   .logo {
-    font-size: 1.2rem;
+    font-size: 1.5rem;
   }
 }
 
@@ -283,7 +283,7 @@ footer {
 
 @media (max-width: 480px) {
   .hero-text h2 {
-    font-size: 1.5rem;
+    font-size: 2.7rem;
   }
 
   .product-grid {
@@ -310,7 +310,7 @@ footer {
 }
 @media (min-width: 769px) {
   body {
-    background-attachment: fixed; /* parallax effect on larger screens */
+    background-attachment: fixed; 
   }
 }
 /* Use full-screen landscape background only on phones */
@@ -324,10 +324,10 @@ footer {
   }
 
   body {
-    background-image: url('./images/homepage_background_portrait.jpg'); /* your portrait image */
-    background-size: cover;         /* ensures full-screen coverage */
-    background-position: center;    /* keeps image centered */
-    background-repeat: no-repeat;   /* avoids tiling */
-    background-attachment: fixed;   /* makes it stay still during scroll */
+    background-image: url('./images/homepage_background_portrait.jpg');
+    background-position: center;    
+    background-repeat: no-repeat;   
+    background-attachment: fixed;   
   }
 }
+
