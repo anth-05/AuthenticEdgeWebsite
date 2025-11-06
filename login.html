@@ -20,9 +20,9 @@
 </header>
 <section class="login-container">
   <h2>Login</h2>
-  <input type="text" id="email" placeholder="email" required />
+  <input type="text" id="email" placeholder="Email" required />
   <input type="password" id="password" placeholder="Password" required />
-  <button onclick="login()">Login</button>
+  <button type="button" onclick="login()">Login</button>
 
   <p class="create-account-text">
     Don’t have an account yet?
@@ -30,13 +30,17 @@
   </p>
 </section>
 
+<script>
+async function login() {
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
 
+  if (!email || !password) {
+    alert("Please enter both email and password.");
+    return;
+  }
 
-  <script>
-  async function login() {
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
-
+  try {
     const res = await fetch("http://localhost:5000/api/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -44,6 +48,7 @@
     });
 
     const data = await res.json();
+
     if (res.ok) {
       localStorage.setItem("token", data.token);
       localStorage.setItem("role", data.role);
@@ -56,10 +61,14 @@
         window.location.href = "index.html";
       }
     } else {
-      alert(data.error);
+      alert(data.error || "Login failed. Please check your credentials.");
     }
+  } catch (err) {
+    console.error("❌ Login error:", err);
+    alert("Unable to connect to the server. Please make sure your backend is running.");
   }
-  </script>
+}
+</script>
 
 </body>
 </html>
