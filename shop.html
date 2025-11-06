@@ -1,53 +1,84 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Authentic Edge | Shop</title>
-  <link rel="stylesheet" href="style.css">
-</head> 
+  <link rel="stylesheet" href="style.css" />
+</head>
 <body>
- <header>
-  <h1 class="logo">Authentic Edge</h1>
-  <div class="menu-toggle">☰</div>
-  <nav class="nav-menu">
-    <a href="contact.html">Contact</a>
-    <a href="shop.html">Products</a>
-    <a href="index.html">Home</a>
-  </nav>
-</header>
 
+  <!-- ===== HEADER ===== -->
+  <header>
+    <h1 class="logo">Authentic Edge</h1>
+    <div class="menu-toggle">☰</div>
+    <nav class="nav-menu">
+      <a href="contact.html">Contact</a>
+      <a href="index.html">Home</a>
+      <a href="login.html">Login</a>
+    </nav>
+  </header>
+
+  <!-- Return Button -->
+  <a href="index.html" class="return-btn">← Return</a>
+
+  <!-- ===== MAIN SHOP ===== -->
   <main class="shop">
     <section>
-      <h2>New Arrivals</h2>
-      <div class="product-grid">
-        <div class="product">Placeholder</div>
-        <div class="product">Placeholder</div>
-        <div class="product">Placeholder</div>
-        <div class="product">Placeholder</div>
-      </div>
-    </section>
-
-    <section>
-      <h2>All Shoes</h2>
-      <div class="product-grid">
-        <div class="product">Placeholder</div>
-        <div class="product">Placeholder</div>
-        <div class="product">Placeholder</div>
-        <div class="product">Placeholder</div>
-        <div class="product">Placeholder</div>
-        <div class="product">Placeholder</div>
-        <div class="product">Placeholder</div>
-        <div class="product">Placeholder</div>
+      <h2>All Products</h2>
+      <div id="product-grid" class="product-grid">
+        <p>Loading products...</p>
       </div>
     </section>
   </main>
 
+  <!-- ===== FOOTER ===== -->
   <footer>
     <p>The Authentic Edge</p>
     <p>authenticedge@gmail.com</p>
   </footer>
-  <script src="script.js"></script>
+
+  <script>
+  // === Responsive Menu ===
+  document.querySelector(".menu-toggle").addEventListener("click", () => {
+    document.querySelector(".nav-menu").classList.toggle("active");
+  });
+
+  // === Fetch Products from Database ===
+  async function loadProducts() {
+    const productGrid = document.getElementById("product-grid");
+    try {
+      const res = await fetch("http://localhost:5000/api/products");
+      const products = await res.json();
+
+      if (products.length === 0) {
+        productGrid.innerHTML = "<p>No products available yet.</p>";
+        return;
+      }
+
+      productGrid.innerHTML = products
+        .map(
+          (product) => `
+          <div class="product" data-id="${product.id}">
+            <a href="product.html?id=${product.id}">
+              <img src="${product.image}" alt="${product.name}" />
+              <div class="product-info">
+                <h3>${product.name}</h3>
+                <p>${product.description || "No description available"}</p>
+              </div>
+            </a>
+          </div>
+        `
+        )
+        .join("");
+    } catch (err) {
+      console.error("Error loading products:", err);
+      productGrid.innerHTML = "<p>Failed to load products. Please try again later.</p>";
+    }
+  }
+
+  loadProducts();
+  </script>
 
 </body>
 </html>
