@@ -7,39 +7,106 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
 <header>
   <h1 class="logo">Authentic Edge</h1>
   <div class="menu-toggle">☰</div>
   <nav class="nav-menu">
     <a href="contact.html">Contact</a>
-    <a href="shop.html">Products</a>
+    <a href="shop.html">Shop</a>
     <a href="index.html">Home</a>
   </nav>
-  <!-- ✅ Add this below -->
-  <a href="shop.html" class="return-btn">← Return</a>
+  <a href="shop.html" class="return-btn">← Back to Shop</a>
 </header>
 
+<section class="product-details">
+  <div class="product-container">
+    <div class="image-box">
+      <img id="product-image" src="" alt="Product Image">
+    </div>
+    <div class="details-box">
+      <h2 id="product-name">Loading...</h2>
+      <p><strong>Availability:</strong> <span id="product-availability">Loading...</span></p>
+      <p><strong>Gender:</strong> <span id="product-gender">Loading...</span></p>
 
-  <section class="product-details">
-    <div class="product-container">
-      <div class="image-box">
-        <img id="product-image" src="" alt="Product Image">
-      </div>
-      <div class="details-box">
-        <h2 id="product-name"></h2>
-        <p><strong>Availability:</strong> <span id="product-availability"></span></p>
-        <p><strong>Gender:</strong> <span id="product-gender"></span></p>
+      <label for="product-quality"><strong>Quality:</strong></label>
+      <select id="product-quality"></select>
 
-        <label for="product-quality"><strong>Quality:</strong></label>
-        <select id="product-quality"></select>
+      <p id="product-description" style="margin-top: 1em;">Loading product description...</p>
 
-        <div class="contact-btn-container">
-          <a href="contact.html" class="btn">Contact Us</a>
-        </div>
+      <div class="contact-btn-container">
+        <a href="contact.html" class="btn">Contact Us to Order</a>
       </div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <script src="script.js"></script>
+<script>
+  // Toggle responsive menu
+  document.querySelector(".menu-toggle").addEventListener("click", () => {
+    document.querySelector(".nav-menu").classList.toggle("active");
+  });
+
+  // Extract product ID from URL
+  const params = new URLSearchParams(window.location.search);
+  const productId = params.get("id");
+
+  // Load product details from backend
+  async function loadProductDetails() {
+    const imageEl = document.getElementById("product-image");
+    const nameEl = document.getElementById("product-name");
+    const genderEl = document.getElementById("product-gender");
+    const availabilityEl = document.getElementById("product-availability");
+    const descriptionEl = document.getElementById("product-description");
+    const qualitySelect = document.getElementById("product-quality");
+
+    if (!productId) {
+      nameEl.textContent = "Product not found";
+      descriptionEl.textContent = "Invalid product ID.";
+      return;
+    }
+
+    try {
+      const res = await fetch(`http://localhost:5000/api/products/${productId}`);
+      if (!res.ok) throw new Error("Product not found");
+      const product = await res.json();
+
+      // Fill in product data
+      imageEl.src = product.image || "./images/placeholder.jpg";
+      nameEl.textContent = product.name;
+      genderEl.textContent = product.gender || "Unisex";
+      availabilityEl.textContent = product.availability || "Available";
+      descriptionEl.textContent = product.description || "No description provided.";
+
+      // Handle quality options (stored as JSON or comma-separated)
+      qualitySelect.innerHTML = "";
+      if (product.quality) {
+        let qualities = [];
+        try {
+          qualities = JSON.parse(product.quality);
+        } catch {
+          qualities = product.quality.split(",");
+        }
+        qualities.forEach(q => {
+          const option = document.createElement("option");
+          option.textContent = q.trim();
+          qualitySelect.appendChild(option);
+        });
+      } else {
+        const option = document.createElement("option");
+        option.textContent = "Standard";
+        qualitySelect.appendChild(option);
+      }
+
+    } catch (err) {
+      console.error(err);
+      nameEl.textContent = "Error loading product.";
+      descriptionEl.textContent = "Could not load product details.";
+    }
+  }
+
+  loadProductDetails();
+</script>
+
 </body>
 </html>

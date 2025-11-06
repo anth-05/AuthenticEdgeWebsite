@@ -1,25 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Authentic Edge | Shop</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
   <!-- ===== HEADER ===== -->
   <header>
     <h1 class="logo">Authentic Edge</h1>
-
-    <!-- Hamburger Icon -->
     <div class="menu-toggle">☰</div>
-
-    <!-- Navigation -->
     <nav class="nav-menu">
       <a href="contact.html">Contact</a>
-      <a href="shop.html" class="active">Products</a>
       <a href="index.html">Home</a>
+      <a href="login.html">Login</a>
     </nav>
   </header>
 
@@ -29,76 +25,9 @@
   <!-- ===== MAIN SHOP ===== -->
   <main class="shop">
     <section>
-      <h2>New Arrivals</h2>
-      <div class="product-grid">
-
-        <div class="product" data-id="1">
-          <a href="product.html?id=1">
-            <img src="./images/shoe1.jpg" alt="Sneaker 1">
-            <div class="product-info">
-              <h3>Classic Basketball Shoes</h3>
-              <p>Premium Quality AJ4 Retro 'Sierra Red'</p>
-            </div>
-          </a>
-        </div>
-
-        <div class="product" data-id="2">
-          <a href="product.html?id=2">
-            <img src="./images/shoe2.jpg" alt="Sneaker 2">
-            <div class="product-info">
-              <h3>Classic Shoes</h3>
-              <p>Better Quality AM Plus 'Lisboa'</p>
-            </div>
-          </a>
-        </div>
-
-        <div class="product" data-id="3">
-          <a href="product.html?id=3">
-            <img src="./images/shoe3.jpg" alt="Sneaker 3">
-            <div class="product-info">
-              <h3>Classic Shoes</h3>
-              <p>NB 9060 'White Black Metallic Silver'</p>
-            </div>
-          </a>
-        </div>
-
-      </div>
-    </section>
-
-    <section>
-      <h2>All Shoes</h2>
-      <div class="product-grid">
-
-        <div class="product" data-id="1">
-          <a href="product.html?id=1">
-            <img src="./images/shoe1.jpg" alt="Sneaker 1">
-            <div class="product-info">
-              <h3>Classic Basketball Shoes</h3>
-              <p>Premium Quality AJ4 Retro 'Sierra Red'</p>
-            </div>
-          </a>
-        </div>
-
-        <div class="product" data-id="2">
-          <a href="product.html?id=2">
-            <img src="./images/shoe2.jpg" alt="Sneaker 2">
-            <div class="product-info">
-              <h3>Classic Shoes</h3>
-              <p>Better Quality AM Plus 'Lisboa'</p>
-            </div>
-          </a>
-        </div>
-
-        <div class="product" data-id="3">
-          <a href="product.html?id=3">
-            <img src="./images/shoe3.jpg" alt="Sneaker 3">
-            <div class="product-info">
-              <h3>Classic Shoes</h3>
-              <p>NB 9060 'White Black Metallic Silver'</p>
-            </div>
-          </a>
-        </div>
-
+      <h2>All Products</h2>
+      <div id="product-grid" class="product-grid">
+        <p>Loading products...</p>
       </div>
     </section>
   </main>
@@ -109,6 +38,47 @@
     <p>authenticedge@gmail.com</p>
   </footer>
 
-  <script src="script.js"></script>
+  <script>
+  // === Responsive Menu ===
+  document.querySelector(".menu-toggle").addEventListener("click", () => {
+    document.querySelector(".nav-menu").classList.toggle("active");
+  });
+
+  // === Fetch Products from Database ===
+  async function loadProducts() {
+    const productGrid = document.getElementById("product-grid");
+    try {
+      const res = await fetch("http://localhost:5000/api/products");
+      const products = await res.json();
+
+      if (products.length === 0) {
+        productGrid.innerHTML = "<p>No products available yet.</p>";
+        return;
+      }
+
+      productGrid.innerHTML = products
+        .map(
+          (product) => `
+          <div class="product" data-id="${product.id}">
+            <a href="product.html?id=${product.id}">
+              <img src="${product.image}" alt="${product.name}" />
+              <div class="product-info">
+                <h3>${product.name}</h3>
+                <p>${product.description || "No description available"}</p>
+              </div>
+            </a>
+          </div>
+        `
+        )
+        .join("");
+    } catch (err) {
+      console.error("Error loading products:", err);
+      productGrid.innerHTML = "<p>Failed to load products. Please try again later.</p>";
+    }
+  }
+
+  loadProducts();
+  </script>
+
 </body>
 </html>
