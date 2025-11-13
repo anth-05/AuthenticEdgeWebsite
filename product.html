@@ -42,6 +42,7 @@
 </section>
 
 <script>
+  import { API_BASE_URL } from "./config.js";
   // Toggle responsive menu
   document.querySelector(".menu-toggle").addEventListener("click", () => {
     document.querySelector(".nav-menu").classList.toggle("active");
@@ -67,7 +68,7 @@
     }
 
     try {
-      const res = await fetch(`http://localhost:5000/api/products/${productId}`);
+      const res = await fetch(`${API_BASE_URL}/api/products/${productId}`)
       if (!res.ok) throw new Error("Product not found");
       const product = await res.json();
 

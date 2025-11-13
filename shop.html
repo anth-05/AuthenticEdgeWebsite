@@ -37,8 +37,13 @@
     <p>The Authentic Edge</p>
     <p>authenticedge@gmail.com</p>
   </footer>
+<script>
+  // 🌍 Auto-detect backend (local vs live)
+  const API_BASE_URL =
+    window.location.hostname === "localhost"
+      ? "http://localhost:5000"
+      : "https://your-backend-name.onrender.com"; // 🔁 replace with your actual Render backend URL
 
-  <script>
   // === Responsive Menu ===
   document.querySelector(".menu-toggle").addEventListener("click", () => {
     document.querySelector(".nav-menu").classList.toggle("active");
@@ -48,8 +53,10 @@
   async function loadProducts() {
     const productGrid = document.getElementById("product-grid");
     try {
-      const res = await fetch("http://localhost:5000/api/products");
+      const res = await fetch(`${API_BASE_URL}/api/products`);
       const products = await res.json();
+
+      if (!res.ok) throw new Error("Failed to fetch products.");
 
       if (products.length === 0) {
         productGrid.innerHTML = "<p>No products available yet.</p>";
@@ -61,7 +68,7 @@
           (product) => `
           <div class="product" data-id="${product.id}">
             <a href="product.html?id=${product.id}">
-              <img src="${product.image}" alt="${product.name}" />
+              <img src="${product.image || "./images/placeholder.jpg"}" alt="${product.name}" />
               <div class="product-info">
                 <h3>${product.name}</h3>
                 <p>${product.description || "No description available"}</p>
@@ -73,12 +80,15 @@
         .join("");
     } catch (err) {
       console.error("Error loading products:", err);
-      productGrid.innerHTML = "<p>Failed to load products. Please try again later.</p>";
+      productGrid.innerHTML =
+        "<p>⚠️ Failed to load products. Please try again later.</p>";
     }
   }
 
-  loadProducts();
-  </script>
+  // Load products when page is ready
+  document.addEventListener("DOMContentLoaded", loadProducts);
+</script>
+
 
 </body>
 </html>
