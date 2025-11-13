@@ -23,7 +23,6 @@
   <input type="text" id="email" placeholder="Email" required />
   <input type="password" id="password" placeholder="Password" required />
   <button type="button" onclick="login()">Login</button>
-
   <p class="create-account-text">
     Don’t have an account yet?
     <a href="register.html">Create account</a>
@@ -31,7 +30,9 @@
 </section>
 <script type="module">
   import { API_BASE_URL } from "./config.js";
+
   async function login() {
+    console.log("Login clicked"); // 👈 Add this line for testing
     const email = document.getElementById("email").value.trim();
     const password = document.getElementById("password").value.trim();
 
@@ -68,7 +69,11 @@
       alert("Unable to connect to the server. Please try again later.");
     }
   }
+
+  // 👇 VERY IMPORTANT — this makes the onclick="login()" actually work
+  window.login = login;
 </script>
+
 
 </body>
 </html>
