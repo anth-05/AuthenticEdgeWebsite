@@ -37,13 +37,8 @@
     <p>The Authentic Edge</p>
     <p>authenticedge@gmail.com</p>
   </footer>
-<script>
-  // 🌍 Auto-detect backend (local vs live)
-  const API_BASE_URL =
-    window.location.hostname === "localhost"
-      ? "http://localhost:5000"
-      : "https://your-backend-name.onrender.com"; // 🔁 replace with your actual Render backend URL
-
+<script type="module">
+    import { API_BASE_URL } from "./config.js";
   // === Responsive Menu ===
   document.querySelector(".menu-toggle").addEventListener("click", () => {
     document.querySelector(".nav-menu").classList.toggle("active");
