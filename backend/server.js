@@ -7,12 +7,21 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const cors = require("cors");
 const dotenv = require("dotenv");
+import cors from "cors";
 
 dotenv.config();
 
 const app = express();
 app.use(express.json());
-app.use(cors());
+
+app.use(cors({
+  origin: [
+    "https://authenticedge.netlify.app/", // ✅ Your Netlify URL
+    "http://localhost:5500" // (optional for local testing)
+  ],
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
 
 // ==============================
 // DATABASE INITIALIZATION
