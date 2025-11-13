@@ -2,8 +2,7 @@
 // IMPORTS & SETUP
 // ==============================
 const express = require("express");
-const sqlite3 = require("sqlite3");
-const { open } = require("sqlite");
+const { Pool } = require("pg");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const cors = require("cors");
@@ -15,67 +14,69 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-let db;
-
 // ==============================
 // DATABASE INITIALIZATION
 // ==============================
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false } // Required for Render
+});
+
 (async () => {
-  db = await open({
-    filename: "./database.sqlite",
-    driver: sqlite3.Database,
-  });
+  try {
+    // === USERS TABLE ===
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        email TEXT UNIQUE NOT NULL,
+        password TEXT NOT NULL,
+        role TEXT CHECK(role IN ('admin', 'user')) NOT NULL DEFAULT 'user',
+        created_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
 
-  // === USERS TABLE ===
-  await db.exec(`
-    CREATE TABLE IF NOT EXISTS users (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      email TEXT UNIQUE NOT NULL,
-      password TEXT NOT NULL,
-      role TEXT CHECK(role IN ('admin', 'user')) NOT NULL,
-      created_at TEXT DEFAULT CURRENT_TIMESTAMP
-    );
-  `);
+    // === PRODUCTS TABLE ===
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS products (
+        id SERIAL PRIMARY KEY,
+        name TEXT NOT NULL,
+        description TEXT,
+        image TEXT,
+        gender TEXT,
+        quality TEXT,
+        availability TEXT,
+        created_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
 
-  // === PRODUCTS TABLE ===
-  await db.exec(`
-    CREATE TABLE IF NOT EXISTS products (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL,
-      description TEXT,
-      image TEXT,
-      gender TEXT,
-      quality TEXT,
-      availability TEXT,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    );
-  `);
+    console.log("✅ Database ready (users & products)");
 
-  console.log("✅ Database ready (users & products)");
+    // === DEFAULT ACCOUNTS ===
+    const admin = await pool.query("SELECT * FROM users WHERE email = $1", ["admin"]);
+    if (admin.rows.length === 0) {
+      const hashed = await bcrypt.hash("admin123", 10);
+      await pool.query(
+        "INSERT INTO users (email, password, role) VALUES ($1, $2, $3)",
+        ["admin", hashed, "admin"]
+      );
+      console.log("👑 Default admin: admin / admin123");
+    }
 
-  // === DEFAULT ACCOUNTS ===
-  const admin = await db.get("SELECT * FROM users WHERE email = ?", ["admin"]);
-  if (!admin) {
-    const hashed = await bcrypt.hash("admin123", 10);
-    await db.run(
-      "INSERT INTO users (email, password, role) VALUES (?, ?, ?)",
-      ["admin", hashed, "admin"]
-    );
-    console.log("👑 Default admin: admin / admin123");
+    const user = await pool.query("SELECT * FROM users WHERE email = $1", ["user"]);
+    if (user.rows.length === 0) {
+      const hashed = await bcrypt.hash("user123", 10);
+      await pool.query(
+        "INSERT INTO users (email, password, role) VALUES ($1, $2, $3)",
+        ["user", hashed, "user"]
+      );
+      console.log("👤 Default user: user / user123");
+    }
+
+    const PORT = process.env.PORT || 5000;
+    app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+  } catch (err) {
+    console.error("❌ Database initialization failed:", err);
   }
-
-  const user = await db.get("SELECT * FROM users WHERE email = ?", ["user"]);
-  if (!user) {
-    const hashed = await bcrypt.hash("user123", 10);
-    await db.run(
-      "INSERT INTO users (email, password, role) VALUES (?, ?, ?)",
-      ["user", hashed, "user"]
-    );
-    console.log("👤 Default user: user / user123");
-  }
-
-  const PORT = process.env.PORT || 5000;
-  app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
 })();
 
 // ==============================
@@ -113,16 +114,17 @@ app.post("/api/register", async (req, res) => {
     return res.status(400).json({ error: "Email and password are required." });
 
   try {
-    const existing = await db.get("SELECT * FROM users WHERE email = ?", [email]);
-    if (existing)
+    const existing = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
+    if (existing.rows.length > 0)
       return res.status(400).json({ error: "Email is already registered." });
 
     const hashed = await bcrypt.hash(password, 10);
-    const result = await db.run(
-      "INSERT INTO users (email, password, role) VALUES (?, ?, ?)",
+    const result = await pool.query(
+      "INSERT INTO users (email, password, role) VALUES ($1, $2, $3) RETURNING id",
       [email, hashed, role || "user"]
     );
-    res.json({ success: true, id: result.lastID });
+
+    res.json({ success: true, id: result.rows[0].id });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Registration failed." });
@@ -132,7 +134,8 @@ app.post("/api/register", async (req, res) => {
 // Login
 app.post("/api/login", async (req, res) => {
   const { email, password } = req.body;
-  const user = await db.get("SELECT * FROM users WHERE email = ?", [email]);
+  const result = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
+  const user = result.rows[0];
   if (!user) return res.status(400).json({ error: "Invalid credentials" });
 
   const valid = await bcrypt.compare(password, user.password);
@@ -155,98 +158,88 @@ app.get("/api/protected", authenticateToken, (req, res) => {
 // ==============================
 // ADMIN DASHBOARD ROUTES
 // ==============================
-
-// Dashboard stats
 app.get("/api/stats", verifyAdmin, async (req, res) => {
   try {
-    const users = await db.get("SELECT COUNT(*) AS count FROM users");
-    const admins = await db.get("SELECT COUNT(*) AS count FROM users WHERE role='admin'");
-    const regular = await db.get("SELECT COUNT(*) AS count FROM users WHERE role='user'");
+    const users = await pool.query("SELECT COUNT(*) AS count FROM users");
+    const admins = await pool.query("SELECT COUNT(*) AS count FROM users WHERE role='admin'");
+    const regular = await pool.query("SELECT COUNT(*) AS count FROM users WHERE role='user'");
 
     res.json({
-      users: users.count,
-      admins: admins.count,
-      regularUsers: regular.count,
+      users: users.rows[0].count,
+      admins: admins.rows[0].count,
+      regularUsers: regular.rows[0].count
     });
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch stats" });
   }
 });
 
-// Recent users
 app.get("/api/recent-users", verifyAdmin, async (req, res) => {
   try {
-    const users = await db.all(
+    const result = await pool.query(
       "SELECT email, role, created_at FROM users ORDER BY id DESC LIMIT 5"
     );
-    res.json(users);
-  } catch (err) {
+    res.json(result.rows);
+  } catch {
     res.status(500).json({ error: "Failed to fetch recent users" });
   }
 });
 
-// Manage users
 app.get("/api/users", verifyAdmin, async (req, res) => {
   try {
-    const users = await db.all(
+    const result = await pool.query(
       "SELECT id, email, role, created_at FROM users ORDER BY created_at DESC"
     );
-    res.json(users);
-  } catch (err) {
+    res.json(result.rows);
+  } catch {
     res.status(500).json({ error: "Failed to load users" });
   }
 });
 
-// Update user role
 app.put("/api/users/:id", verifyAdmin, async (req, res) => {
   const { role } = req.body;
   const { id } = req.params;
-  await db.run("UPDATE users SET role = ? WHERE id = ?", [role, id]);
+  await pool.query("UPDATE users SET role = $1 WHERE id = $2", [role, id]);
   res.json({ message: "User role updated" });
 });
 
-// Delete user
 app.delete("/api/users/:id", verifyAdmin, async (req, res) => {
   const { id } = req.params;
-  await db.run("DELETE FROM users WHERE id = ?", [id]);
+  await pool.query("DELETE FROM users WHERE id = $1", [id]);
   res.json({ message: "User deleted" });
 });
 
 // ==============================
 // PRODUCT ROUTES
 // ==============================
-
-// Get all products
 app.get("/api/products", async (req, res) => {
   try {
-    const products = await db.all("SELECT * FROM products ORDER BY created_at DESC");
-    res.json(products);
-  } catch (err) {
+    const result = await pool.query("SELECT * FROM products ORDER BY created_at DESC");
+    res.json(result.rows);
+  } catch {
     res.status(500).json({ error: "Failed to load products" });
   }
 });
 
-// Get single product
 app.get("/api/products/:id", async (req, res) => {
   const { id } = req.params;
-  const product = await db.get("SELECT * FROM products WHERE id = ?", [id]);
+  const result = await pool.query("SELECT * FROM products WHERE id = $1", [id]);
+  const product = result.rows[0];
   if (!product) return res.status(404).json({ error: "Product not found" });
   res.json(product);
 });
 
-// Add new product (admin)
 app.post("/api/products", verifyAdmin, async (req, res) => {
   const { name, description, image, gender, quality, availability } = req.body;
-  await db.run(
-    "INSERT INTO products (name, description, image, gender, quality, availability) VALUES (?, ?, ?, ?, ?, ?)",
+  await pool.query(
+    "INSERT INTO products (name, description, image, gender, quality, availability) VALUES ($1, $2, $3, $4, $5, $6)",
     [name, description, image, gender, quality, availability]
   );
   res.json({ message: "Product added successfully" });
 });
 
-// Delete product (admin)
 app.delete("/api/products/:id", verifyAdmin, async (req, res) => {
   const { id } = req.params;
-  await db.run("DELETE FROM products WHERE id = ?", [id]);
+  await pool.query("DELETE FROM products WHERE id = $1", [id]);
   res.json({ message: "Product deleted successfully" });
 });
