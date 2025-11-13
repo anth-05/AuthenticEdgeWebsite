@@ -78,12 +78,8 @@
   </div>
 
   <!-- ===== SCRIPT ===== -->
-<script>
-  // 🌍 Auto-detect backend
-  const API_BASE_URL =
-    window.location.hostname === "localhost"
-      ? "http://localhost:5000"
-      : "https://your-backend-name.onrender.com"; // 🔁 replace with your actual Render backend URL
+<script type="module">
+    import { API_BASE_URL } from "./config.js";
 
   document.addEventListener("DOMContentLoaded", initProductsPage);
 
