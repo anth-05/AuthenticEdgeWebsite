@@ -11,20 +11,6 @@ import multer from "multer";
 import http from "http";
 import { Server } from "socket.io";
 
-import path from "path";
-import { fileURLToPath } from "url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Serve frontend
-app.use(express.static(path.join(__dirname, "public")));
-
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
-});
-
-
 const { Pool } = pkg;
 
 dotenv.config();
@@ -56,6 +42,15 @@ const io = new Server(server, {
 const adminSockets = new Map();
 const userSockets = new Map();
 
+// ==============================
+// DATABASE
+// ==============================
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
+});
+
+
 io.on("connection", socket => {
   console.log("🔌 Socket connected:", socket.id);
 
@@ -84,13 +79,6 @@ io.on("connection", socket => {
   });
 });
 
-// ==============================
-// DATABASE
-// ==============================
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false }
-});
 
 // Initialize tables
 (async () => {
