@@ -20,7 +20,7 @@
       if (role === "admin") {
         menuHTML += `<a href="admin-dashboard.html">Admin Dashboard</a>`;
       } else {
-        menuHTML += `<a href="account.html">Account</a>`;
+        menuHTML += `<a href="user-dashboard.html">Account</a>`;
       }
 
       menuHTML += `<a href="#" id="logout-btn">Logout</a>`;
