@@ -22,7 +22,7 @@ app.use(express.json());
 
 app.use(cors({
   origin: [
-    "https://authenticedge.netlify.app",
+    "https://authenticedgewebsite-1.onrender.com",
     "http://localhost:5500"
   ],
   methods: ["GET", "POST", "PUT", "DELETE"],
