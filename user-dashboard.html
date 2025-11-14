@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Dashboard | AuthenticEdge</title>
+  <link rel="stylesheet" href="user-dashboard.css">
+</head>
+<body>
+
+<header>
+  <h1 class="logo">AuthenticEdge</h1>
+  <nav class="nav-menu">
+    <a href="index.html">Home</a>
+    <a href="shop.html">Shop</a>
+    <a href="#" id="logout-btn">Logout</a>
+  </nav>
+</header>
+
+<section class="dashboard-container">
+  <h2>Your Account</h2>
+
+  <div id="user-info" class="info-box">
+    <p>Loading account info...</p>
+  </div>
+
+  <h3>Update Email</h3>
+  <input type="email" id="new-email" placeholder="New email">
+  <button onclick="updateEmail()">Update Email</button>
+
+  <h3>Change Password</h3>
+  <input type="password" id="new-password" placeholder="New password">
+  <button onclick="updatePassword()">Update Password</button>
+
+  <h3>Danger Zone</h3>
+  <button class="delete-btn" onclick="deleteAccount()">Delete My Account</button>
+
+</section>
+<section class="dashboard-container">
+  <h2>Your Subscription</h2>
+
+  <div class="info-box" id="sub-box">
+    <p><strong>Current Plan:</strong> <span id="current-plan">Loading...</span></p>
+    <p><strong>Requested Change:</strong> <span id="requested-plan">None</span></p>
+    <p><strong>Status:</strong> <span id="sub-status">Loading...</span></p>
+  </div>
+
+  <h3>Change Subscription</h3>
+  <select id="new-plan">
+    <option value="Comfort">Comfort — €84,99</option>
+    <option value="Edge">Edge — €104,99</option>
+    <option value="Authentic">Authentic — €119,99</option>
+    <option value="Hooper">Hooper’s Edition — €109,99</option>
+  </select>
+
+  <button onclick="requestSubChange()">Request Change</button>
+</section>
+<div id="chat-widget">
+  <div id="chat-header">Support</div>
+  <div id="chat-body"></div>
+
+  <div id="chat-input">
+    <input type="text" id="chat-message" placeholder="Type a message...">
+    <button id="chat-send">➤</button>
+  </div>
+</div>
+
+<script src="sub-dashboard.js"></script>
+<script>
+import { API_BASE_URL } from "./config.js";
+
+const body = document.getElementById("chat-body");
+const input = document.getElementById("chat-message");
+const sendBtn = document.getElementById("chat-send");
+
+async function loadMessages() {
+  const token = localStorage.getItem("token");
+
+  const res = await fetch(`${API_BASE_URL}/api/messages`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+
+  const messages = await res.json();
+  body.innerHTML = "";
+
+  messages.forEach(m => {
+    const bubble = document.createElement("div");
+    bubble.className = m.sender === "user" 
+      ? "chat-bubble-user" 
+      : "chat-bubble-admin";
+
+    bubble.innerText = m.message;
+    body.appendChild(bubble);
+  });
+
+  body.scrollTop = body.scrollHeight;
+}
+
+async function sendMessage() {
+  const msg = input.value.trim();
+  if (!msg) return;
+
+  const token = localStorage.getItem("token");
+
+  await fetch(`${API_BASE_URL}/api/messages/send`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ message: msg })
+  });
+
+  input.value = "";
+  loadMessages();
+}
+
+sendBtn.onclick = sendMessage;
+
+// Auto-refresh every 3 seconds
+setInterval(loadMessages, 3000);
+loadMessages();
+</script>
+
+
+
+<script type="module" src="config.js"></script>
+<script type="module" src="user-dashboard.js"></script>
+
+</body>
+</html>

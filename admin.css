@@ -1,0 +1,75 @@
+/* PAGE LAYOUT */
+.admin-content {
+  margin-left: 260px;
+  padding: 40px;
+  color: #fff;
+}
+
+h1 {
+  font-size: 32px;
+  margin-bottom: 10px;
+}
+
+.subtitle {
+  opacity: 0.7;
+  margin-bottom: 25px;
+}
+
+/* TABLE */
+.sub-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #111;
+  color: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 0 10px rgba(255,255,255,0.1);
+}
+
+.sub-table th {
+  background: #222;
+  padding: 14px;
+  text-align: left;
+}
+
+.sub-table td {
+  padding: 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.sub-table tr:hover {
+  background: rgba(255,255,255,0.05);
+}
+
+.empty {
+  text-align: center;
+  padding: 25px;
+  color: #bbb;
+}
+
+/* BUTTONS */
+.approve-btn,
+.reject-btn {
+  padding: 7px 15px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #fff;
+  margin-right: 6px;
+}
+
+.approve-btn {
+  background: #28a745;
+}
+
+.reject-btn {
+  background: #dc3545;
+}
+
+.approve-btn:hover {
+  opacity: 0.8;
+}
+
+.reject-btn:hover {
+  opacity: 0.8;
+}

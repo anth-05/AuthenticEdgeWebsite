@@ -59,6 +59,27 @@ const pool = new Pool({
       );
     `);
 
+    // === SUBS TABLE ===
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS subscriptions (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        current_plan TEXT,          
+        requested_plan TEXT,        
+        status TEXT CHECK(status IN ('active', 'pending', 'none')) DEFAULT 'none',
+        updated_at TIMESTAMP DEFAULT NOW()
+    );`);
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS messages (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id),
+        sender TEXT NOT NULL CHECK(sender IN ('user', 'admin')),
+        message TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT NOW(),
+        status TEXT DEFAULT 'unread'
+    );`)
+
+    console.log("📦 Subscriptions table ready");
     console.log("✅ Database ready (users & products)");
 
     // === DEFAULT ACCOUNTS ===
@@ -252,4 +273,192 @@ app.delete("/api/products/:id", verifyAdmin, async (req, res) => {
   const { id } = req.params;
   await pool.query("DELETE FROM products WHERE id = $1", [id]);
   res.json({ message: "Product deleted successfully" });
+});
+
+
+// Update Email user
+app.put("/api/user/email", authenticateToken, async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    await pool.query("UPDATE users SET email = $1 WHERE id = $2", [
+      email,
+      req.user.id,
+    ]);
+    res.json({ message: "Email updated" });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to update email" });
+  }
+});
+
+// Update password user
+app.put("/api/user/password", authenticateToken, async (req, res) => {
+  const { password } = req.body;
+  const hashed = await bcrypt.hash(password, 10);
+
+  try {
+    await pool.query("UPDATE users SET password = $1 WHERE id = $2", [
+      hashed,
+      req.user.id,
+    ]);
+    res.json({ message: "Password updated" });
+  } catch {
+    res.status(500).json({ error: "Failed to update password" });
+  }
+});
+
+// Delete account user
+app.delete("/api/user/delete", authenticateToken, async (req, res) => {
+  try {
+    await pool.query("DELETE FROM users WHERE id = $1", [req.user.id]);
+    res.json({ message: "Account deleted" });
+  } catch {
+    res.status(500).json({ error: "Failed to delete account" });
+  }
+});
+async function getSubscription(userId) {
+  const result = await pool.query(
+    "SELECT * FROM subscriptions WHERE user_id = $1 LIMIT 1",
+    [userId]
+  );
+  return result.rows[0];
+}
+app.get("/api/subscription", authenticateToken, async (req, res) => {
+  try {
+    let sub = await getSubscription(req.user.id);
+
+    if (!sub) {
+      // Create "none" subscription if missing
+      await pool.query(
+        `INSERT INTO subscriptions (user_id, current_plan, status)
+         VALUES ($1, $2, $3)`,
+        [req.user.id, null, "none"]
+      );
+      sub = await getSubscription(req.user.id);
+    }
+
+    res.json(sub);
+  } catch (err) {
+    console.error("Subscription fetch error:", err);
+    res.status(500).json({ error: "Failed to load subscription" });
+  }
+});
+app.post("/api/subscription/request", authenticateToken, async (req, res) => {
+  const { plan } = req.body;
+
+  if (!plan)
+    return res.status(400).json({ error: "Plan selection required" });
+
+  try {
+    let sub = await getSubscription(req.user.id);
+
+    if (!sub) {
+      // Create subscription record if not exists
+      await pool.query(
+        `INSERT INTO subscriptions (user_id, current_plan, status)
+         VALUES ($1, $2, $3)`,
+        [req.user.id, null, "none"]
+      );
+      sub = await getSubscription(req.user.id);
+    }
+
+    await pool.query(
+      `UPDATE subscriptions
+       SET requested_plan = $1, status = 'pending', updated_at = NOW()
+       WHERE user_id = $2`,
+      [plan, req.user.id]
+    );
+
+    res.json({ message: "Your subscription change request is pending approval." });
+  } catch (err) {
+    console.error("Sub request error:", err);
+    res.status(500).json({ error: "Failed to request subscription change" });
+  }
+});
+app.get("/api/admin/subscriptions/pending", verifyAdmin, async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT s.id, s.user_id, s.current_plan, s.requested_plan, s.status, u.email
+       FROM subscriptions s
+       JOIN users u ON s.user_id = u.id
+       WHERE s.status = 'pending'
+       ORDER BY s.updated_at DESC`
+    );
+
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to load pending requests" });
+  }
+});
+app.put("/api/admin/subscriptions/:id/approve", verifyAdmin, async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const sub = await pool.query("SELECT * FROM subscriptions WHERE id = $1", [id]);
+    const s = sub.rows[0];
+
+    if (!s) return res.status(404).json({ error: "Subscription not found" });
+
+    await pool.query(
+      `UPDATE subscriptions
+       SET current_plan = requested_plan,
+           requested_plan = NULL,
+           status = 'active',
+           updated_at = NOW()
+       WHERE id = $1`,
+      [id]
+    );
+
+    res.json({ message: "Subscription plan updated successfully." });
+  } catch (err) {
+    console.error("Approval error:", err);
+    res.status(500).json({ error: "Failed to approve subscription" });
+  }
+});
+app.put("/api/admin/subscriptions/:id/reject", verifyAdmin, async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    await pool.query(
+      `UPDATE subscriptions
+       SET requested_plan = NULL,
+           status = 'active',
+           updated_at = NOW()
+       WHERE id = $1`,
+      [id]
+    );
+
+    res.json({ message: "Subscription request rejected." });
+  } catch (err) {
+    console.error("Reject error:", err);
+    res.status(500).json({ error: "Failed to reject request" });
+  }
+});
+app.post("/api/messages/send", authenticateToken, async (req, res) => {
+  const { message, toUser } = req.body;
+
+  const sender = req.user.role === "admin" ? "admin" : "user";
+  const userId = req.user.role === "admin" ? toUser : req.user.id;
+
+  await pool.query(
+    `INSERT INTO messages (user_id, sender, message) VALUES ($1, $2, $3)`,
+    [userId, sender, message]
+  );
+
+  res.json({ success: true });
+});
+app.get("/api/messages/:userId", verifyAdmin, async (req, res) => {
+  const { userId } = req.params;
+  const result = await pool.query(
+    "SELECT * FROM messages WHERE user_id = $1 ORDER BY created_at ASC",
+    [userId]
+  );
+  res.json(result.rows);
+});
+app.get("/api/messages", authenticateToken, async (req, res) => {
+  const result = await pool.query(
+    "SELECT * FROM messages WHERE user_id = $1 ORDER BY created_at ASC",
+    [req.user.id]
+  );
+  res.json(result.rows);
 });

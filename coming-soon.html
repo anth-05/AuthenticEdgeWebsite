@@ -3,26 +3,42 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Authentic Edge | Coming Soon</title>
+  <title>Authentic Edge | Subscriptions</title>
   <link rel="stylesheet" href="style.css">
+
+  <style>
+    /* Clickable subscription cards */
+    .sub-card {
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .sub-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 0 10px rgba(255,255,255,0.2);
+    }
+
+    .sub-card.selected {
+      border: 2px solid #f42658;
+      box-shadow: 0 0 15px rgba(244,38,88,0.4);
+    }
+  </style>
 </head>
 <body>
 
 <header>
   <h1 class="logo">Authentic Edge</h1>
   <div class="menu-toggle">☰</div>
-  <nav class="nav-menu">
-    <a href="contact.html">Contact</a>
-    <a href="coming-soon.html">Products</a>
-    <a href="index.html">Home</a>
-    <a href="login.html">Login</a>
 
+  <nav class="nav-menu" id="header-buttons">
+    <!-- Dynamic buttons inserted by header.js -->
   </nav>
 </header>
-  <main class="coming-soon">
+
+<main class="coming-soon">
     <section class="hero">
       <div class="hero-text">
-        <h2>COMING SOON</h2>
+        <h2>PRODUCTS COMING SOON</h2>
         <p>The Authentic Edge subscription experience — comfort, edge, and authenticity delivered.</p>
       </div>
     </section>
@@ -30,44 +46,32 @@
     <section class="subscriptions">
       <h2>Choose Your Edge</h2>
 
-      <div class="sub-grid">
-        <div class="sub-card">
+      <div class="sub-grid" id="sub-grid">
+
+        <div class="sub-card" data-plan="Comfort">
           <h3>Comfort</h3>
           <p>One size. Premium comfort. <br>Every 2 months new shoes.</p>
           <div class="price">€84,99 / mo</div>
         </div>
 
-        <div class="sub-card highlight">
+        <div class="sub-card highlight" data-plan="Edge">
           <h3>Edge</h3>
           <p>Choose between 2–3 shoes.<br>Switch: clothes / shoes / gadgets.</p>
           <div class="price">€104,99 / mo</div>
         </div>
 
-        <div class="sub-card">
+        <div class="sub-card" data-plan="Authentic">
           <h3>Authentic</h3>
           <p>Up to 5 shoes. <br>Unlimited access + first gadget gift.</p>
           <div class="price">€119,99 / mo</div>
         </div>
 
-        <div class="sub-card">
+        <div class="sub-card" data-plan="Hoopers Edition">
           <h3>Hooper’s Edition 🏀</h3>
           <p>Casual & Real Hooper options.<br>Customized drops every 2 months.</p>
           <div class="price">€109,99 / mo</div>
         </div>
-      </div>
-    </section>
 
-    <section class="gift-section">
-      <h2>Gift an Edge</h2>
-      <div class="gift-grid">
-        <div class="gift-card">
-          <h3>Gift 3 Times</h3>
-          <p>Perfect for sneaker lovers.<br>Includes customization.</p>
-        </div>
-        <div class="gift-card">
-          <h3>Gift Unlimited</h3>
-          <p>Share unlimited Authentic Edge experiences with your friends.</p>
-        </div>
       </div>
     </section>
 
@@ -80,11 +84,143 @@
       </form>
     </section>
   </main>
+  <!-- Subscription Popup Modal -->
+<div id="sub-modal" class="modal-overlay hidden">
+  <div class="modal-box">
+    <h3 id="modal-title">Subscribe?</h3>
+    <p id="modal-text"></p>
+
+    <div class="modal-buttons">
+      <button id="modal-cancel" class="btn-cancel">Cancel</button>
+      <button id="modal-confirm" class="btn-confirm">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- Login Required Modal -->
+<div id="login-modal" class="modal-overlay hidden">
+  <div class="modal-box">
+    <h3>Login Required</h3>
+    <p>You need an account to subscribe.</p>
+
+    <div class="modal-buttons">
+      <button id="login-cancel" class="btn-cancel">Create Account</button>
+      <button id="login-confirm" class="btn-confirm">Login</button>
+    </div>
+  </div>
+</div>
+
 
   <footer>
     <p>The Authentic Edge</p>
     <p>authenticedge@gmail.com</p>
   </footer>
+
+<script src="header.js"></script>
+<script src="config.js"></script>
+
+<script>
+import { API_BASE_URL } from "./config.js";
+
+const subModal = document.getElementById("sub-modal");
+const loginModal = document.getElementById("login-modal");
+
+const modalTitle = document.getElementById("modal-title");
+const modalText = document.getElementById("modal-text");
+
+let currentPlan = null;
+
+// ===== Show modal =====
+function openModal(modal) {
+  modal.classList.remove("hidden");
+  setTimeout(() => modal.classList.add("show"), 10);
+}
+
+function closeModal(modal) {
+  modal.classList.remove("show");
+  setTimeout(() => modal.classList.add("hidden"), 250);
+}
+
+document.getElementById("login-confirm").onclick = () => {
+  closeModal(loginModal);
+  window.location.href = "login.html";
+};
+
+document.getElementById("login-cancel").onclick = () => {
+  closeModal(loginModal);
+  window.location.href = "register.html";
+};
+
+document.getElementById("modal-cancel").onclick = () => {
+  closeModal(subModal);
+};
+
+document.getElementById("modal-confirm").onclick = async () => {
+  closeModal(subModal);
+  subscribe(currentPlan);
+};
+
+// ===== Subscription click handling =====
+const cards = document.querySelectorAll(".sub-card");
+cards.forEach(card => {
+  card.addEventListener("click", () => {
+    const token = localStorage.getItem("token");
+    currentPlan = card.querySelector("h3").innerText.trim();
+
+    // Not logged in → show login modal
+    if (!token) {
+      openModal(loginModal);
+      return;
+    }
+
+    // Logged in → show confirm modal
+    modalTitle.innerText = `Subscribe to ${currentPlan}?`;
+    modalText.innerText = `Do you want to subscribe to the “${currentPlan}” plan?`;
+    openModal(subModal);
+  });
+});
+
+// ===== Call backend =====
+async function subscribe(plan) {
+  const token = localStorage.getItem("token");
+
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/subscription/change`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ plan })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert(data.error || "Failed to subscribe.");
+      return;
+    }
+
+    alert(`Your subscription request for "${plan}" has been submitted.`);
+    window.location.href = "user-dashboard.html";
+
+  } catch (err) {
+    alert("Server connection error.");
+  }
+}
+await fetch(`${API_BASE_URL}/api/messages/send`, {
+  method: "POST",
+  headers: {
+    Authorization: `Bearer ${token}`,
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    message: `User requested subscription plan: ${plan}`
+  })
+});
+
+</script>
+
 
 </body>
 </html>

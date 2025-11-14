@@ -1280,3 +1280,168 @@ select {
     width: 80%;
   }
 }
+/* ================================
+   USER DASHBOARD STYLING
+   ================================ */
+
+.dashboard-container {
+  max-width: 600px;
+  margin: 120px auto 60px auto;
+  padding: 30px;
+  background: #ffffff;
+  border-radius: 18px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+}
+
+.dashboard-container h2 {
+  text-align: center;
+  margin-bottom: 25px;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.dashboard-container h3 {
+  margin-top: 30px;
+  margin-bottom: 10px;
+  font-size: 20px;
+}
+
+.info-box {
+  background: #f7f9fc;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 30px;
+  border: 1px solid #e2e6ee;
+}
+
+.info-box p {
+  margin: 8px 0;
+  font-size: 16px;
+}
+
+/* ============ Inputs ============ */
+.dashboard-container input {
+  width: 100%;
+  padding: 12px 15px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  font-size: 16px;
+  transition: 0.25s;
+}
+
+.dashboard-container input:focus {
+  border-color: #000;
+  outline: none;
+  box-shadow: 0 0 4px rgba(0,0,0,0.15);
+}
+
+/* ============ Buttons ============ */
+.dashboard-container button {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  background: #000;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  margin-bottom: 20px;
+  transition: 0.25s;
+}
+
+.dashboard-container button:hover {
+  background: #333;
+}
+
+/* Delete Account Button */
+.delete-btn {
+  background: #ff3b3b !important;
+}
+
+.delete-btn:hover {
+  background: #d62828 !important;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .dashboard-container {
+    margin: 100px 15px;
+    padding: 20px;
+  }
+}
+/* ===== MODAL OVERLAY ===== */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.75);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 5000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease-in-out;
+}
+
+.modal-overlay.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-box {
+  background: #111;
+  padding: 25px;
+  border-radius: 15px;
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+  color: white;
+  box-shadow: 0 0 20px rgba(255,255,255,0.1);
+  animation: pop 0.25s ease;
+}
+
+@keyframes pop {
+  from { transform: scale(0.8); opacity: 0 }
+  to   { transform: scale(1); opacity: 1 }
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.btn-cancel {
+  background: #333;
+  color: white;
+  padding: 10px 18px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-confirm {
+  background: #0a84ff;
+  color: white;
+  padding: 10px 18px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-cancel:hover {
+  background: #555;
+}
+
+.btn-confirm:hover {
+  background: #006edc;
+}
+
+.hidden {
+  display: none;
+}

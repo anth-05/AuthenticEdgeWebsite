@@ -9,15 +9,15 @@
 <body>
 
   <!-- ===== HEADER ===== -->
-  <header>
-    <h1 class="logo">Authentic Edge</h1>
-    <div class="menu-toggle">☰</div>
-    <nav class="nav-menu">
-      <a href="contact.html">Contact</a>
-      <a href="index.html">Home</a>
-      <a href="login.html">Login</a>
-    </nav>
-  </header>
+<header>
+  <h1 class="logo">Authentic Edge</h1>
+  <div class="menu-toggle">☰</div>
+
+  <nav class="nav-menu" id="header-buttons">
+    <!-- Dynamic buttons inserted by header.js -->
+  </nav>
+</header>
+
 
   <!-- Return Button -->
   <a href="index.html" class="return-btn">← Return</a>
@@ -83,6 +83,8 @@
   // Load products when page is ready
   document.addEventListener("DOMContentLoaded", loadProducts);
 </script>
+<script src="header.js"></script>
+
 
 
 </body>

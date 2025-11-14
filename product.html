@@ -11,13 +11,12 @@
 <header>
   <h1 class="logo">Authentic Edge</h1>
   <div class="menu-toggle">☰</div>
-  <nav class="nav-menu">
-    <a href="contact.html">Contact</a>
-    <a href="shop.html">Shop</a>
-    <a href="index.html">Home</a>
+
+  <nav class="nav-menu" id="header-buttons">
+    <!-- Dynamic buttons inserted by header.js -->
   </nav>
-  <a href="shop.html" class="return-btn">← Back to Shop</a>
 </header>
+
 
 <section class="product-details">
   <div class="product-container">
@@ -106,8 +105,57 @@
     }
   }
 
+    document.addEventListener("DOMContentLoaded", () => {
+    const nav = document.getElementById("header-buttons");
+    const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
+
+    let menuHTML = `
+      <a href="index.html">Home</a>
+      <a href="products.html">Products</a>
+      <a href="contact.html">Contact</a">
+    `;
+
+    if (!token) {
+      // NOT LOGGED IN
+      menuHTML += `
+        <a href="login.html">Login</a>
+        <a href="register.html">Register</a>
+      `;
+    } else {
+      // LOGGED IN
+      if (role === "admin") {
+        menuHTML += `<a href="admin-dashboard.html">Admin Dashboard</a>`;
+      } else {
+        menuHTML += `<a href="account.html">Account</a>`;
+      }
+
+      menuHTML += `<a href="#" id="logout-btn">Logout</a>`;
+    }
+
+    nav.innerHTML = menuHTML;
+
+    // Logout handler
+    const logoutBtn = document.getElementById("logout-btn");
+
+    if (logoutBtn) {
+      logoutBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        localStorage.clear();
+        window.location.href = "index.html";
+      });
+    }
+
+    // Mobile menu toggle
+    document.querySelector(".menu-toggle").addEventListener("click", () => {
+      document.querySelector(".nav-menu").classList.toggle("active");
+    });
+  });
+
   loadProductDetails();
 </script>
+<script src="header.js"></script>
+
 
 </body>
 </html>

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin | Subscription Requests</title>
+  <link rel="stylesheet" href="admin.css" />
+</head>
+
+<body>
+
+  <aside class="sidebar">
+    <h2 class="sidebar-logo">AuthenticEdge</h2>
+    <ul class="sidebar-menu">
+      <li><a href="admin-dashboard.html">Dashboard</a></li>
+      <li><a href="admin-products.html">Product Management</a></li>
+      <li><a href="admin-subscriptions.html" class="active">Subscriptions</a></li>
+      <li><a href="contact.html">Contact</a></li>
+      <li><a href="shop.html">Products</a></li>
+      <li><a href="index.html">Home</a></li>
+      <li><a href="#" onclick="logout()">Logout</a></li>
+    </ul>
+  </aside>
+
+  <main class="admin-content">
+
+    <h1>Subscription Requests</h1>
+    <p class="subtitle">Review all user subscription change requests.</p>
+
+    <table class="sub-table">
+      <thead>
+        <tr>
+          <th>User</th>
+          <th>Current Plan</th>
+          <th>Requested Plan</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+
+      <tbody id="sub-table-body">
+        <!-- Filled dynamically -->
+      </tbody>
+    </table>
+
+  </main>
+
+  <script src="config.js"></script>
+  <script src="admin-subscriptions.js"></script>
+
+</body>
+</html>
