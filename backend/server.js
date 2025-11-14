@@ -25,7 +25,7 @@ app.use(cors({
     "https://authenticedgewebsite-1.onrender.com",
     "http://localhost:5500"
   ],
-  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true,
   allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
