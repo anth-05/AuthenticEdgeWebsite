@@ -1,13 +1,14 @@
 // ==============================
 // IMPORTS & SETUP
 // ==============================
-const express = require("express");
-const { Pool } = require("pg");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const cors = require("cors");
-const dotenv = require("dotenv");
+import express from "express";
 import cors from "cors";
+import dotenv from "dotenv";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import pkg from "pg";
+
+const { Pool } = pkg;
 
 dotenv.config();
 
@@ -16,7 +17,7 @@ app.use(express.json());
 
 app.use(cors({
   origin: [
-    "https://authenticedge.netlify.app/", // ✅ Your Netlify URL
+    "https://authenticedge.netlify.app", // ✅ Your Netlify URL
     "http://localhost:5500" // (optional for local testing)
   ],
   methods: ["GET", "POST", "PUT", "DELETE"],
