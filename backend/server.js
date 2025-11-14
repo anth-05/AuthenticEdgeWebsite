@@ -333,3 +333,12 @@ const upload = multer({ dest: "uploads/" });
 app.post("/api/messages/upload", upload.single("file"), (req, res) => {
   res.json({ url: `/uploads/${req.file.filename}` });
 });
+// ==============================
+// PROTECTED TEST ROUTE
+// ==============================
+app.get("/api/protected", authenticateToken, (req, res) => {
+  res.json({
+    message: "Token is valid",
+    user: req.user,
+  });
+});
