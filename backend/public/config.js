@@ -1,4 +1,4 @@
 // Change this to your Render backend URL after deployment
-const API_BASE_URL = "https://authenticedgewebsite.onrender.com";
+const API_BASE_URL = "";
 
 export { API_BASE_URL };
