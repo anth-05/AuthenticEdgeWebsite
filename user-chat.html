@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Authentic Edge | Shop</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ===== HEADER ===== -->
+<header>
+  <h1 class="logo">Authentic Edge</h1>
+  <div class="menu-toggle">☰</div>
+
+  <nav class="nav-menu" id="header-buttons">
+    <!-- Dynamic buttons inserted by header.js -->
+  </nav>
+</header>
+
+
+  <!-- ===== MAIN SHOP ===== -->
+  <main class="shop">
+    <section>
+      <h2>All Products</h2>
+      <div id="product-grid" class="product-grid">
+        <p>Loading products...</p>
+      </div>
+    </section>
+  </main>
+
+<div class="chat-widget" id="chatWidget">
+  <div class="chat-header">Support</div>
+  <div class="chat-box" id="chatBox"></div>
+
+  <div class="chat-input-bar">
+    <input id="chatInput" placeholder="Message…" />
+    <label class="file-btn">
+      📎<input type="file" id="chatFile" hidden>
+    </label>
+    <button id="chatSend">➤</button>
+  </div>
+</div>
+<script src="header.js"></script>
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<script>
+const socket = io("https://your-render-backend.onrender.com");
+
+const userId = localStorage.getItem("user_id");
+const chatBox = document.getElementById("chatBox");
+const input = document.getElementById("chatInput");
+
+function addMessage(msg, sender) {
+  const el = document.createElement("div");
+  el.className = `message ${sender}-msg`;
+  el.innerHTML = msg;
+  chatBox.appendChild(el);
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+document.getElementById("chatSend").onclick = () => {
+  const message = input.value.trim();
+  if (!message) return;
+
+  socket.emit("sendMessage", {
+    user_id: userId,
+    sender: "user",
+    message,
+    file_url: null
+  });
+
+  input.value = "";
+};
+
+socket.on(`message_${userId}`, (msg) => {
+  addMessage(msg.message, msg.sender);
+});
+</script>
+
+</body>
+</html>

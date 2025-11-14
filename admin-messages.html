@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin | Messages</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <header>
+    <h1>Admin Dashboard — Messages</h1>
+    <div id="message-badge" class="badge hidden">0</div>
+  </header>
+
+  <div class="messages-container">
+
+    <!-- LEFT: LIST OF USERS -->
+    <aside class="users-list" id="usersList"></aside>
+
+    <!-- RIGHT: CHAT PANEL -->
+    <main class="chat-panel">
+      <div id="chatHeader">Select a user</div>
+
+      <div id="chatBody"></div>
+
+      <div class="send-box">
+        <input id="adminInput" type="text" placeholder="Type message…">
+        <input id="fileInput" type="file" hidden>
+        <button id="attachBtn">📎</button>
+        <button id="adminSend">Send</button>
+      </div>
+    </main>
+
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script type="module" src="admin-messages.js"></script>
+</body>
+</html>
