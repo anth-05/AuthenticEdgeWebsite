@@ -4,7 +4,9 @@ import dotenv from "dotenv";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import pkg from "pg";
+import multer from "multer";
 import http from "http";
+import { Server } from "socket.io";
 
 const { Pool } = pkg;
 
@@ -13,7 +15,6 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 
-// Middleware
 app.use(express.json());
 app.use(
   cors({
@@ -26,13 +27,14 @@ app.use(
   })
 );
 
-// Database pool setup
+app.use("/uploads", express.static("uploads"));
+
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false },
 });
 
-// Authentication Middleware
+// AUTH MIDDLEWARE
 function authenticateToken(req, res, next) {
   const token = req.headers.authorization?.split(" ")[1];
   if (!token) return res.status(401).json({ error: "Missing token" });
@@ -52,8 +54,9 @@ function verifyAdmin(req, res, next) {
   });
 }
 
-// Routes
-// Get product list (admin only)
+// ROUTES
+
+// Products
 app.get("/api/products", authenticateToken, verifyAdmin, async (req, res) => {
   try {
     const { rows } = await pool.query(
@@ -66,7 +69,6 @@ app.get("/api/products", authenticateToken, verifyAdmin, async (req, res) => {
   }
 });
 
-// Add product (admin only)
 app.post("/api/products", authenticateToken, verifyAdmin, async (req, res) => {
   try {
     const { name, description, image, gender, quality, availability } = req.body;
@@ -82,40 +84,7 @@ app.post("/api/products", authenticateToken, verifyAdmin, async (req, res) => {
   }
 });
 
-// Delete product (admin only)
-app.delete("/api/products/:id", authenticateToken, verifyAdmin, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const result = await pool.query("DELETE FROM products WHERE id = $1", [id]);
-    if (result.rowCount === 0)
-      return res.status(404).json({ error: "Product not found" });
-    res.json({ message: "Deleted" });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to delete product" });
-  }
-});
-
-// Update product (admin only)
-app.put("/api/products/:id", authenticateToken, verifyAdmin, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { name, description, image, gender, quality, availability } = req.body;
-    const result = await pool.query(
-      `UPDATE products SET name=$1, description=$2, image=$3, gender=$4, quality=$5, availability=$6
-       WHERE id=$7 RETURNING *`,
-      [name, description, image, gender, quality, availability, id]
-    );
-    if (result.rowCount === 0)
-      return res.status(404).json({ error: "Product not found" });
-    res.json(result.rows[0]);
-  } catch (err) {
-    console.error("Failed to update product:", err);
-    res.status(500).json({ error: "Failed to update product" });
-  }
-});
-
-// User register
+// Register
 app.post("/api/register", async (req, res) => {
   const { email, password, role } = req.body;
   try {
@@ -136,7 +105,7 @@ app.post("/api/register", async (req, res) => {
   }
 });
 
-// User login
+// Login
 app.post("/api/login", async (req, res) => {
   const { email, password } = req.body;
   try {
@@ -152,6 +121,7 @@ app.post("/api/login", async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
+
     res.json({ token, role: user.role });
   } catch (err) {
     console.error(err);
@@ -159,7 +129,7 @@ app.post("/api/login", async (req, res) => {
   }
 });
 
-// Database initialization & server start
+// Database table setup and server start
 (async () => {
   try {
     await pool.query(`CREATE TABLE IF NOT EXISTS users (
