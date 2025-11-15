@@ -3,41 +3,29 @@ import cors from "cors";
 import dotenv from "dotenv";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { Pool } from "pg";
+import pkg from "pg";
 import http from "http";
-import multer from "multer";
-import path from "path";
+import multer from 'multer';  // or const multer = require('multer'); for CommonJS
+
+// Configure storage and upload middleware
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/');  // make sure this folder exists and is writable
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + '-' + file.originalname);
+  },
+});
+
+const upload = multer({ storage: storage });
+
+
+const { Pool } = pkg;
 
 dotenv.config();
 
 const app = express();
 const server = http.createServer(app);
-
-// Configure multer storage for image uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/"); // Make sure this folder exists
-  },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    cb(null, `${Date.now()}${ext}`);
-  },
-});
-
-const fileFilter = (req, file, cb) => {
-  // Accept images only
-  if (file.mimetype.startsWith("image/")) {
-    cb(null, true);
-  } else {
-    cb(new Error("Only image files are allowed!"), false);
-  }
-};
-
-const upload = multer({
-  storage,
-  fileFilter,
-  limits: { fileSize: 5 * 1024 * 1024 }, // Limit 5MB
-});
 
 // Middleware
 app.use(express.json());
@@ -51,10 +39,9 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
-
 app.use("/uploads", express.static("uploads"));
 
-// Database setup
+// Database pool setup
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false },
@@ -81,8 +68,7 @@ function verifyAdmin(req, res, next) {
 }
 
 // Routes
-
-// Get products (admin only)
+// Get product list (admin only)
 app.get("/api/products", authenticateToken, verifyAdmin, async (req, res) => {
   try {
     const { rows } = await pool.query(
@@ -95,21 +81,22 @@ app.get("/api/products", authenticateToken, verifyAdmin, async (req, res) => {
   }
 });
 
-// Add product with image upload (admin only)
+// Add product (admin only)
 app.post(
   "/api/products",
   authenticateToken,
   verifyAdmin,
-  upload.single("imageFile"),
+  upload.single('imageFile'),
   async (req, res) => {
     try {
-      const { name, description, gender, quality, availability } = req.body;
+      const { name, description, gender, quality, availability, image } = req.body;
 
       if (!name) {
         return res.status(400).json({ error: "Product name is required." });
       }
 
-      const imagePath = req.file ? `/uploads/${req.file.filename}` : req.body.image;
+      // Use uploaded file path if file was sent, otherwise use image URL from body
+      const imagePath = req.file ? `/uploads/${req.file.filename}` : image || null;
 
       const { rows } = await pool.query(
         `INSERT INTO products (name, description, image, gender, quality, availability)
@@ -124,6 +111,7 @@ app.post(
     }
   }
 );
+
 
 // Delete product (admin only)
 app.delete("/api/products/:id", authenticateToken, verifyAdmin, async (req, res) => {
@@ -202,7 +190,7 @@ app.post("/api/login", async (req, res) => {
   }
 });
 
-// Initialize database tables and start server
+// Database initialization & server start
 (async () => {
   try {
     await pool.query(`CREATE TABLE IF NOT EXISTS users (
@@ -263,4 +251,4 @@ app.post("/api/login", async (req, res) => {
     console.error("❌ Database init failed:", err);
     process.exit(1);
   }
-});
+})();
