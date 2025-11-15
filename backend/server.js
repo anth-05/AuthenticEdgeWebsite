@@ -19,6 +19,14 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
+
+const { Pool } = pkg;
+
+dotenv.config();
+
+const app = express();
+const server = http.createServer(app);
+
 app.post(
   "/api/products",
   authenticateToken,
@@ -49,13 +57,6 @@ app.post(
   }
 );
 
-
-const { Pool } = pkg;
-
-dotenv.config();
-
-const app = express();
-const server = http.createServer(app);
 
 // Middleware
 app.use(express.json());
