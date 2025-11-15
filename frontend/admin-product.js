@@ -1,5 +1,6 @@
 import { API_BASE_URL } from "./config.js";
 
+// --- UI Handlers for form input type ---
 document.querySelectorAll('input[name="imageType"]').forEach(radio => {
   radio.addEventListener('change', (e) => {
     const showUrl = e.target.value === 'url';
@@ -8,6 +9,7 @@ document.querySelectorAll('input[name="imageType"]').forEach(radio => {
   });
 });
 
+// --- PRODUCTS TABLE/CRUD ---
 async function loadProducts() {
   const token = localStorage.getItem("token");
   const tbody = document.querySelector("#product-table tbody");
@@ -28,30 +30,63 @@ async function loadProducts() {
     tbody.innerHTML = products.map(p => `
       <tr>
         <td>${p.id}</td>
-        <td><img src="${p.image}" alt="${p.name}" style="max-width:60px;"></td>
+        <td><img src="${p.image}" alt="${p.name}" class="product-thumb"></td>
         <td>${p.name}</td>
         <td>${p.gender || ""}</td>
         <td>${p.quality || ""}</td>
         <td>${p.availability || ""}</td>
         <td>
-          <!-- Action buttons placeholder -->
           <button data-id="${p.id}" class="edit-btn">Edit</button>
           <button data-id="${p.id}" class="delete-btn">Delete</button>
         </td>
       </tr>
     `).join("");
+
+    // Add event handlers for Edit and Delete
+    tbody.querySelectorAll('.delete-btn').forEach(btn =>
+      btn.addEventListener('click', async function () {
+        if (!confirm('Are you sure you want to delete this product?')) return;
+        await deleteProduct(btn.dataset.id);
+      })
+    );
+
+    tbody.querySelectorAll('.edit-btn').forEach(btn =>
+      btn.addEventListener('click', function () {
+        // You need to show a modal or form here, prefill, and handle update
+        alert('Edit product functionality not implemented yet.');
+      })
+    );
   } catch (error) {
     tbody.innerHTML = `<tr><td colspan='7'>Error loading products: ${error.message}</td></tr>`;
   }
 }
 
+// --- Delete Product ---
+async function deleteProduct(id) {
+  const token = localStorage.getItem("token");
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/products/${id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (res.ok) {
+      alert("✅ Product deleted!");
+      loadProducts();
+    } else {
+      const err = await res.json();
+      alert(`❌ Unable to delete: ${err.error || res.statusText}`);
+    }
+  } catch (err) {
+    alert(`❌ Error deleting: ${err.message}`);
+  }
+}
+
+// --- Add Product ---
 document.getElementById("add-product-form").addEventListener("submit", async (e) => {
   e.preventDefault();
 
   const token = localStorage.getItem("token");
   const imageType = document.querySelector('input[name="imageType"]:checked').value;
-
-  // Collect other fields
   const data = {
     name: document.getElementById("name").value.trim(),
     description: document.getElementById("description").value.trim(),
@@ -72,7 +107,7 @@ document.getElementById("add-product-form").addEventListener("submit", async (e)
     Object.entries(data).forEach(([key, value]) => formData.append(key, value));
     formData.append("imageFile", imageFile);
     body = formData;
-    headers = { Authorization: `Bearer ${token}` }; // Multer handles Content-Type
+    headers = { Authorization: `Bearer ${token}` };
   } else {
     const imageUrl = document.getElementById("image").value.trim();
     if (!imageUrl) {
@@ -100,7 +135,6 @@ document.getElementById("add-product-form").addEventListener("submit", async (e)
       alert("✅ Product added successfully!");
       e.target.reset();
       loadProducts();
-      // Reset radio selection and toggle UI
       document.querySelector('input[name="imageType"][value="url"]').checked = true;
       document.getElementById('image-url-row').style.display = '';
       document.getElementById('image-upload-row').style.display = 'none';
