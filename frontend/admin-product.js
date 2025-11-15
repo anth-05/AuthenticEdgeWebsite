@@ -117,21 +117,20 @@ document.getElementById("add-product-form").addEventListener("submit", async (e)
     availability: document.getElementById("availability").value.trim(),
   };
 
-  let body, headers;
-    const imageUrl = document.getElementById("image").value.trim();
-    if (!imageUrl) {
-      alert("Please supply an image URL.");
-      return;
-    }
-    data.image = imageUrl;
-    body = JSON.stringify(data);
-    headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
-  
+  const imageUrl = document.getElementById("image").value.trim();
+  if (!imageUrl) {
+    alert("Please supply an image URL.");
+    return;
+  }
+  data.image = imageUrl;
 
   if (!data.name) {
     alert("Please provide the product name.");
     return;
   }
+
+  let body = JSON.stringify(data);
+  let headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
 
   try {
     const res = await fetch(`${API_BASE_URL}/api/products`, { method: "POST", headers, body });
@@ -214,3 +213,4 @@ document.addEventListener("DOMContentLoaded", () => {
   setWelcomeMessage();
   loadProducts();
 });
+
