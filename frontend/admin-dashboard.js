@@ -1,34 +1,42 @@
 import { API_BASE_URL } from "./config.js";
 
 document.addEventListener("DOMContentLoaded", () => {
+  setupTabs();
+  setupLogout();
+  setupProductForm();
+
+  loadDashboard();
+});
+
+function setupTabs() {
   const tabButtons = document.querySelectorAll(".tab-button");
   const tabContents = document.querySelectorAll(".tab-content");
 
   tabButtons.forEach(button => {
     button.addEventListener("click", () => {
-      // Remove active class from all buttons
       tabButtons.forEach(btn => btn.classList.remove("active"));
-      // Hide all tab content
       tabContents.forEach(content => content.classList.remove("active"));
 
-      // Activate clicked button and relevant tab content
       button.classList.add("active");
       const tabId = button.getAttribute("data-tab");
       document.getElementById(tabId).classList.add("active");
-    });})
+    });
+  });
+}
 
-  // Load dashboard data after tabs setup
-  loadDashboard();
+function setupLogout() {
+  const logoutBtn = document.getElementById("logout-btn");
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", logout);
+  }
+}
 
-  // Setup logout button listener
-  document.getElementById("logout-btn").addEventListener("click", logout);
-
-  // Setup product form submit handler if exists
+function setupProductForm() {
   const productForm = document.getElementById("product-form");
   if (productForm) {
     productForm.addEventListener("submit", handleAddProduct);
   }
-});
+}
 
 async function loadDashboard() {
   const token = localStorage.getItem("token");
@@ -40,38 +48,46 @@ async function loadDashboard() {
     return;
   }
 
-  const verify = await fetch(`${API_BASE_URL}/api/protected`, {
-    headers: { Authorization: "Bearer " + token }
-  });
+  try {
+    const verify = await fetch(`${API_BASE_URL}/api/protected`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
 
-  if (!verify.ok) {
-    alert("Session expired. Please log in again.");
-    logout();
-    return;
+    if (!verify.ok) {
+      alert("Session expired. Please log in again.");
+      logout();
+      return;
+    }
+    const verifyData = await verify.json();
+    document.getElementById("welcome-message").textContent = `Welcome, ${verifyData.user.email} (${verifyData.user.role})`;
+
+    const statsRes = await fetch(`${API_BASE_URL}/api/stats`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const statsData = await statsRes.json();
+
+    document.getElementById("user-count").textContent = statsData.users;
+    document.getElementById("admin-count").textContent = statsData.admins;
+    document.getElementById("regular-count").textContent = statsData.regularUsers;
+
+    const usersRes = await fetch(`${API_BASE_URL}/api/users`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const users = await usersRes.json();
+
+    renderRecentUsers(users);
+    renderAllUsers(users);
+
+  } catch (error) {
+    console.error("Dashboard loading failed:", error);
+    alert("Failed to load dashboard data. Please try again.");
   }
-
-  const verifyData = await verify.json();
-  document.getElementById("welcome-message").textContent = `Welcome, ${verifyData.user.email} (${verifyData.user.role})`;
-
-  const statsRes = await fetch(`${API_BASE_URL}/api/stats`, { headers: { Authorization: `Bearer ${token}` } });
-  const statsData = await statsRes.json();
-
-  document.getElementById("user-count").textContent = statsData.users;
-  document.getElementById("admin-count").textContent = statsData.admins;
-  document.getElementById("regular-count").textContent = statsData.regularUsers;
-
-  const usersRes = await fetch(`${API_BASE_URL}/api/users`, { headers: { Authorization: `Bearer ${token}` } });
-  const users = await usersRes.json();
-
-  renderRecentUsers(users);
-  renderAllUsers(users);
 }
 
 function renderRecentUsers(users) {
   const recentTbody = document.querySelector("#recent-users tbody");
   recentTbody.innerHTML = "";
-  const recent = users.slice(0, 5);
-  recent.forEach(u => {
+  users.slice(0, 5).forEach(u => {
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${u.email}</td>
@@ -102,9 +118,8 @@ function renderAllUsers(users) {
     manageTbody.appendChild(tr);
   });
 
-  // Delegated event handler for delete buttons
   manageTbody.querySelectorAll('.delete-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
+    btn.addEventListener('click', e => {
       deleteUser(e.target.dataset.userid);
     });
   });
@@ -112,20 +127,25 @@ function renderAllUsers(users) {
 
 async function updateUserRole(id, role) {
   const token = localStorage.getItem("token");
-  const res = await fetch(`${API_BASE_URL}/api/users/${id}`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`
-    },
-    body: JSON.stringify({ role })
-  });
 
-  if (res.ok) {
-    alert("✅ User role updated successfully!");
-    loadDashboard();
-  } else {
-    alert("❌ Failed to update user role.");
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/users/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({ role })
+    });
+
+    if (res.ok) {
+      alert("✅ User role updated successfully!");
+      loadDashboard();
+    } else {
+      alert("❌ Failed to update user role.");
+    }
+  } catch (error) {
+    alert("❌ Error updating user role: " + error.message);
   }
 }
 
@@ -133,20 +153,24 @@ async function deleteUser(id) {
   if (!confirm("Are you sure you want to delete this user?")) return;
 
   const token = localStorage.getItem("token");
-  const res = await fetch(`${API_BASE_URL}/api/users/${id}`, {
-    method: "DELETE",
-    headers: { Authorization: `Bearer ${token}` }
-  });
 
-  if (res.ok) {
-    alert("🗑️ User deleted!");
-    loadDashboard();
-  } else {
-    alert("❌ Failed to delete user.");
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/users/${id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    if (res.ok) {
+      alert("🗑️ User deleted!");
+      loadDashboard();
+    } else {
+      alert("❌ Failed to delete user.");
+    }
+  } catch (error) {
+    alert("❌ Error deleting user: " + error.message);
   }
 }
 
-// Handle adding product from the product form
 async function handleAddProduct(event) {
   event.preventDefault();
 
@@ -190,7 +214,7 @@ async function handleAddProduct(event) {
     } else {
       alert("❌ Failed to add product.");
     }
-  } catch (err) {
+  } catch (error) {
     alert("❌ Error connecting to server.");
   }
 }
@@ -199,67 +223,3 @@ function logout() {
   localStorage.clear();
   window.location.href = "login.html";
 }
-// Wait for DOM to be fully loaded
-document.addEventListener('DOMContentLoaded', () => {
-  const tabs = document.querySelectorAll('.dashboard-tabs .tab-link');
-  const mainContent = document.getElementById('main-content');
-
-  // Define content for each page (simplified example)
-  const pagesContent = {
-    home: `<section><h1>Home</h1><p>Welcome to the Home page.</p></section>`,
-    products: `<section><h1>Product Management</h1><p>Manage your products here.</p></section>`,
-    dashboard: `<section><h1>Dashboard</h1><p>Analytics and summaries here.</p></section>`,
-    logout: `<section><h1>Logout</h1><p>You are logged out.</p></section>`
-  };
-
-  function activateTab(tab) {
-    tabs.forEach(t => t.classList.remove('active'));
-    tab.classList.add('active');
-
-    // Get the target from href hash (e.g. #home)
-    const target = tab.getAttribute('href').substring(1);
-    mainContent.innerHTML = pagesContent[target] || '<p>Page not found.</p>';
-  }
-
-  // Initialize first tab content
-  if (tabs.length > 0) activateTab(tabs[0]);
-
-  // Add click event to all tabs
-  tabs.forEach(tab => {
-    tab.addEventListener('click', e => {
-      e.preventDefault();
-      activateTab(tab);
-    });
-  });
-});
-document.addEventListener('DOMContentLoaded', () => {
-  // Handle mobile tabs only
-  if (window.innerWidth <= 600) {
-    const mobileTabs = document.querySelectorAll('.mobile-tabs .tab-link');
-    const mainContent = document.getElementById('main-content');
-
-    const pagesContent = {
-      home: '<section><h1>Home</h1><p>Welcome to Home.</p></section>',
-      products: '<section><h1>Products</h1><p>Manage your Products.</p></section>',
-      dashboard: '<section><h1>Dashboard</h1><p>Your Analytics here.</p></section>',
-      logout: '<section><h1>Logout</h1><p>You are logged out.</p></section>'
-    };
-
-    function activateTab(tab) {
-      mobileTabs.forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-
-      const target = tab.getAttribute('href').substring(1);
-      mainContent.innerHTML = pagesContent[target] || '<p>Page not found.</p>';
-    }
-
-    if (mobileTabs.length > 0) activateTab(mobileTabs[0]);
-
-    mobileTabs.forEach(tab => {
-      tab.addEventListener('click', e => {
-        e.preventDefault();
-        activateTab(tab);
-      });
-    });
-  }
-});
