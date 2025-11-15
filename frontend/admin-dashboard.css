@@ -60,7 +60,7 @@ body, html {
   margin-bottom: 0;
 }
 
-.sidebar-menu button, /* for tab buttons */
+.sidebar-menu button,
 .sidebar-menu a {
   display: block;
   color: #ccc;
@@ -264,6 +264,72 @@ body, html {
 .delete-btn:hover {
   background-color: #b02a37;
   box-shadow: 0 6px 15px rgba(176, 42, 55, 0.8);
+}
+
+/* ===== TABS ===== */
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+/* Product Management Form */
+.product-form {
+  max-width: 600px;
+  background: rgba(20, 20, 20, 0.95);
+  padding: 1.5rem 2rem;
+  border-radius: 15px;
+  box-shadow: 0 6px 20px rgba(255, 157, 0, 0.3);
+  margin-top: 1rem;
+  color: #f0f0f0;
+}
+
+.product-form label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+  color: var(--accent, #ff9d00);
+}
+
+.product-form input[type="text"],
+.product-form input[type="file"],
+.product-form textarea {
+  width: 100%;
+  padding: 0.7rem 1rem;
+  border-radius: 12px;
+  border: 1px solid #444;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+  font-family: 'Roboto Flex', sans-serif;
+  background: #1c1c1c;
+  color: #ddd;
+  transition: border-color 0.3s ease;
+}
+
+.product-form input[type="text"]:focus,
+.product-form input[type="file"]:focus,
+.product-form textarea:focus {
+  border-color: var(--accent, #ff9d00);
+  outline: none;
+}
+
+.product-form button {
+  background-color: var(--accent, #ff9d00);
+  border: none;
+  color: #121214;
+  padding: 0.75rem 1.8rem;
+  font-weight: 700;
+  border-radius: 25px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  box-shadow: 0 6px 10px rgba(255, 157, 0, 0.5);
+}
+
+.product-form button:hover {
+  background-color: #e08600;
 }
 
 /* ===== RESPONSIVE ===== */

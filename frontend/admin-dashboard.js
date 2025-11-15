@@ -1,19 +1,21 @@
 import { API_BASE_URL } from "./config.js";
 
 document.addEventListener("DOMContentLoaded", () => {
-  // Initialize tabs
   const tabButtons = document.querySelectorAll(".tab-button");
   const tabContents = document.querySelectorAll(".tab-content");
 
   tabButtons.forEach(button => {
     button.addEventListener("click", () => {
+      // Remove active class from all buttons
       tabButtons.forEach(btn => btn.classList.remove("active"));
+      // Hide all tab content
       tabContents.forEach(content => content.classList.remove("active"));
 
+      // Activate clicked button and relevant tab content
       button.classList.add("active");
-      document.getElementById(button.getAttribute("data-tab")).classList.add("active");
-    });
-  });
+      const tabId = button.getAttribute("data-tab");
+      document.getElementById(tabId).classList.add("active");
+    });})
 
   // Load dashboard data after tabs setup
   loadDashboard();
