@@ -1,6 +1,8 @@
 import { API_BASE_URL } from "./config.js";
 
-// --- UI Handlers for form input type ---
+let currentProducts = [];
+
+// Toggle image input fields UI dynamically
 document.querySelectorAll('input[name="imageType"]').forEach(radio => {
   radio.addEventListener('change', (e) => {
     const showUrl = e.target.value === 'url';
@@ -9,7 +11,7 @@ document.querySelectorAll('input[name="imageType"]').forEach(radio => {
   });
 });
 
-// --- PRODUCTS TABLE/CRUD ---
+// Load products and render table
 async function loadProducts() {
   const token = localStorage.getItem("token");
   const tbody = document.querySelector("#product-table tbody");
@@ -20,14 +22,14 @@ async function loadProducts() {
       headers: { Authorization: `Bearer ${token}` }
     });
     if (!res.ok) throw new Error("Failed to fetch products");
-    const products = await res.json();
+    currentProducts = await res.json();
 
-    if (products.length === 0) {
+    if (currentProducts.length === 0) {
       tbody.innerHTML = "<tr><td colspan='7'>No products found.</td></tr>";
       return;
     }
 
-    tbody.innerHTML = products.map(p => `
+    tbody.innerHTML = currentProducts.map(p => `
       <tr>
         <td>${p.id}</td>
         <td><img src="${p.image}" alt="${p.name}" class="product-thumb"></td>
@@ -42,28 +44,30 @@ async function loadProducts() {
       </tr>
     `).join("");
 
-    // Add event handlers for Edit and Delete
-    tbody.querySelectorAll('.delete-btn').forEach(btn =>
-      btn.addEventListener('click', async function () {
-        if (!confirm('Are you sure you want to delete this product?')) return;
+    // Add Delete handlers
+    tbody.querySelectorAll('.delete-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if (!confirm("Are you sure you want to delete this product?")) return;
         await deleteProduct(btn.dataset.id);
-      })
-    );
+      });
+    });
 
-tbody.querySelectorAll('.edit-btn').forEach(btn =>
-  btn.addEventListener('click', function () {
-    const id = btn.dataset.id;
-    // Find the product from current loaded list OR refetch single product by id
-    const product = /* get product object by id from products array */
-    openEditModal(product);
-  })
-);
+    // Add Edit handlers
+    tbody.querySelectorAll('.edit-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.id;
+        const product = currentProducts.find(p => p.id == id);
+        if (!product) return alert("Product not found");
+        openEditModal(product);
+      });
+    });
 
   } catch (error) {
     tbody.innerHTML = `<tr><td colspan='7'>Error loading products: ${error.message}</td></tr>`;
   }
 }
-// Open modal and prefill form fields with the product data
+
+// Show edit modal & prefill form
 function openEditModal(product) {
   document.getElementById('edit-product-id').value = product.id;
   document.getElementById('edit-name').value = product.name;
@@ -72,36 +76,35 @@ function openEditModal(product) {
   document.getElementById('edit-gender').value = product.gender || '';
   document.getElementById('edit-quality').value = product.quality || '';
   document.getElementById('edit-availability').value = product.availability || '';
-
   document.getElementById('edit-modal').style.display = 'block';
 }
 
-// Close modal
+// Hide modal
 function closeEditModal() {
   document.getElementById('edit-modal').style.display = 'none';
 }
 
-// --- Delete Product ---
+// Delete product handler
 async function deleteProduct(id) {
   const token = localStorage.getItem("token");
   try {
     const res = await fetch(`${API_BASE_URL}/api/products/${id}`, {
-      method: "DELETE",
+      method: 'DELETE',
       headers: { Authorization: `Bearer ${token}` }
     });
-    if (res.ok) {
-      alert("✅ Product deleted!");
-      loadProducts();
-    } else {
+    if (!res.ok) {
       const err = await res.json();
-      alert(`❌ Unable to delete: ${err.error || res.statusText}`);
+      alert(`Failed to delete: ${err.error || res.statusText}`);
+      return;
     }
+    alert('Product deleted!');
+    loadProducts();
   } catch (err) {
-    alert(`❌ Error deleting: ${err.message}`);
+    alert('Error deleting: ' + err.message);
   }
 }
 
-// --- Add Product ---
+// Add product form submit
 document.getElementById("add-product-form").addEventListener("submit", async (e) => {
   e.preventDefault();
 
@@ -116,7 +119,6 @@ document.getElementById("add-product-form").addEventListener("submit", async (e)
   };
 
   let body, headers;
-
   if (imageType === "upload") {
     const imageFile = document.getElementById('imageUpload').files[0];
     if (!imageFile) {
@@ -124,8 +126,8 @@ document.getElementById("add-product-form").addEventListener("submit", async (e)
       return;
     }
     const formData = new FormData();
-    Object.entries(data).forEach(([key, value]) => formData.append(key, value));
-    formData.append("imageFile", imageFile);
+    Object.entries(data).forEach(([key, val]) => formData.append(key, val));
+    formData.append('imageFile', imageFile);
     body = formData;
     headers = { Authorization: `Bearer ${token}` };
   } else {
@@ -145,32 +147,28 @@ document.getElementById("add-product-form").addEventListener("submit", async (e)
   }
 
   try {
-    const res = await fetch(`${API_BASE_URL}/api/products`, {
-      method: "POST",
-      headers,
-      body
-    });
-
-    if (res.ok) {
-      alert("✅ Product added successfully!");
-      e.target.reset();
-      loadProducts();
-      document.querySelector('input[name="imageType"][value="url"]').checked = true;
-      document.getElementById('image-url-row').style.display = '';
-      document.getElementById('image-upload-row').style.display = 'none';
-    } else {
+    const res = await fetch(`${API_BASE_URL}/api/products`, { method: "POST", headers, body });
+    if (!res.ok) {
       const err = await res.json();
-      alert(`❌ Failed to add product: ${err.error || res.statusText}`);
+      alert(`Failed to add product: ${err.error || res.statusText}`);
+      return;
     }
-  } catch (error) {
-    alert(`❌ Failed to add product: ${error.message}`);
+    alert("Product added successfully!");
+    e.target.reset();
+    loadProducts();
+    document.querySelector('input[name="imageType"][value="url"]').checked = true;
+    document.getElementById('image-url-row').style.display = '';
+    document.getElementById('image-upload-row').style.display = 'none';
+  } catch (err) {
+    alert('Failed to add product: ' + err.message);
   }
 });
+
+// Edit product form submit
 document.getElementById('edit-product-form').addEventListener('submit', async (e) => {
   e.preventDefault();
 
   const token = localStorage.getItem('token');
-
   const id = document.getElementById('edit-product-id').value;
   const updatedProduct = {
     name: document.getElementById('edit-name').value.trim(),
@@ -184,10 +182,7 @@ document.getElementById('edit-product-form').addEventListener('submit', async (e
   try {
     const res = await fetch(`${API_BASE_URL}/api/products/${id}`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
-      },
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify(updatedProduct)
     });
 
@@ -205,6 +200,10 @@ document.getElementById('edit-product-form').addEventListener('submit', async (e
   }
 });
 
+// Cancel edit modal button
+document.getElementById('edit-cancel').addEventListener('click', closeEditModal);
+
+// Welcome message update on page load
 async function setWelcomeMessage() {
   const token = localStorage.getItem("token");
   const welcomeEl = document.getElementById("welcome-message");
@@ -212,7 +211,6 @@ async function setWelcomeMessage() {
     welcomeEl.textContent = "Welcome, Guest";
     return;
   }
-
   try {
     const res = await fetch(`${API_BASE_URL}/api/protected`, {
       headers: { Authorization: `Bearer ${token}` }
@@ -220,15 +218,12 @@ async function setWelcomeMessage() {
     if (!res.ok) throw new Error("Not authenticated");
     const data = await res.json();
     welcomeEl.textContent = `Welcome, ${data.user.email}`;
-  } catch (err) {
+  } catch {
     welcomeEl.textContent = "Welcome";
   }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
   setWelcomeMessage();
-  loadProducts(); // your existing call to fetch product list
+  loadProducts();
 });
-
-
-document.getElementById('edit-cancel').addEventListener('click', closeEditModal);
