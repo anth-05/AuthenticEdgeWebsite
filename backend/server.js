@@ -5,7 +5,6 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import pkg from "pg";
 import http from "http";
-import multer from 'multer';  // or const multer = require('multer'); for CommonJS
 
 const { Pool } = pkg;
 
