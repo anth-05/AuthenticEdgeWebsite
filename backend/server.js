@@ -7,19 +7,6 @@ import pkg from "pg";
 import http from "http";
 import multer from 'multer';  // or const multer = require('multer'); for CommonJS
 
-// Configure storage and upload middleware
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'uploads/');  // make sure this folder exists and is writable
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + '-' + file.originalname);
-  },
-});
-
-const upload = multer({ storage: storage });
-
-
 const { Pool } = pkg;
 
 dotenv.config();
@@ -39,7 +26,6 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
-app.use("/uploads", express.static("uploads"));
 
 // Database pool setup
 const pool = new Pool({
