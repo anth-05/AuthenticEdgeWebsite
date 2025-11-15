@@ -1,33 +1,51 @@
-/* ======= Root & Base ======= */
+/* admin-product-dashboard.css */
+
+/* Root variables */
 :root {
   --accent: #ff9d00;
+  --bg-light: #fafafa;
+  --bg-dark: #23201d;
+  --text-color-light: #111;
+  --text-color-dark: #ececec;
+  --card-radius: 18px;
+  --card-shadow: 0 10px 30px rgba(255, 157, 0, 0.25);
 }
+
+/* Base */
 body, .dashboard-container, .dashboard-body {
-  background: #141414;
+  background: var(--bg-light);
   height: 100vh;
   margin: 0;
-  font-family: 'Roboto Flex', 'Arial', sans-serif;
-  color: #eee;
+  font-family: var(--main-font, 'Roboto Flex', sans-serif);
+  color: var(--text-color-light);
   overflow: hidden;
 }
 
+/* Sidebar */
 .sidebar {
-  background: rgba(15,15,15,0.97);
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: saturate(180%) blur(20px);
+  border-right: 1px solid rgba(0,0,0,0.07);
+  color: var(--text-color-light);
 }
 
+/* Active sidebar menu */
 .sidebar-menu a.active {
   background: var(--accent);
-  color: #181818;
+  color: var(--bg-dark);
   font-weight: 700;
   box-shadow: 0 0 20px var(--accent);
 }
 
-/* ===== Main Area ===== */
+/* Main area */
 .dashboard-main {
   padding: 2.5rem 3rem 4rem;
-  background: linear-gradient(135deg, #1f1f1f, #131313 85%);
+  background: linear-gradient(135deg, #fffdef, #f4f1e8 85%);
   overflow-y: auto;
+  color: var(--text-color-light);
 }
+
+/* Dashboard header */
 .dashboard-header h1 {
   font-size: 2.6rem;
   color: var(--accent);
@@ -36,71 +54,79 @@ body, .dashboard-container, .dashboard-body {
   text-shadow: 0 0 10px var(--accent);
 }
 
-/* ===== Add Product ===== */
+/* Add Product card */
 .add-product.card {
   max-width: 900px;
-  background: #23201d;
-  border-radius: 20px;
+  border-radius: var(--card-radius);
   padding: 2rem 2.5rem;
   margin-bottom: 2rem;
-  box-shadow: 0 8px 30px rgba(255, 157, 0, 0.22);
+  box-shadow: var(--card-shadow);
+  color: var(--text-color-dark);
 }
+
 .add-product h3 {
-  font-family: 'Libre Baskerville', serif;
+  font-family: var(--title-font, 'Libre Baskerville', serif);
   font-weight: 700;
   font-size: 2rem;
   color: var(--accent);
   margin-bottom: 1.2rem;
 }
 
+/* Form Rows */
 .form-row {
   display: flex;
   gap: 1.5rem;
   margin-bottom: 1rem;
   flex-wrap: wrap;
 }
+
 .form-row label {
   font-weight: 500;
-  color: #ccc;
+  color: #555;
   margin-right: 1.2rem;
 }
+
 .form-row input, .form-row select {
   flex: 1;
   padding: 0.7rem 1rem;
   font-size: 1.1rem;
   border-radius: 13px;
-  border: 1px solid #444;
-  background: #181818;
-  color: #ececec;
+  border: 1px solid #ccc;
+  background: #fff;
+  color: var(--text-color-light);
   transition: border-color 0.2s;
 }
+
 .form-row input:focus, .form-row select:focus {
   border-color: var(--accent);
   outline: none;
 }
 
+/* Textarea */
 textarea {
   width: 100%;
   padding: 0.9rem 1rem;
   border-radius: 13px;
-  border: 1px solid #444;
-  background: #181818;
-  color: #ececec;
+  border: 1px solid #ccc;
+  background: #fff;
+  color: var(--text-color-light);
   font-size: 1.1rem;
   resize: vertical;
-  font-family: 'Roboto Flex', sans-serif;
+  font-family: var(--main-font, 'Roboto Flex', sans-serif);
   margin-bottom: 1.2rem;
   transition: border-color 0.2s;
 }
+
 textarea:focus {
   border-color: var(--accent);
   outline: none;
 }
 
+/* Buttons */
 button.btn {
   background: var(--accent);
   border: none;
-  color: #181818;
+  color: var(--bg-dark);
   padding: 0.8rem 2.5rem;
   font-weight: 800;
   font-size: 1.15rem;
@@ -110,23 +136,25 @@ button.btn {
   transition: background 0.25s, box-shadow 0.33s;
   margin-top: 0.7rem;
 }
+
 button.btn:hover {
-  background: #e18b00;
-  color: #111;
-  box-shadow: 0 10px 30px rgba(225,139,0,.5);
+  background: #e18b01;
+  color: var(--text-color-dark);
+  box-shadow: 0 10px 30px rgba(225,139,0,0.5);
 }
 
-/* ===== Product Table ===== */
+/* Product Table card */
 .manage-products.card.full-width {
   max-width: 1000px;
-  background: #23201d;
   border-radius: 22px;
   margin: auto;
   box-shadow: 0 6px 26px rgba(255,157,0,0.24);
   padding: 2rem 2.2rem;
+  color: var(--text-color-dark);
 }
+
 .manage-products h3 {
-  font-family: 'Libre Baskerville', serif;
+  font-family: var(--title-font, 'Libre Baskerville', serif);
   font-weight: 700;
   font-size: 2rem;
   color: var(--accent);
@@ -134,42 +162,49 @@ button.btn:hover {
   text-shadow: 0 0 12px var(--accent);
 }
 
+/* User Table */
 .user-table {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0 14px;
-  background: #1a1a1a;
-  color: #eee;
+  background: #f6f1e8;
+  color: var(--text-color-light);
   font-size: 1rem;
   border-radius: 20px;
   overflow: hidden;
   box-shadow: 0 10px 40px rgba(255,157,0,0.16);
 }
-.user-table th, .user-table td {
+
+.user-table th,
+.user-table td {
   padding: 1.1rem 1.3rem;
   vertical-align: middle;
   text-align: left;
   border-bottom: none !important;
 }
+
 .user-table th {
   background: var(--accent);
-  color: #161515;
+  color: var(--bg-dark);
   font-weight: 900;
   font-size: 1rem;
   letter-spacing: .06em;
   text-transform: uppercase;
 }
+
 .user-table tr {
-  background: #251d13;
+  background: #fff8e1;
   transition: background 0.17s;
   border-radius: 13px;
-  box-shadow: inset 0 -12px 12px -12px rgba(0,0,0,0.12);
-}
-.user-table tr:hover {
-  background: #332003;
+  box-shadow: inset 0 -12px 12px -12px rgba(0,0,0,0.05);
 }
 
-.user-table td img, .user-table td .product-thumb {
+.user-table tr:hover {
+  background: #f5e1a4;
+}
+
+.user-table td img,
+.user-table td .product-thumb {
   width: 62px;
   height: 62px;
   object-fit: contain;
@@ -177,7 +212,7 @@ button.btn:hover {
   box-shadow: 0 0 8px rgba(255,157,0,0.32);
 }
 
-/* ===== Table Buttons ===== */
+/* Edit/delete Buttons */
 .edit-btn, .delete-btn {
   padding: 7px 18px;
   font-weight: 700;
@@ -188,26 +223,30 @@ button.btn:hover {
   margin-right: 7px;
   transition: all 0.19s;
 }
+
 .edit-btn {
   background: #29a329;
-  color: #fff;
+  color: white;
   box-shadow: 0 8px 18px rgba(41,163,41,0.18);
 }
+
 .edit-btn:hover {
   background: #227522;
   box-shadow: 0 11px 30px rgba(34,117,34,0.33);
 }
+
 .delete-btn {
   background: #dc3545;
-  color: #fff;
+  color: white;
   box-shadow: 0 8px 18px rgba(220,53,69,0.19);
 }
+
 .delete-btn:hover {
   background: #b02a37;
   box-shadow: 0 11px 30px rgba(176,42,55,0.33);
 }
 
-/* ===== Responsive ===== */
+/* Responsive adjustments */
 @media (max-width: 900px) {
   .dashboard-main {
     padding: 1.7rem 1.7rem;
@@ -245,97 +284,5 @@ button.btn:hover {
     padding: 0.5rem 1rem;
     font-size: 0.9rem;
     border-radius: 10px;
-  }
-}
-/* Edit Modal Overlay */
-#edit-modal {
-  display: none;
-  position: fixed;
-  top: 15vh;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 5px 30px rgba(0, 0, 0, 0.25);
-  width: 420px;
-  padding: 1.5rem 2rem;
-  z-index: 1000;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  color: #333;
-}
-
-/* Modal Heading */
-#edit-modal h3 {
-  margin: 0 0 1rem 0;
-  font-weight: 600;
-  font-size: 1.25rem;
-  text-align: center;
-  color: #222;
-}
-
-/* Form Layout */
-#edit-product-form {
-  display: flex;
-  flex-direction: column;
-}
-
-#edit-product-form input[type="text"],
-#edit-product-form input[type="url"],
-#edit-product-form textarea {
-  font-size: 0.9rem;
-  padding: 0.5rem 0.7rem;
-  margin: 0.3rem 0 1rem 0;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  color: #444;
-}
-
-#edit-product-form label {
-  font-weight: 500;
-  margin-top: 0.5rem;
-  margin-bottom: 0.2rem;
-  color: #555;
-}
-
-/* Buttons */
-#edit-product-form button {
-  font-size: 1rem;
-  padding: 0.55rem 0.75rem;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  margin-top: 0.5rem;
-  width: 140px;
-  align-self: center;
-  transition: background-color 0.3s ease;
-}
-
-#edit-product-form button[type="submit"] {
-  background-color: #007BFF;
-  color: white;
-}
-
-#edit-product-form button[type="submit"]:hover {
-  background-color: #0056b3;
-}
-
-#edit-product-form button#edit-cancel {
-  background-color: #dc3545;
-  color: white;
-  margin-left: 1rem;
-}
-
-#edit-product-form button#edit-cancel:hover {
-  background-color: #a71d2a;
-}
-
-/* Responsive */
-@media (max-width: 480px) {
-  #edit-modal {
-    width: 90vw;
-  }
-  #edit-product-form button {
-    width: 100%;
-    margin-left: 0;
   }
 }

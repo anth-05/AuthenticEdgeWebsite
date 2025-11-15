@@ -1,5 +1,3 @@
-/* homepage.css - specific styles for homepage */
-
 /* ===== HERO ===== */
 .hero {
   min-height: 85vh;
@@ -9,65 +7,88 @@
   justify-content: center;
   text-align: center;
   padding: 0 1rem;
-  color: white;
+  color: var(--text-color, white);
   position: relative;
   z-index: 1;
+  border-radius: var(--card-radius);
+  font-family: var(--title-font);
 }
 
 .hero::before {
   content: "";
   position: absolute;
-  inset: 0;
-  background: linear-gradient(to bottom, rgba(0,0,0,0.4), rgba(0,0,0,0.3));
+  top: 50%; /* control vertical position */
+  left: 50%; /* control horizontal position */
+  transform: translate(-50%, -50%); /* center the backdrop */
+  width: 80%; /* control backdrop width */
+  height: 70%; /* control backdrop height */
   z-index: 0;
+  border-radius: var(--card-radius);
+  pointer-events: none;
+  background: rgba(255, 255, 255, 0.25); /* translucent white */
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(5px);
+  box-shadow: 0 4px 30px rgba(255, 255, 255, 0.1);
 }
+
 
 .hero-text {
   position: relative;
-  animation: heroPopIn 0.3s ease-in-out forwards;
+  animation: heroPopIn 0.5s ease-in-out forwards;
+  color: #1d1d1f;
+  max-width: 650px;
+  padding: 0 1rem;
+  user-select: none;
 }
 
 .hero-text h2 {
-  font-family: 'Libre Baskerville', serif;
-  font-size: 2.3rem;
+  font-size: 2.8rem;
   font-weight: 700;
+  color: white;
   margin-bottom: 2rem;
-  text-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
+  text-shadow: none;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
 }
 
 .hero-buttons {
+  position: relative;
   display: flex;
   justify-content: center;
   gap: 1rem;
   margin-top: 1rem;
   opacity: 0;
-  animation: heroPopIn 1s ease-out 0.3s forwards;
+  animation: heroPopIn 1s ease-out 0.5s forwards;
 }
 
 .hero-buttons .btn {
-  background: white;
-  color: black;
-  padding: 0.6rem 1.4rem;
-  border-radius: 25px;
+  background: #ef890c;
+  color: white;
+  padding: 0.7rem 1.6rem;
+  border-radius: 22px;
   font-weight: 600;
+  letter-spacing: 0.015em;
   text-decoration: none;
-  transition: 0.3s ease;
-  font-size: 0.9rem;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+  font-size: 1rem;
   border: none;
   cursor: pointer;
+  font-family: var(--main-font);
+  user-select: none;
+  box-shadow: 0 6px 12px rgba(206, 120, 7, 0.35);
 }
 
-.hero-buttons .btn:hover {
-  background: #ff9d00;
-  color: #111;
-  transform: translateY(-2px);
+.hero-buttons .btn:hover,
+.hero-buttons .btn:focus {
+  background-color: #8b4504;
+  outline: none;
+  transform: translateY(-3px);
 }
 
-/* ===== ANIMATIONS ===== */
 @keyframes heroPopIn {
   0% {
     opacity: 0;
-    transform: scale(0.95) translateY(15px);
+    transform: scale(0.97) translateY(20px);
   }
   100% {
     opacity: 1;
@@ -75,35 +96,18 @@
   }
 }
 
-/* ===== RESPONSIVE for HERO ===== */
+/* RESPONSIVE */
 @media (max-width: 768px) {
   .hero-text h2 {
-    font-size: 1.8rem;
+    font-size: 2rem;
   }
   .hero-buttons {
     flex-direction: column;
+    align-items: center;
   }
   .hero-buttons .btn {
-    width: 100%;
+    width: 50%;
     text-align: center;
+    font-size: 1.05rem;
   }
-}
-/* Base nav menu hidden on mobile */
-.nav-menu {
-  position: relative !important;
-  left: 0 !important;
-  top: 0 !important;
-  height: auto !important;
-  width: auto !important;
-  display: flex !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-  z-index: 9999 !important;
-  background-color: transparent !important;
-}
-.nav-menu a {
-  display: inline-block;
-  padding: 0.7rem 1.2rem;
-  color: white;
-  text-decoration: none;
 }

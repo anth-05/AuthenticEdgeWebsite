@@ -1,4 +1,4 @@
-/* coming-soon.css - updated with better layout and theme consistency */
+/* coming-soon.css - updated layout and theme consistency */
 
 /* ===== PAGE LAYOUT ===== */
 .coming-soon {
@@ -8,9 +8,10 @@
   justify-content: center;
   min-height: 85vh;
   padding: 3rem 5%;
-  color: white;
+  color: var(--text-color);
   text-align: center;
-  background: none; /* transparent, background handled by theme */
+  background: none; /* background handled by main theme */
+  font-family: var(--main-font);
 }
 
 /* ===== HERO ===== */
@@ -26,16 +27,22 @@
   position: relative;
   z-index: 1;
   padding: 0 1rem;
+  background: var(--card-bg);
+  border-radius: var(--card-radius);
+  box-shadow: var(--card-shadow);
+  backdrop-filter: blur(10px);
+  color: var(--text-color);
 }
 
 .coming-soon .hero-text h2 {
-  font-family: 'Libre Baskerville', serif;
+  font-family: var(--title-font);
   font-size: 3rem;
   font-weight: 700;
   letter-spacing: 2px;
   margin-bottom: 1rem;
-  text-shadow: 0 3px 10px rgba(0,0,0,0.5);
-  color: white;
+  color: var(--text-color);
+  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  user-select: none;
 }
 
 .coming-soon .hero-text p {
@@ -44,6 +51,7 @@
   margin: 0 auto;
   opacity: 0.85;
   line-height: 1.5;
+  color: var(--subtle-text-color);
 }
 
 /* ===== SUBSCRIPTIONS GRID ===== */
@@ -54,7 +62,7 @@
 }
 
 .subscriptions h2 {
-  font-family: 'Libre Baskerville', serif;
+  font-family: var(--title-font);
   font-size: 2rem;
   font-weight: 700;
   margin-bottom: 2rem;
@@ -63,64 +71,67 @@
 
 .sub-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr); /* 4 cards side by side */
+  grid-template-columns: repeat(4, 1fr);
   gap: 1.5rem;
   justify-items: center;
 }
 
 @media (max-width: 768px) {
   .sub-grid {
-    grid-template-columns: repeat(2, 1fr); /* switch to 2 per row on mobile */
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
 /* ===== SUBSCRIPTION AND GIFT CARDS ===== */
 .sub-card, .gift-card {
-  background: rgba(0, 0, 0, 0.5);
-  border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(193, 191, 191, 0.737);
+  border-radius: var(--card-radius);
+  border: 1px solid rgba(255, 255, 255, 0.748);
   padding: 2rem 1.2rem;
-  color: white;
+  box-shadow: var(--card-shadow);
+  color: var(--text-color);
   text-align: center;
   max-width: 280px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   transition: background 0.3s ease, transform 0.3s ease;
   cursor: default;
+  user-select: none;
 }
 
 .sub-card:hover, .gift-card:hover {
   transform: translateY(-5px);
-  background: rgba(0, 0, 0, 0.65);
+  background: rgba(255, 255, 255, 0.681);
+  box-shadow: 0 10px 20px rgba(255, 165, 0, 0.25);
 }
 
 .sub-card h3, .gift-card h3 {
-  font-family: 'Libre Baskerville', serif;
+  font-family: var(--title-font);
   font-size: 1.4rem;
   font-weight: 700;
   margin-bottom: 1rem;
-  color: #fff;
-  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.6);
+  color: var(--text-color);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
 }
 
 .sub-card p, .gift-card p {
   font-size: 0.95rem;
+  font-weight: 600;
   line-height: 1.4;
-  opacity: 0.95;
-  color: #f2f2f2;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
+  opacity: 0.9;
+  color: white;
+  text-shadow: 0 0 3px rgba(0, 0, 0, 0.1);
 }
 
 .sub-card .price {
   margin-top: 1rem;
   font-weight: bold;
   font-size: 1.1rem;
-  color: #ff9d00;
-  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.6);
+  color: var(--accent);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
 }
 
 .sub-card.highlight {
-  border: 1px solid #ff9d00;
-  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid var(--accent);
+  background: rgba(255, 165, 0, 0.15);
 }
 
 /* ===== GIFT SECTION ===== */
@@ -140,17 +151,18 @@
 .gift-card {
   max-width: 250px;
   padding: 2rem 1.2rem;
-  background: rgba(0,0,0,0.5);
-  border-radius: 20px;
-  border: 1px solid rgba(255,255,255,0.15);
-  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-  color: white;
+  background: var(--card-bg);
+  border-radius: var(--card-radius);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: var(--card-shadow);
+  color: var(--text-color);
   text-align: center;
   transition: background 0.3s ease, transform 0.3s ease;
+  user-select: none;
 }
 
 .gift-card:hover {
-  background: rgba(255,255,255,0.15);
+  background: rgba(255, 255, 255, 0.15);
   transform: translateY(-3px);
 }
 
@@ -165,7 +177,7 @@
 .notify h2 {
   font-size: 2rem;
   margin-bottom: 1rem;
-  color: white;
+  color: var(--text-color);
 }
 
 .notify-form {
@@ -182,10 +194,13 @@
   width: 260px;
   outline: none;
   font-size: 1rem;
+  font-family: var(--main-font);
+  color: var(--text-color);
+  background: rgba(255, 255, 255, 0.2);
 }
 
 .notify-form button {
-  background: #ff9d00;
+  background: var(--accent);
   border: none;
   padding: 0.8rem 1.5rem;
   border-radius: 25px;
@@ -193,12 +208,13 @@
   cursor: pointer;
   font-size: 1rem;
   transition: background 0.3s ease;
-  color: black;
+  color: #000;
+  font-family: var(--main-font);
 }
 
 .notify-form button:hover {
-  background: white;
-  color: black;
+  background: rgba(255, 157, 0, 0.85);
+  color: #000;
 }
 
 /* ===== RESPONSIVE ===== */
@@ -208,7 +224,7 @@
   }
 
   .sub-grid {
-    grid-template-columns: repeat(2, 1fr); /* 2 cards side by side */
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .gift-grid {
