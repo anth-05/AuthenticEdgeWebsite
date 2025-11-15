@@ -26,6 +26,7 @@ dotenv.config();
 
 const app = express();
 const server = http.createServer(app);
+app.use('/uploads', express.static('uploads'));
 
 app.post(
   "/api/products",
