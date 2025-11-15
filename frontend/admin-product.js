@@ -1,8 +1,6 @@
 import { API_BASE_URL } from "./config.js";
 
-let currentProducts = [];
-
-// Toggle image input fields UI dynamically
+// --- UI Handlers for form input type ---
 document.querySelectorAll('input[name="imageType"]').forEach(radio => {
   radio.addEventListener('change', (e) => {
     const showUrl = e.target.value === 'url';
@@ -11,7 +9,7 @@ document.querySelectorAll('input[name="imageType"]').forEach(radio => {
   });
 });
 
-// Load products and render table
+// --- PRODUCTS TABLE/CRUD ---
 async function loadProducts() {
   const token = localStorage.getItem("token");
   const tbody = document.querySelector("#product-table tbody");
@@ -22,14 +20,14 @@ async function loadProducts() {
       headers: { Authorization: `Bearer ${token}` }
     });
     if (!res.ok) throw new Error("Failed to fetch products");
-    currentProducts = await res.json();
+    const products = await res.json();
 
-    if (currentProducts.length === 0) {
+    if (products.length === 0) {
       tbody.innerHTML = "<tr><td colspan='7'>No products found.</td></tr>";
       return;
     }
 
-    tbody.innerHTML = currentProducts.map(p => `
+    tbody.innerHTML = products.map(p => `
       <tr>
         <td>${p.id}</td>
         <td><img src="${p.image}" alt="${p.name}" class="product-thumb"></td>
@@ -44,71 +42,51 @@ async function loadProducts() {
       </tr>
     `).join("");
 
-    // Add Delete handlers
-    tbody.querySelectorAll('.delete-btn').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        if (!confirm("Are you sure you want to delete this product?")) return;
+    // Add event handlers for Edit and Delete
+    tbody.querySelectorAll('.delete-btn').forEach(btn =>
+      btn.addEventListener('click', async function () {
+        if (!confirm('Are you sure you want to delete this product?')) return;
         await deleteProduct(btn.dataset.id);
-      });
-    });
+      })
+    );
 
-    // Add Edit handlers
-    tbody.querySelectorAll('.edit-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const id = btn.dataset.id;
-        const product = currentProducts.find(p => p.id == id);
-        if (!product) return alert("Product not found");
-        openEditModal(product);
-      });
-    });
-
+    tbody.querySelectorAll('.edit-btn').forEach(btn =>
+      btn.addEventListener('click', function () {
+        // You need to show a modal or form here, prefill, and handle update
+        alert('Edit product functionality not implemented yet.');
+      })
+    );
   } catch (error) {
     tbody.innerHTML = `<tr><td colspan='7'>Error loading products: ${error.message}</td></tr>`;
   }
 }
 
-// Show edit modal & prefill form
-function openEditModal(product) {
-  document.getElementById('edit-product-id').value = product.id;
-  document.getElementById('edit-name').value = product.name;
-  document.getElementById('edit-description').value = product.description || '';
-  document.getElementById('edit-image').value = product.image || '';
-  document.getElementById('edit-gender').value = product.gender || '';
-  document.getElementById('edit-quality').value = product.quality || '';
-  document.getElementById('edit-availability').value = product.availability || '';
-  document.getElementById('edit-modal').style.display = 'block';
-}
-
-// Hide modal
-function closeEditModal() {
-  document.getElementById('edit-modal').style.display = 'none';
-}
-
-// Delete product handler
+// --- Delete Product ---
 async function deleteProduct(id) {
   const token = localStorage.getItem("token");
   try {
     const res = await fetch(`${API_BASE_URL}/api/products/${id}`, {
-      method: 'DELETE',
+      method: "DELETE",
       headers: { Authorization: `Bearer ${token}` }
     });
-    if (!res.ok) {
+    if (res.ok) {
+      alert("✅ Product deleted!");
+      loadProducts();
+    } else {
       const err = await res.json();
-      alert(`Failed to delete: ${err.error || res.statusText}`);
-      return;
+      alert(`❌ Unable to delete: ${err.error || res.statusText}`);
     }
-    alert('Product deleted!');
-    loadProducts();
   } catch (err) {
-    alert('Error deleting: ' + err.message);
+    alert(`❌ Error deleting: ${err.message}`);
   }
 }
 
-// Add product form submit
+// --- Add Product ---
 document.getElementById("add-product-form").addEventListener("submit", async (e) => {
   e.preventDefault();
 
   const token = localStorage.getItem("token");
+  const imageType = document.querySelector('input[name="imageType"]:checked').value;
   const data = {
     name: document.getElementById("name").value.trim(),
     description: document.getElementById("description").value.trim(),
@@ -117,99 +95,56 @@ document.getElementById("add-product-form").addEventListener("submit", async (e)
     availability: document.getElementById("availability").value.trim(),
   };
 
-  const imageUrl = document.getElementById("image").value.trim();
-  if (!imageUrl) {
-    alert("Please supply an image URL.");
-    return;
+  let body, headers;
+
+  if (imageType === "upload") {
+    const imageFile = document.getElementById('imageUpload').files[0];
+    if (!imageFile) {
+      alert("Please upload an image file.");
+      return;
+    }
+    const formData = new FormData();
+    Object.entries(data).forEach(([key, value]) => formData.append(key, value));
+    formData.append("imageFile", imageFile);
+    body = formData;
+    headers = { Authorization: `Bearer ${token}` };
+  } else {
+    const imageUrl = document.getElementById("image").value.trim();
+    if (!imageUrl) {
+      alert("Please supply an image URL.");
+      return;
+    }
+    data.image = imageUrl;
+    body = JSON.stringify(data);
+    headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
   }
-  data.image = imageUrl;
 
   if (!data.name) {
     alert("Please provide the product name.");
     return;
   }
 
-  let body = JSON.stringify(data);
-  let headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
-
   try {
-    const res = await fetch(`${API_BASE_URL}/api/products`, { method: "POST", headers, body });
-    if (!res.ok) {
-      const err = await res.json();
-      alert(`Failed to add product: ${err.error || res.statusText}`);
-      return;
-    }
-    alert("Product added successfully!");
-    e.target.reset();
-    loadProducts();
-    document.querySelector('input[name="imageType"][value="url"]').checked = true;
-    document.getElementById('image-url-row').style.display = '';
-    document.getElementById('image-upload-row').style.display = 'none';
-  } catch (err) {
-    alert('Failed to add product: ' + err.message);
-  }
-});
-
-// Edit product form submit
-document.getElementById('edit-product-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-
-  const token = localStorage.getItem('token');
-  const id = document.getElementById('edit-product-id').value;
-  const updatedProduct = {
-    name: document.getElementById('edit-name').value.trim(),
-    description: document.getElementById('edit-description').value.trim(),
-    image: document.getElementById('edit-image').value.trim(),
-    gender: document.getElementById('edit-gender').value.trim(),
-    quality: document.getElementById('edit-quality').value.trim(),
-    availability: document.getElementById('edit-availability').value.trim(),
-  };
-
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/products/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify(updatedProduct)
+    const res = await fetch(`${API_BASE_URL}/api/products`, {
+      method: "POST",
+      headers,
+      body
     });
 
-    if (!res.ok) {
+    if (res.ok) {
+      alert("✅ Product added successfully!");
+      e.target.reset();
+      loadProducts();
+      document.querySelector('input[name="imageType"][value="url"]').checked = true;
+      document.getElementById('image-url-row').style.display = '';
+      document.getElementById('image-upload-row').style.display = 'none';
+    } else {
       const err = await res.json();
-      alert(`Failed to update product: ${err.error || res.statusText}`);
-      return;
+      alert(`❌ Failed to add product: ${err.error || res.statusText}`);
     }
-
-    alert('Product updated successfully!');
-    closeEditModal();
-    loadProducts();
   } catch (error) {
-    alert('Error updating product: ' + error.message);
+    alert(`❌ Failed to add product: ${error.message}`);
   }
 });
 
-// Cancel edit modal button
-document.getElementById('edit-cancel').addEventListener('click', closeEditModal);
-
-// Welcome message update on page load
-async function setWelcomeMessage() {
-  const token = localStorage.getItem("token");
-  const welcomeEl = document.getElementById("welcome-message");
-  if (!token) {
-    welcomeEl.textContent = "Welcome, Guest";
-    return;
-  }
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/protected`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    if (!res.ok) throw new Error("Not authenticated");
-    const data = await res.json();
-    welcomeEl.textContent = `Welcome, ${data.user.email}`;
-  } catch {
-    welcomeEl.textContent = "Welcome";
-  }
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-  setWelcomeMessage();
-  loadProducts();
-});
+document.addEventListener("DOMContentLoaded", loadProducts);
