@@ -1,8 +1,32 @@
 import { API_BASE_URL } from "./config.js";
 
-document.addEventListener("DOMContentLoaded", loadDashboard);
+document.addEventListener("DOMContentLoaded", () => {
+  // Initialize tabs
+  const tabButtons = document.querySelectorAll(".tab-button");
+  const tabContents = document.querySelectorAll(".tab-content");
 
-document.getElementById('logout-btn').addEventListener('click', logout);
+  tabButtons.forEach(button => {
+    button.addEventListener("click", () => {
+      tabButtons.forEach(btn => btn.classList.remove("active"));
+      tabContents.forEach(content => content.classList.remove("active"));
+
+      button.classList.add("active");
+      document.getElementById(button.getAttribute("data-tab")).classList.add("active");
+    });
+  });
+
+  // Load dashboard data after tabs setup
+  loadDashboard();
+
+  // Setup logout button listener
+  document.getElementById("logout-btn").addEventListener("click", logout);
+
+  // Setup product form submit handler if exists
+  const productForm = document.getElementById("product-form");
+  if (productForm) {
+    productForm.addEventListener("submit", handleAddProduct);
+  }
+});
 
 async function loadDashboard() {
   const token = localStorage.getItem("token");
@@ -27,14 +51,14 @@ async function loadDashboard() {
   const verifyData = await verify.json();
   document.getElementById("welcome-message").textContent = `Welcome, ${verifyData.user.email} (${verifyData.user.role})`;
 
-  const statsRes = await fetch(`${API_BASE_URL}/api/stats`, { headers: { Authorization: "Bearer " + token } });
+  const statsRes = await fetch(`${API_BASE_URL}/api/stats`, { headers: { Authorization: `Bearer ${token}` } });
   const statsData = await statsRes.json();
 
   document.getElementById("user-count").textContent = statsData.users;
   document.getElementById("admin-count").textContent = statsData.admins;
   document.getElementById("regular-count").textContent = statsData.regularUsers;
 
-  const usersRes = await fetch(`${API_BASE_URL}/api/users`, { headers: { Authorization: "Bearer " + token } });
+  const usersRes = await fetch(`${API_BASE_URL}/api/users`, { headers: { Authorization: `Bearer ${token}` } });
   const users = await usersRes.json();
 
   renderRecentUsers(users);
@@ -90,7 +114,7 @@ async function updateUserRole(id, role) {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
-      Authorization: "Bearer " + token
+      Authorization: `Bearer ${token}`
     },
     body: JSON.stringify({ role })
   });
@@ -109,7 +133,7 @@ async function deleteUser(id) {
   const token = localStorage.getItem("token");
   const res = await fetch(`${API_BASE_URL}/api/users/${id}`, {
     method: "DELETE",
-    headers: { Authorization: "Bearer " + token }
+    headers: { Authorization: `Bearer ${token}` }
   });
 
   if (res.ok) {
@@ -117,6 +141,55 @@ async function deleteUser(id) {
     loadDashboard();
   } else {
     alert("❌ Failed to delete user.");
+  }
+}
+
+// Handle adding product from the product form
+async function handleAddProduct(event) {
+  event.preventDefault();
+
+  const token = localStorage.getItem("token");
+
+  const form = event.target;
+  const name = form.productName.value.trim();
+  const imageUrl = form.productImageUrl.value.trim();
+  const imageFile = form.productImageUpload.files[0];
+  const quality = form.productQuality.value.trim();
+  const description = form.productDescription.value.trim();
+
+  if (!name || !quality) {
+    alert("Please provide required fields: Name and Quality.");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("name", name);
+  formData.append("quality", quality);
+  formData.append("description", description);
+
+  if (imageFile) {
+    formData.append("imageFile", imageFile);
+  } else if (imageUrl) {
+    formData.append("imageUrl", imageUrl);
+  }
+
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/products`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`
+      },
+      body: formData
+    });
+
+    if (res.ok) {
+      alert("✅ Product added successfully!");
+      form.reset();
+    } else {
+      alert("❌ Failed to add product.");
+    }
+  } catch (err) {
+    alert("❌ Error connecting to server.");
   }
 }
 

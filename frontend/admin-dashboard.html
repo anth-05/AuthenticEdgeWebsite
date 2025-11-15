@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Admin Dashboard | AuthenticEdge</title>
   <link rel="stylesheet" href="theme.css" />
   <link rel="stylesheet" href="admin-dashboard.css" />
@@ -12,72 +12,47 @@
   <nav class="sidebar" aria-label="Admin Sidebar Navigation">
     <h2 class="sidebar-logo">AuthenticEdge</h2>
     <ul class="sidebar-menu">
-      <li><a href="admin-products.html" aria-current="page">Products Management</a></li>
+      <li><button class="tab-button active" data-tab="dashboard-tab" type="button">Dashboard</button></li>
+      <li><button class="tab-button" data-tab="products-tab" type="button">Product Management</button></li>
       <li><a href="contact.html">Contact</a></li>
       <li><a href="shop.html">Products</a></li>
-      <li><a href="index.html">Home</a></li>
       <li><a href="#" id="logout-btn">Logout</a></li>
     </ul>
   </nav>
 
   <main class="dashboard-main" role="main" tabindex="0">
-    <header class="dashboard-header">
-      <h1>Admin Dashboard</h1>
-      <p id="welcome-message">Loading...</p>
-    </header>
 
-    <section class="analytics" id="analytics" aria-label="User statistics">
-      <div class="card" role="region" aria-labelledby="total-users-label">
-        <h3 id="total-users-label">Total Users</h3>
-        <p id="user-count">Loading...</p>
-      </div>
-
-      <div class="card" role="region" aria-labelledby="admins-label">
-        <h3 id="admins-label">Admins</h3>
-        <p id="admin-count">Loading...</p>
-      </div>
-
-      <div class="card" role="region" aria-labelledby="regular-users-label">
-        <h3 id="regular-users-label">Regular Users</h3>
-        <p id="regular-count">Loading...</p>
-      </div>
+    <section id="dashboard-tab" class="tab-content active" aria-labelledby="dashboard-tab-label">
+      <header class="dashboard-header">
+        <h1 id="dashboard-tab-label">Admin Dashboard</h1>
+        <p id="welcome-message">Loading...</p>
+      </header>
+      <!-- Include your analytics, user tables, etc. here -->
     </section>
 
-    <section class="activity" aria-label="Recent user activity">
-      <div class="card full-width">
-        <h3>Recent Users</h3>
-        <table class="user-table" id="recent-users">
-          <thead>
-            <tr>
-              <th>Email</th>
-              <th>Role</th>
-              <th>Created</th>
-            </tr>
-          </thead>
-          <tbody><tr><td colspan="3">Loading...</td></tr></tbody>
-        </table>
-      </div>
+    <section id="products-tab" class="tab-content" aria-labelledby="products-tab-label">
+      <h2 id="products-tab-label">Product Management</h2>
+      <form class="product-form" id="product-form">
+        <label for="product-name">Product Name</label>
+        <input type="text" id="product-name" name="productName" required />
+
+        <label for="product-image-url">Image URL</label>
+        <input type="text" id="product-image-url" name="productImageUrl" placeholder="Enter an image URL" />
+
+        <label for="product-image-upload">Or Upload Image</label>
+        <input type="file" id="product-image-upload" name="productImageUpload" accept="image/*" />
+
+        <label for="product-quality">Quality</label>
+        <input type="text" id="product-quality" name="productQuality" required />
+
+        <label for="product-description">Description</label>
+        <textarea id="product-description" name="productDescription" rows="4"></textarea>
+
+        <button type="submit">Add Product</button>
+      </form>
     </section>
 
-    <section class="manage-users" aria-label="User management">
-      <div class="card full-width">
-        <h3>Manage Users</h3>
-        <table class="user-table" id="all-users">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Email</th>
-              <th>Role</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody><tr><td colspan="4">Loading...</td></tr></tbody>
-        </table>
-      </div>
-    </section>
   </main>
-
-  <script type="module" src="admin-dashboard.js"></script>
 
 </body>
 </html>

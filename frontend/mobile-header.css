@@ -1,0 +1,75 @@
+/* Mobile menu toggle button */
+.menu-toggle {
+  display: none;
+  font-size: 2.4rem;
+  cursor: pointer;
+  user-select: none;
+  color: var(--accent);
+  transition: color 0.3s ease;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+}
+
+.menu-toggle:hover {
+  color: #ffa733;
+  background-color: rgba(255 157 0 / 0.1);
+}
+
+/* Show toggle button on mobile */
+@media (max-width: 768px) {
+  .menu-toggle {
+    display: block;
+  }
+}
+
+/* Base hidden state for mobile nav menu */
+.nav-menu {
+  display: none;
+  flex-direction: column;
+  position: absolute;
+  top: 60px; /* underneath the header */
+  right: 0;
+  width: 90%;
+  max-width: 320px;
+  background: rgba(255 255 255 / 0.95);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 16px rgba(255 157 0 / 0.3);
+  border-radius: 12px;
+  padding: 1rem 0;
+  z-index: 10000;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  opacity: 0;
+  transform: translateY(-20px);
+  pointer-events: none;
+}
+
+/* Visible state */
+.nav-menu.active {
+  display: flex;
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* Menu links */
+.nav-menu a {
+  padding: 12px 24px;
+  font-size: 1.1rem;
+  color: #231f20;
+  font-weight: 600;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.nav-menu a:hover, 
+.nav-menu a:focus {
+  background-color: var(--accent);
+  color: #121214;
+  outline: none;
+}
+
+/* Add some spacing between last link and border */
+.nav-menu a:last-child {
+  border-bottom: none;
+}

@@ -88,3 +88,14 @@
     text-align: center;
   }
 }
+/* Base nav menu hidden on mobile */
+.nav-menu {
+  display: none;
+  position: absolute;
+  top: 60px; /* adjust based on header height */
+  right: 0;
+  width: 100%;
+  background-color: rgba(10, 10, 10, 0.9);
+  flex-direction: column;
+  z-index: 9999;
+}
