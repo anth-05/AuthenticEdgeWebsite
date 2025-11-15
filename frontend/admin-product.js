@@ -7,6 +7,7 @@ document.querySelectorAll('input[name="imageType"]').forEach(radio => {
     document.getElementById('image-upload-row').style.display = showUrl ? 'none' : '';
   });
 });
+
 async function loadProducts() {
   const token = localStorage.getItem("token");
   const tbody = document.querySelector("#product-table tbody");
@@ -33,7 +34,7 @@ async function loadProducts() {
         <td>${p.quality || ""}</td>
         <td>${p.availability || ""}</td>
         <td>
-          <!-- Add your action buttons here -->
+          <!-- Action buttons placeholder -->
           <button data-id="${p.id}" class="edit-btn">Edit</button>
           <button data-id="${p.id}" class="delete-btn">Delete</button>
         </td>
@@ -43,6 +44,7 @@ async function loadProducts() {
     tbody.innerHTML = `<tr><td colspan='7'>Error loading products: ${error.message}</td></tr>`;
   }
 }
+
 document.getElementById("add-product-form").addEventListener("submit", async (e) => {
   e.preventDefault();
 
@@ -70,7 +72,7 @@ document.getElementById("add-product-form").addEventListener("submit", async (e)
     Object.entries(data).forEach(([key, value]) => formData.append(key, value));
     formData.append("imageFile", imageFile);
     body = formData;
-    headers = { Authorization: `Bearer ${token}` }; // No Content-Type for FormData!
+    headers = { Authorization: `Bearer ${token}` }; // Multer handles Content-Type
   } else {
     const imageUrl = document.getElementById("image").value.trim();
     if (!imageUrl) {
@@ -87,22 +89,27 @@ document.getElementById("add-product-form").addEventListener("submit", async (e)
     return;
   }
 
-  const res = await fetch(`${ API_BASE_URL }/api/products`, {
-    method: "POST",
-    headers,
-    body
-  });
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/products`, {
+      method: "POST",
+      headers,
+      body
+    });
 
-  if (res.ok) {
-    alert("✅ Product added successfully!");
-    e.target.reset();
-    loadProducts();
-    // Reset the radio selection and toggle back to default
-    document.querySelector('input[name="imageType"][value="url"]').checked = true;
-    document.getElementById('image-url-row').style.display = '';
-    document.getElementById('image-upload-row').style.display = 'none';
-  } else {
-    alert("❌ Failed to add product.");
+    if (res.ok) {
+      alert("✅ Product added successfully!");
+      e.target.reset();
+      loadProducts();
+      // Reset radio selection and toggle UI
+      document.querySelector('input[name="imageType"][value="url"]').checked = true;
+      document.getElementById('image-url-row').style.display = '';
+      document.getElementById('image-upload-row').style.display = 'none';
+    } else {
+      const err = await res.json();
+      alert(`❌ Failed to add product: ${err.error || res.statusText}`);
+    }
+  } catch (error) {
+    alert(`❌ Failed to add product: ${error.message}`);
   }
 });
 

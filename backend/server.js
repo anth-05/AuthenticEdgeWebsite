@@ -1,6 +1,3 @@
-// ==============================
-// IMPORTS & SETUP
-// ==============================
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
@@ -18,280 +15,26 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 
+app.use(express.json());
+app.use(
+  cors({
+    origin: [
+      "https://authenticedgewebsite-1.onrender.com",
+      "http://localhost:5500",
+    ],
+    credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
-
-// Static for file uploads
 app.use("/uploads", express.static("uploads"));
 
-// ==============================
-// SOCKET.IO
-// ==============================
-const io = new Server(server, {
-  cors: { origin: "*" }
-});
-
-const adminSockets = new Map();
-const userSockets = new Map();
-
-// ==============================
-// DATABASE
-// ==============================
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false }
+  ssl: { rejectUnauthorized: false },
 });
 
-
-io.on("connection", socket => {
-  console.log("🔌 Socket connected:", socket.id);
-
-  socket.on("register", ({ userId, role }) => {
-    if (role === "admin") adminSockets.set(userId, socket.id);
-    else userSockets.set(userId, socket.id);
-  });
-
-  socket.on("sendMessage", async data => {
-    const { userId, sender, message, fileUrl } = data;
-
-    await pool.query(
-      `INSERT INTO messages (user_id, sender, message, file_url)
-       VALUES ($1, $2, $3, $4)`,
-      [userId, sender, message, fileUrl || null]
-    );
-
-    if (sender === "user") {
-      adminSockets.forEach(sock => io.to(sock).emit("newMessage", data));
-    }
-
-    if (sender === "admin") {
-      const sock = userSockets.get(userId);
-      if (sock) io.to(sock).emit("newMessage", data);
-    }
-  });
-});
-
-
-// Initialize tables
-(async () => {
-  try {
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS users (
-        id SERIAL PRIMARY KEY,
-        email TEXT UNIQUE NOT NULL,
-        password TEXT NOT NULL,
-        role TEXT CHECK(role IN ('admin', 'user')) DEFAULT 'user',
-        created_at TIMESTAMP DEFAULT NOW()
-      );
-    `);
-
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS products (
-        id SERIAL PRIMARY KEY,
-        name TEXT NOT NULL,
-        description TEXT,
-        image TEXT,
-        gender TEXT,
-        quality TEXT,
-        availability TEXT,
-        created_at TIMESTAMP DEFAULT NOW()
-      );
-    `);
-
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS subscriptions (
-        id SERIAL PRIMARY KEY,
-        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-        current_plan TEXT,
-        requested_plan TEXT,
-        status TEXT CHECK(status IN ('active','pending','none')) DEFAULT 'none',
-        updated_at TIMESTAMP DEFAULT NOW()
-      );
-    `);
-
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS messages (
-        id SERIAL PRIMARY KEY,
-        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-        sender TEXT CHECK(sender IN ('user','admin')) NOT NULL,
-        message TEXT,
-        file_url TEXT,
-        status TEXT DEFAULT 'unread',
-        created_at TIMESTAMP DEFAULT NOW()
-      );
-    `);
-
-    app.use(express.json());
-
-app.use(cors({
-  origin: [
-    "https://authenticedgewebsite-1.onrender.com",
-    "http://localhost:5500"
-  ],
-  credentials: true,
-  allowedHeaders: ["Content-Type", "Authorization"]
-}));
-app.get("/api/products", authenticateToken, verifyAdmin, async (req, res) => {
-  // sends list of products
-});
-
-app.post("/api/products", authenticateToken, verifyAdmin, async (req, res) => {
-  try {
-    const { name, description, image, gender, quality, availability } = req.body;
-
-    const result = await pool.query(
-      `INSERT INTO products (name, description, image, gender, quality, availability)
-       VALUES ($1, $2, $3, $4, $5, $6)
-       RETURNING *`,
-      [name, description, image, gender, quality, availability]
-    );
-
-    res.status(201).json(result.rows[0]);
-  } catch (err) {
-    console.error("Failed to add product:", err);
-    res.status(500).json({ error: "Failed to add product" });
-  }
-});
-app.post("/api/register", async (req, res) => {
-  const { email, password, role } = req.body;
-
-  try {
-    const found = await pool.query("SELECT 1 FROM users WHERE email=$1", [email]);
-    if (found.rowCount > 0)
-      return res.status(400).json({ error: "Email already registered" });
-
-    const hashed = await bcrypt.hash(password, 10);
-
-    await pool.query(
-      "INSERT INTO users (email, password, role) VALUES ($1,$2,$3)",
-      [email, hashed, role || "user"]
-    );
-
-    res.json({ success: true });
-  } catch (err) {
-    res.status(500).json({ error: "Registration failed" });
-  }
-});
-
-app.post("/api/login", async (req, res) => {
-  const { email, password } = req.body;
-
-  const result = await pool.query(
-    "SELECT * FROM users WHERE email=$1",
-    [email]
-  );
-
-  const user = result.rows[0];
-  if (!user) return res.status(400).json({ error: "Invalid login" });
-
-  const valid = await bcrypt.compare(password, user.password);
-  if (!valid) return res.status(400).json({ error: "Invalid login" });
-
-  const token = jwt.sign(
-    { id: user.id, email: user.email, role: user.role },
-    process.env.JWT_SECRET,
-    { expiresIn: "1h" }
-  );
-
-  res.json({ token, role: user.role });
-});
-
-app.get("/api/subscription", authenticateToken, async (req, res) => {
-  let sub = await getSubscription(req.user.id);
-
-  if (!sub) {
-    await pool.query(
-      `INSERT INTO subscriptions (user_id, current_plan, status)
-       VALUES ($1,$2,$3)`,
-      [req.user.id, null, "none"]
-    );
-    sub = await getSubscription(req.user.id);
-  }
-
-  res.json(sub);
-});
-
-app.post("/api/subscription/request", authenticateToken, async (req, res) => {
-  const { plan } = req.body;
-
-  await pool.query(
-    `UPDATE subscriptions SET requested_plan=$1, status='pending'
-     WHERE user_id=$2`,
-    [plan, req.user.id]
-  );
-
-  res.json({ message: "Request submitted" });
-});
-
-// Admin view pending
-app.get("/api/admin/subscriptions/pending", verifyAdmin, async (req, res) => {
-  const result = await pool.query(`
-    SELECT s.*, u.email FROM subscriptions s
-    JOIN users u ON s.user_id=u.id
-    WHERE status='pending'
-  `);
-  res.json(result.rows);
-});
-app.get("/api/messages", authenticateToken, async (req, res) => {
-  const result = await pool.query(
-    "SELECT * FROM messages WHERE user_id=$1 ORDER BY created_at ASC",
-    [req.user.id]
-  );
-  res.json(result.rows);
-});
-
-app.get("/api/messages/:userId", verifyAdmin, async (req, res) => {
-  const result = await pool.query(
-    "SELECT * FROM messages WHERE user_id=$1 ORDER BY created_at ASC",
-    [req.params.userId]
-  );
-  res.json(result.rows);
-});
-
-// Unread count for admin
-app.get("/api/messages-unread", verifyAdmin, async (req, res) => {
-  const result = await pool.query(
-    "SELECT COUNT(*) FROM messages WHERE status='unread'"
-  );
-  res.json({ count: Number(result.rows[0].count) });
-});
-app.get("/api/protected", authenticateToken, (req, res) => {
-  res.json({
-    message: "Token is valid",
-    user: req.user,
-  });
-});
-    console.log("📦 Tables ready");
-
-    // Create default accounts
-    const admin = await pool.query("SELECT 1 FROM users WHERE email='admin'");
-    if (admin.rowCount === 0) {
-      await pool.query(
-        "INSERT INTO users (email, password, role) VALUES ($1,$2,$3)",
-        ["admin", await bcrypt.hash("admin123", 10), "admin"]
-      );
-    }
-
-    const user = await pool.query("SELECT 1 FROM users WHERE email='user'");
-    if (user.rowCount === 0) {
-      await pool.query(
-        "INSERT INTO users (email, password, role) VALUES ($1,$2,$3)",
-        ["user", await bcrypt.hash("user123", 10), "user"]
-      );
-    }
-
-    const PORT = process.env.PORT || 5000;
-    server.listen(PORT, () => console.log(`🚀 Server running on ${PORT}`));
-
-  } catch (err) {
-    console.error("❌ Database init failed:", err);
-  }
-})();
-
-
-
-// ==============================
 // AUTH MIDDLEWARE
-// ==============================
 function authenticateToken(req, res, next) {
   const token = req.headers.authorization?.split(" ")[1];
   if (!token) return res.status(401).json({ error: "Missing token" });
@@ -311,62 +54,140 @@ function verifyAdmin(req, res, next) {
   });
 }
 
-// ==============================
-// AUTH ROUTES
-// ==============================
+// ROUTES
 
-
-// ==============================
-// SUBSCRIPTIONS
-// ==============================
-async function getSubscription(userId) {
-  const result = await pool.query(
-    "SELECT * FROM subscriptions WHERE user_id=$1 LIMIT 1",
-    [userId]
-  );
-  return result.rows[0];
-}
-
-
-// Approve
-app.put("/api/admin/subscriptions/:id/approve", verifyAdmin, async (req, res) => {
-  await pool.query(`
-    UPDATE subscriptions
-    SET current_plan=requested_plan,
-        requested_plan=NULL,
-        status='active'
-    WHERE id=$1
-  `, [req.params.id]);
-
-  res.json({ message: "Approved" });
+// Products
+app.get("/api/products", authenticateToken, verifyAdmin, async (req, res) => {
+  try {
+    const { rows } = await pool.query(
+      "SELECT id, name, description, image, gender, quality, availability, created_at FROM products ORDER BY created_at DESC"
+    );
+    res.json(rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch products" });
+  }
 });
 
-// Reject
-app.put("/api/admin/subscriptions/:id/reject", verifyAdmin, async (req, res) => {
-  await pool.query(`
-    UPDATE subscriptions
-    SET requested_plan=NULL,
-        status='active'
-    WHERE id=$1
-  `, [req.params.id]);
-
-  res.json({ message: "Rejected" });
+app.post("/api/products", authenticateToken, verifyAdmin, async (req, res) => {
+  try {
+    const { name, description, image, gender, quality, availability } = req.body;
+    const { rows } = await pool.query(
+      `INSERT INTO products (name, description, image, gender, quality, availability)
+       VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`,
+      [name, description, image, gender, quality, availability]
+    );
+    res.status(201).json(rows[0]);
+  } catch (err) {
+    console.error("Failed to add product:", err);
+    res.status(500).json({ error: "Failed to add product" });
+  }
 });
 
-// ==============================
-// CHAT (MESSAGES)
-// ==============================
+// Register
+app.post("/api/register", async (req, res) => {
+  const { email, password, role } = req.body;
+  try {
+    const { rowCount } = await pool.query("SELECT 1 FROM users WHERE email=$1", [
+      email,
+    ]);
+    if (rowCount > 0) return res.status(400).json({ error: "Email already registered" });
 
-
-// ==============================
-// FILE UPLOADS (for chat)
-// ==============================
-const upload = multer({ dest: "uploads/" });
-
-app.post("/api/messages/upload", upload.single("file"), (req, res) => {
-  res.json({ url: `/uploads/${req.file.filename}` });
+    const hashed = await bcrypt.hash(password, 10);
+    await pool.query(
+      "INSERT INTO users (email, password, role) VALUES ($1,$2,$3)",
+      [email, hashed, role || "user"]
+    );
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Registration failed" });
+  }
 });
-// ==============================
-// PROTECTED TEST ROUTE
-// ==============================
 
+// Login
+app.post("/api/login", async (req, res) => {
+  const { email, password } = req.body;
+  try {
+    const { rows } = await pool.query("SELECT * FROM users WHERE email=$1", [email]);
+    if (rows.length === 0) return res.status(400).json({ error: "Invalid login" });
+
+    const user = rows[0];
+    const valid = await bcrypt.compare(password, user.password);
+    if (!valid) return res.status(400).json({ error: "Invalid login" });
+
+    const token = jwt.sign(
+      { id: user.id, email: user.email, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
+    res.json({ token, role: user.role });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Login failed" });
+  }
+});
+
+// Database table setup and server start
+(async () => {
+  try {
+    await pool.query(`CREATE TABLE IF NOT EXISTS users (
+      id SERIAL PRIMARY KEY,
+      email TEXT UNIQUE NOT NULL,
+      password TEXT NOT NULL,
+      role TEXT CHECK(role IN ('admin', 'user')) DEFAULT 'user',
+      created_at TIMESTAMP DEFAULT NOW()
+    )`);
+    await pool.query(`CREATE TABLE IF NOT EXISTS products (
+      id SERIAL PRIMARY KEY,
+      name TEXT NOT NULL,
+      description TEXT,
+      image TEXT,
+      gender TEXT,
+      quality TEXT,
+      availability TEXT,
+      created_at TIMESTAMP DEFAULT NOW()
+    )`);
+    await pool.query(`CREATE TABLE IF NOT EXISTS subscriptions (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+      current_plan TEXT,
+      requested_plan TEXT,
+      status TEXT CHECK(status IN ('active','pending','none')) DEFAULT 'none',
+      updated_at TIMESTAMP DEFAULT NOW()
+    )`);
+    await pool.query(`CREATE TABLE IF NOT EXISTS messages (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+      sender TEXT CHECK(sender IN ('user','admin')) NOT NULL,
+      message TEXT,
+      file_url TEXT,
+      status TEXT DEFAULT 'unread',
+      created_at TIMESTAMP DEFAULT NOW()
+    )`);
+
+    // Create default users if missing
+    let result = await pool.query("SELECT 1 FROM users WHERE email='admin'");
+    if (result.rowCount === 0) {
+      await pool.query(
+        "INSERT INTO users (email, password, role) VALUES ($1,$2,$3)",
+        ["admin", await bcrypt.hash("admin123", 10), "admin"]
+      );
+    }
+    result = await pool.query("SELECT 1 FROM users WHERE email='user'");
+    if (result.rowCount === 0) {
+      await pool.query(
+        "INSERT INTO users (email, password, role) VALUES ($1,$2,$3)",
+        ["user", await bcrypt.hash("user123", 10), "user"]
+      );
+    }
+
+    server.listen(process.env.PORT || 5000, () =>
+      console.log(`🚀 Server running on port ${process.env.PORT || 5000}`)
+    );
+  } catch (err) {
+    console.error("❌ Database init failed:", err);
+    process.exit(1);
+  }
+})();
