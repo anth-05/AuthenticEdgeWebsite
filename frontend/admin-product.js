@@ -1,3 +1,5 @@
+import { API_BASE_URL } from "./config.js";
+
 document.querySelectorAll('input[name="imageType"]').forEach(radio => {
   radio.addEventListener('change', (e) => {
     const showUrl = e.target.value === 'url';
