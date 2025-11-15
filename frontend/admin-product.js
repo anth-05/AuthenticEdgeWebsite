@@ -52,7 +52,7 @@ document.getElementById("add-product-form").addEventListener("submit", async (e)
     return;
   }
 
-  const res = await fetch(`${API_BASE_URL}/api/products`, {
+  const res = await fetch(`https://authenticedgewebsite.onrender.com/api/products`, {
     method: "POST",
     headers,
     body
