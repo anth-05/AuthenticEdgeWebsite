@@ -109,7 +109,6 @@ document.getElementById("add-product-form").addEventListener("submit", async (e)
   e.preventDefault();
 
   const token = localStorage.getItem("token");
-  const imageType = document.querySelector('input[name="imageType"]:checked').value;
   const data = {
     name: document.getElementById("name").value.trim(),
     description: document.getElementById("description").value.trim(),
@@ -118,24 +117,7 @@ document.getElementById("add-product-form").addEventListener("submit", async (e)
     availability: document.getElementById("availability").value.trim(),
   };
 
-  if (!data.name) {
-    alert("Please provide the product name.");
-    return;
-  }
-
   let body, headers;
-  if (imageType === "upload") {
-    const imageFile = document.getElementById('imageUpload').files[0];
-    if (!imageFile) {
-      alert("Please upload an image file.");
-      return;
-    }
-    const formData = new FormData();
-    Object.entries(data).forEach(([key, val]) => formData.append(key, val));
-    formData.append('imageFile', imageFile); // Important: field name 'imageFile'
-    body = formData;
-    headers = { Authorization: `Bearer ${token}` }; // Do NOT set Content-Type for FormData
-  } else {
     const imageUrl = document.getElementById("image").value.trim();
     if (!imageUrl) {
       alert("Please supply an image URL.");
@@ -144,6 +126,11 @@ document.getElementById("add-product-form").addEventListener("submit", async (e)
     data.image = imageUrl;
     body = JSON.stringify(data);
     headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
+  
+
+  if (!data.name) {
+    alert("Please provide the product name.");
+    return;
   }
 
   try {
