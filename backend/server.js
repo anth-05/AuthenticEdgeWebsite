@@ -115,6 +115,12 @@ app.put("/api/products/:id", authenticateToken, verifyAdmin, async (req, res) =>
     res.status(500).json({ error: "Failed to update product" });
   }
 });
+app.post('/api/products', upload.single('imageFile'), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: 'Image file is required and must be valid image type and size.' });
+  }
+  // Validate other fields and save product...
+});
 
 // User register
 app.post("/api/register", async (req, res) => {

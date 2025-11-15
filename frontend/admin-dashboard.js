@@ -199,3 +199,67 @@ function logout() {
   localStorage.clear();
   window.location.href = "login.html";
 }
+// Wait for DOM to be fully loaded
+document.addEventListener('DOMContentLoaded', () => {
+  const tabs = document.querySelectorAll('.dashboard-tabs .tab-link');
+  const mainContent = document.getElementById('main-content');
+
+  // Define content for each page (simplified example)
+  const pagesContent = {
+    home: `<section><h1>Home</h1><p>Welcome to the Home page.</p></section>`,
+    products: `<section><h1>Product Management</h1><p>Manage your products here.</p></section>`,
+    dashboard: `<section><h1>Dashboard</h1><p>Analytics and summaries here.</p></section>`,
+    logout: `<section><h1>Logout</h1><p>You are logged out.</p></section>`
+  };
+
+  function activateTab(tab) {
+    tabs.forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+
+    // Get the target from href hash (e.g. #home)
+    const target = tab.getAttribute('href').substring(1);
+    mainContent.innerHTML = pagesContent[target] || '<p>Page not found.</p>';
+  }
+
+  // Initialize first tab content
+  if (tabs.length > 0) activateTab(tabs[0]);
+
+  // Add click event to all tabs
+  tabs.forEach(tab => {
+    tab.addEventListener('click', e => {
+      e.preventDefault();
+      activateTab(tab);
+    });
+  });
+});
+document.addEventListener('DOMContentLoaded', () => {
+  // Handle mobile tabs only
+  if (window.innerWidth <= 600) {
+    const mobileTabs = document.querySelectorAll('.mobile-tabs .tab-link');
+    const mainContent = document.getElementById('main-content');
+
+    const pagesContent = {
+      home: '<section><h1>Home</h1><p>Welcome to Home.</p></section>',
+      products: '<section><h1>Products</h1><p>Manage your Products.</p></section>',
+      dashboard: '<section><h1>Dashboard</h1><p>Your Analytics here.</p></section>',
+      logout: '<section><h1>Logout</h1><p>You are logged out.</p></section>'
+    };
+
+    function activateTab(tab) {
+      mobileTabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+
+      const target = tab.getAttribute('href').substring(1);
+      mainContent.innerHTML = pagesContent[target] || '<p>Page not found.</p>';
+    }
+
+    if (mobileTabs.length > 0) activateTab(mobileTabs[0]);
+
+    mobileTabs.forEach(tab => {
+      tab.addEventListener('click', e => {
+        e.preventDefault();
+        activateTab(tab);
+      });
+    });
+  }
+});

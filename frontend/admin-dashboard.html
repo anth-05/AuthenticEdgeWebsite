@@ -6,17 +6,19 @@
   <title>Admin Dashboard | AuthenticEdge</title>
   <link rel="stylesheet" href="theme.css" />
   <link rel="stylesheet" href="admin-dashboard.css" />
+  <link rel="stylesheet" href="admin-product.css" />
 </head>
 <body class="dashboard-body">
 
   <nav class="sidebar" aria-label="Admin Sidebar Navigation">
-    <h2 class="sidebar-logo" tabindex="0">AuthenticEdge</h2>
     <ul class="sidebar-menu" role="tablist" aria-orientation="vertical">
 
       <li><a href="admin-dashboard.html">Dashboard</a></li>
       <li><a href="admin-products.html">Product Managment</a></li>
       <li><a href="contact.html">Contact</a></li>
       <li><a href="coming-soon.html">Products</a></li>
+      <li><a href="admin-messages.html">Messages</a></li>
+      <li><a href="admin-subscriptions.html">Subscriptions</a></li>
       <li><a href="#" id="logout-btn">Logout</a></li>
     </ul>
   </nav>
@@ -54,6 +56,22 @@
     </section>
 
   </main>
+  <!-- Admin Dashboard Mobile Layout -->
+<div class="dashboard-mobile">
+  <!-- Main Content Area: Shows one section at a time for each tab -->
+  <main class="dashboard-main" id="main-content">
+    <!-- Home, Product Management, Dashboard, or Logout content gets loaded here -->
+  </main>
+
+  <!-- Bottom Navigation Bar -->
+  <nav class="dashboard-tabs">
+    <a href="index.html" class="tab-link active"><span>🏠</span><label>Home</label></a>
+    <a href="admin-product.html" class="tab-link"><span>📦</span><label>Products</label></a>
+    <a href="admin-dashboard.html" class="tab-link"><span>📊</span><label>Dashboard</label></a>
+    <a href="#logout" class="tab-link"><span>🚪</span><label>Logout</label></a>
+  </nav>
+</div>
+
 
   <script src="admin-dashboard.js" defer></script>
   <script src="script.js"></script>
