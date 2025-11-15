@@ -95,7 +95,7 @@ app.post(
         return res.status(400).json({ error: "Product name is required." });
       }
 
-      // Use uploaded file path if file was sent, otherwise use image URL from body
+      // Use uploaded file path, or fall back to image url in body
       const imagePath = req.file ? `/uploads/${req.file.filename}` : image || null;
 
       const { rows } = await pool.query(
@@ -111,6 +111,8 @@ app.post(
     }
   }
 );
+
+
 
 
 // Delete product (admin only)
