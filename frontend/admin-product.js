@@ -42,7 +42,7 @@ async function loadProducts() {
       </tr>
     `).join("");
 
-    // Add event handlers for Edit and Delete
+    // Add Delete handlers
     tbody.querySelectorAll('.delete-btn').forEach(btn =>
       btn.addEventListener('click', async function () {
         if (!confirm('Are you sure you want to delete this product?')) return;
@@ -50,10 +50,13 @@ async function loadProducts() {
       })
     );
 
+    // Add Edit handlers
     tbody.querySelectorAll('.edit-btn').forEach(btn =>
-      btn.addEventListener('click', function () {
-        // You need to show a modal or form here, prefill, and handle update
-        alert('Edit product functionality not implemented yet.');
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.id;
+        const product = products.find(p => p.id == id);
+        if (!product) return alert("Product not found");
+        openEditModal(product);
       })
     );
   } catch (error) {
@@ -80,6 +83,62 @@ async function deleteProduct(id) {
     alert(`❌ Error deleting: ${err.message}`);
   }
 }
+
+// --- Edit Product Modal Functions ---
+function openEditModal(product) {
+  document.getElementById('edit-product-id').value = product.id;
+  document.getElementById('edit-name').value = product.name;
+  document.getElementById('edit-description').value = product.description || '';
+  document.getElementById('edit-image').value = product.image || '';
+  document.getElementById('edit-gender').value = product.gender || '';
+  document.getElementById('edit-quality').value = product.quality || '';
+  document.getElementById('edit-availability').value = product.availability || '';
+  document.getElementById('edit-modal').style.display = 'block';
+}
+
+function closeEditModal() {
+  document.getElementById('edit-modal').style.display = 'none';
+}
+
+// --- Edit Product form submit handler ---
+document.getElementById('edit-product-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const token = localStorage.getItem("token");
+  const id = document.getElementById('edit-product-id').value;
+  const updatedProduct = {
+    name: document.getElementById('edit-name').value.trim(),
+    description: document.getElementById('edit-description').value.trim(),
+    image: document.getElementById('edit-image').value.trim(),
+    gender: document.getElementById('edit-gender').value.trim(),
+    quality: document.getElementById('edit-quality').value.trim(),
+    availability: document.getElementById('edit-availability').value.trim(),
+  };
+
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/products/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify(updatedProduct)
+    });
+    if (res.ok) {
+      alert("✅ Product updated!");
+      closeEditModal();
+      loadProducts();
+    } else {
+      const err = await res.json();
+      alert(`❌ Unable to update: ${err.error || res.statusText}`);
+    }
+  } catch (error) {
+    alert(`❌ Error updating: ${error.message}`);
+  }
+});
+
+// --- Cancel edit modal button ---
+document.getElementById('edit-cancel').addEventListener('click', closeEditModal);
 
 // --- Add Product ---
 document.getElementById("add-product-form").addEventListener("submit", async (e) => {
