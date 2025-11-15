@@ -1,0 +1,218 @@
+/* coming-soon.css - updated with better layout and theme consistency */
+
+/* ===== PAGE LAYOUT ===== */
+.coming-soon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 85vh;
+  padding: 3rem 5%;
+  color: white;
+  text-align: center;
+  background: none; /* transparent, background handled by theme */
+}
+
+/* ===== HERO ===== */
+.coming-soon .hero {
+  min-height: 70vh;
+  width: 100%;
+  max-width: 900px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  z-index: 1;
+  padding: 0 1rem;
+}
+
+.coming-soon .hero-text h2 {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 3rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  margin-bottom: 1rem;
+  text-shadow: 0 3px 10px rgba(0,0,0,0.5);
+  color: white;
+}
+
+.coming-soon .hero-text p {
+  font-size: 1.1rem;
+  max-width: 650px;
+  margin: 0 auto;
+  opacity: 0.85;
+  line-height: 1.5;
+}
+
+/* ===== SUBSCRIPTIONS GRID ===== */
+.subscriptions {
+  margin-top: 4rem;
+  width: 100%;
+  max-width: 1000px;
+}
+
+.subscriptions h2 {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+  color: white;
+}
+
+.sub-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* 4 cards side by side */
+  gap: 1.5rem;
+  justify-items: center;
+}
+
+@media (max-width: 768px) {
+  .sub-grid {
+    grid-template-columns: repeat(2, 1fr); /* switch to 2 per row on mobile */
+  }
+}
+
+/* ===== SUBSCRIPTION AND GIFT CARDS ===== */
+.sub-card, .gift-card {
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 2rem 1.2rem;
+  color: white;
+  text-align: center;
+  max-width: 280px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  transition: background 0.3s ease, transform 0.3s ease;
+  cursor: default;
+}
+
+.sub-card:hover, .gift-card:hover {
+  transform: translateY(-5px);
+  background: rgba(0, 0, 0, 0.65);
+}
+
+.sub-card h3, .gift-card h3 {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: #fff;
+  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.6);
+}
+
+.sub-card p, .gift-card p {
+  font-size: 0.95rem;
+  line-height: 1.4;
+  opacity: 0.95;
+  color: #f2f2f2;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
+}
+
+.sub-card .price {
+  margin-top: 1rem;
+  font-weight: bold;
+  font-size: 1.1rem;
+  color: #ff9d00;
+  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.6);
+}
+
+.sub-card.highlight {
+  border: 1px solid #ff9d00;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+/* ===== GIFT SECTION ===== */
+.gift-section {
+  margin-top: 4rem;
+  width: 100%;
+  max-width: 1000px;
+}
+
+.gift-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.gift-card {
+  max-width: 250px;
+  padding: 2rem 1.2rem;
+  background: rgba(0,0,0,0.5);
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.15);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  color: white;
+  text-align: center;
+  transition: background 0.3s ease, transform 0.3s ease;
+}
+
+.gift-card:hover {
+  background: rgba(255,255,255,0.15);
+  transform: translateY(-3px);
+}
+
+/* ===== NOTIFY FORM ===== */
+.notify {
+  margin-top: 4rem;
+  max-width: 600px;
+  width: 100%;
+  text-align: center;
+}
+
+.notify h2 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  color: white;
+}
+
+.notify-form {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.notify-form input {
+  padding: 0.8rem 1rem;
+  border-radius: 25px;
+  border: none;
+  width: 260px;
+  outline: none;
+  font-size: 1rem;
+}
+
+.notify-form button {
+  background: #ff9d00;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: 25px;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background 0.3s ease;
+  color: black;
+}
+
+.notify-form button:hover {
+  background: white;
+  color: black;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 600px) {
+  .coming-soon .hero-text h2 {
+    font-size: 2rem;
+  }
+
+  .sub-grid {
+    grid-template-columns: repeat(2, 1fr); /* 2 cards side by side */
+  }
+
+  .gift-grid {
+    flex-direction: column;
+    align-items: center;
+  }
+}

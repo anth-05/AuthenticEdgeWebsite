@@ -4,7 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Authentic Edge | Subscriptions</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="theme.css">
+  <link rel="stylesheet" href="coming-soon.css">
+  <link rel="stylesheet" href="user-chat.css">
+
 
   <style>
     /* Clickable subscription cards */
@@ -220,6 +223,23 @@ await fetch(`${API_BASE_URL}/api/messages/send`, {
 });
 
 </script>
+<!-- Chat Widget - place near end of body -->
+<div class="chat-widget">
+  <div class="chat-toggle-btn">💬</div>
+  <div class="chat-window">
+    <div class="chat-header">Support</div>
+    <div class="chat-body"></div>
+    <div class="chat-input-bar">
+      <input type="text" placeholder="Type your message..." />
+      <label class="file-btn">📎<input type="file" hidden /></label>
+      <button>➤</button>
+    </div>
+  </div>
+</div>
+
+
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<script src="user-chat.js"></script>
 
 
 </body>

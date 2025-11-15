@@ -6,7 +6,7 @@
     let menuHTML = `
       <a href="index.html">Home</a>
       <a href="coming-soon.html">Products</a>
-      <a href="contact.html">Contact</a">
+      <a href="contact.html">Contact</a>
     `;
 
     if (!token) {
