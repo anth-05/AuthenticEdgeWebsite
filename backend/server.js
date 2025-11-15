@@ -129,6 +129,38 @@ app.post("/api/login", async (req, res) => {
   }
 });
 
+app.delete("/api/products/:id", authenticateToken, verifyAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await pool.query("DELETE FROM products WHERE id = $1", [id]);
+    if (result.rowCount === 0) return res.status(404).json({ error: "Product not found" });
+    res.json({ message: "Deleted" });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to delete product" });
+  }
+});
+app.put("/api/products/:id", authenticateToken, verifyAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, description, image, gender, quality, availability } = req.body;
+
+    const result = await pool.query(
+      `UPDATE products SET name=$1, description=$2, image=$3, gender=$4, quality=$5, availability=$6
+       WHERE id=$7 RETURNING *`,
+      [name, description, image, gender, quality, availability, id]
+    );
+
+    if (result.rowCount === 0)
+      return res.status(404).json({ error: "Product not found" });
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error("Failed to update product:", err);
+    res.status(500).json({ error: "Failed to update product" });
+  }
+});
+
+
 // Database table setup and server start
 (async () => {
   try {
@@ -182,6 +214,7 @@ app.post("/api/login", async (req, res) => {
         ["user", await bcrypt.hash("user123", 10), "user"]
       );
     }
+    
 
     server.listen(process.env.PORT || 5000, () =>
       console.log(`🚀 Server running on port ${process.env.PORT || 5000}`)

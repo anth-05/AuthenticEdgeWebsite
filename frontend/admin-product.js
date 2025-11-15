@@ -50,15 +50,35 @@ async function loadProducts() {
       })
     );
 
-    tbody.querySelectorAll('.edit-btn').forEach(btn =>
-      btn.addEventListener('click', function () {
-        // You need to show a modal or form here, prefill, and handle update
-        alert('Edit product functionality not implemented yet.');
-      })
-    );
+tbody.querySelectorAll('.edit-btn').forEach(btn =>
+  btn.addEventListener('click', function () {
+    const id = btn.dataset.id;
+    // Find the product from current loaded list OR refetch single product by id
+    const product = /* get product object by id from products array */
+    openEditModal(product);
+  })
+);
+
   } catch (error) {
     tbody.innerHTML = `<tr><td colspan='7'>Error loading products: ${error.message}</td></tr>`;
   }
+}
+// Open modal and prefill form fields with the product data
+function openEditModal(product) {
+  document.getElementById('edit-product-id').value = product.id;
+  document.getElementById('edit-name').value = product.name;
+  document.getElementById('edit-description').value = product.description || '';
+  document.getElementById('edit-image').value = product.image || '';
+  document.getElementById('edit-gender').value = product.gender || '';
+  document.getElementById('edit-quality').value = product.quality || '';
+  document.getElementById('edit-availability').value = product.availability || '';
+
+  document.getElementById('edit-modal').style.display = 'block';
+}
+
+// Close modal
+function closeEditModal() {
+  document.getElementById('edit-modal').style.display = 'none';
 }
 
 // --- Delete Product ---
@@ -146,5 +166,46 @@ document.getElementById("add-product-form").addEventListener("submit", async (e)
     alert(`❌ Failed to add product: ${error.message}`);
   }
 });
+document.getElementById('edit-product-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const token = localStorage.getItem('token');
+
+  const id = document.getElementById('edit-product-id').value;
+  const updatedProduct = {
+    name: document.getElementById('edit-name').value.trim(),
+    description: document.getElementById('edit-description').value.trim(),
+    image: document.getElementById('edit-image').value.trim(),
+    gender: document.getElementById('edit-gender').value.trim(),
+    quality: document.getElementById('edit-quality').value.trim(),
+    availability: document.getElementById('edit-availability').value.trim(),
+  };
+
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/products/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify(updatedProduct)
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      alert(`Failed to update product: ${err.error || res.statusText}`);
+      return;
+    }
+
+    alert('Product updated successfully!');
+    closeEditModal();
+    loadProducts();
+  } catch (error) {
+    alert('Error updating product: ' + error.message);
+  }
+});
+
+document.getElementById('edit-cancel').addEventListener('click', closeEditModal);
+
 
 document.addEventListener("DOMContentLoaded", loadProducts);

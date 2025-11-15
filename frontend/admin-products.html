@@ -89,6 +89,23 @@
       </section>
     </main>
   </div>
+  <div id="edit-modal" class="modal" style="display:none;">
+  <div class="modal-content">
+    <h3>Edit Product</h3>
+    <form id="edit-product-form">
+      <input type="hidden" id="edit-product-id" />
+      <input type="text" id="edit-name" placeholder="Name" required />
+      <input type="text" id="edit-description" placeholder="Description" />
+      <input type="text" id="edit-image" placeholder="Image URL" />
+      <input type="text" id="edit-gender" placeholder="Gender" />
+      <input type="text" id="edit-quality" placeholder="Quality" />
+      <input type="text" id="edit-availability" placeholder="Availability" />
+      <button type="submit">Save Changes</button>
+      <button type="button" id="edit-cancel">Cancel</button>
+    </form>
+  </div>
+</div>
+
 
   <!-- ===== SCRIPT ===== -->
   <script type="module" src="config.js"></script>
