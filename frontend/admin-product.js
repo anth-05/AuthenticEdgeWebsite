@@ -7,7 +7,42 @@ document.querySelectorAll('input[name="imageType"]').forEach(radio => {
     document.getElementById('image-upload-row').style.display = showUrl ? 'none' : '';
   });
 });
+async function loadProducts() {
+  const token = localStorage.getItem("token");
+  const tbody = document.querySelector("#product-table tbody");
+  tbody.innerHTML = "<tr><td colspan='7' role='row'><em>Loading products...</em></td></tr>";
 
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/products`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (!res.ok) throw new Error("Failed to fetch products");
+    const products = await res.json();
+
+    if (products.length === 0) {
+      tbody.innerHTML = "<tr><td colspan='7'>No products found.</td></tr>";
+      return;
+    }
+
+    tbody.innerHTML = products.map(p => `
+      <tr>
+        <td>${p.id}</td>
+        <td><img src="${p.image}" alt="${p.name}" style="max-width:60px;"></td>
+        <td>${p.name}</td>
+        <td>${p.gender || ""}</td>
+        <td>${p.quality || ""}</td>
+        <td>${p.availability || ""}</td>
+        <td>
+          <!-- Add your action buttons here -->
+          <button data-id="${p.id}" class="edit-btn">Edit</button>
+          <button data-id="${p.id}" class="delete-btn">Delete</button>
+        </td>
+      </tr>
+    `).join("");
+  } catch (error) {
+    tbody.innerHTML = `<tr><td colspan='7'>Error loading products: ${error.message}</td></tr>`;
+  }
+}
 document.getElementById("add-product-form").addEventListener("submit", async (e) => {
   e.preventDefault();
 
@@ -52,7 +87,7 @@ document.getElementById("add-product-form").addEventListener("submit", async (e)
     return;
   }
 
-  const res = await fetch(`https://authenticedgewebsite.onrender.com/api/products`, {
+  const res = await fetch(`${ API_BASE_URL }/api/products`, {
     method: "POST",
     headers,
     body
@@ -70,40 +105,5 @@ document.getElementById("add-product-form").addEventListener("submit", async (e)
     alert("❌ Failed to add product.");
   }
 });
-async function loadProducts() {
-  const token = localStorage.getItem("token");
-  const tbody = document.querySelector("#product-table tbody");
-  tbody.innerHTML = "<tr><td colspan='7' role='row'><em>Loading products...</em></td></tr>";
 
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/products`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    if (!res.ok) throw new Error("Failed to fetch products");
-    const products = await res.json();
-
-    if (products.length === 0) {
-      tbody.innerHTML = "<tr><td colspan='7'>No products found.</td></tr>";
-      return;
-    }
-
-    tbody.innerHTML = products.map(p => `
-      <tr>
-        <td>${p.id}</td>
-        <td><img src="${p.image}" alt="${p.name}" style="max-width:60px;"></td>
-        <td>${p.name}</td>
-        <td>${p.gender || ""}</td>
-        <td>${p.quality || ""}</td>
-        <td>${p.availability || ""}</td>
-        <td>
-          <!-- Add your action buttons here -->
-          <button data-id="${p.id}" class="edit-btn">Edit</button>
-          <button data-id="${p.id}" class="delete-btn">Delete</button>
-        </td>
-      </tr>
-    `).join("");
-  } catch (error) {
-    tbody.innerHTML = `<tr><td colspan='7'>Error loading products: ${error.message}</td></tr>`;
-  }
-}
 document.addEventListener("DOMContentLoaded", loadProducts);
