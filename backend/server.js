@@ -4,9 +4,7 @@ import dotenv from "dotenv";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import pkg from "pg";
-import multer from "multer";
 import http from "http";
-import { Server } from "socket.io";
 
 const { Pool } = pkg;
 
@@ -15,6 +13,7 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 
+// Middleware
 app.use(express.json());
 app.use(
   cors({
@@ -27,16 +26,18 @@ app.use(
   })
 );
 
-app.use("/uploads", express.static("uploads"));
-
+// Database pool setup
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false },
 });
 
-// AUTH MIDDLEWARE
+// Authentication Middleware
 function authenticateToken(req, res, next) {
-  const token = req.headers.authorization?.split(" ")[1];
+  const authHeader = req.headers.authorization;
+  if (!authHeader) return res.status(401).json({ error: "Missing token" });
+  
+  const token = authHeader.split(" ")[1];
   if (!token) return res.status(401).json({ error: "Missing token" });
 
   jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
@@ -54,9 +55,9 @@ function verifyAdmin(req, res, next) {
   });
 }
 
-// ROUTES
+// Routes
 
-// Products
+// Get products (admin only)
 app.get("/api/products", authenticateToken, verifyAdmin, async (req, res) => {
   try {
     const { rows } = await pool.query(
@@ -69,9 +70,14 @@ app.get("/api/products", authenticateToken, verifyAdmin, async (req, res) => {
   }
 });
 
+// Add product (admin only)
 app.post("/api/products", authenticateToken, verifyAdmin, async (req, res) => {
   try {
     const { name, description, image, gender, quality, availability } = req.body;
+    if (!name) {
+      return res.status(400).json({ error: "Product name is required." });
+    }
+
     const { rows } = await pool.query(
       `INSERT INTO products (name, description, image, gender, quality, availability)
        VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`,
@@ -84,14 +90,48 @@ app.post("/api/products", authenticateToken, verifyAdmin, async (req, res) => {
   }
 });
 
-// Register
+// Delete product (admin only)
+app.delete("/api/products/:id", authenticateToken, verifyAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await pool.query("DELETE FROM products WHERE id = $1", [id]);
+    if (result.rowCount === 0)
+      return res.status(404).json({ error: "Product not found" });
+    res.json({ message: "Deleted" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to delete product" });
+  }
+});
+
+// Update product (admin only)
+app.put("/api/products/:id", authenticateToken, verifyAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, description, image, gender, quality, availability } = req.body;
+    const result = await pool.query(
+      `UPDATE products SET name=$1, description=$2, image=$3, gender=$4, quality=$5, availability=$6
+       WHERE id=$7 RETURNING *`,
+      [name, description, image, gender, quality, availability, id]
+    );
+    if (result.rowCount === 0)
+      return res.status(404).json({ error: "Product not found" });
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error("Failed to update product:", err);
+    res.status(500).json({ error: "Failed to update product" });
+  }
+});
+
+// User register
 app.post("/api/register", async (req, res) => {
   const { email, password, role } = req.body;
   try {
     const { rowCount } = await pool.query("SELECT 1 FROM users WHERE email=$1", [
       email,
     ]);
-    if (rowCount > 0) return res.status(400).json({ error: "Email already registered" });
+    if (rowCount > 0)
+      return res.status(400).json({ error: "Email already registered" });
 
     const hashed = await bcrypt.hash(password, 10);
     await pool.query(
@@ -105,12 +145,13 @@ app.post("/api/register", async (req, res) => {
   }
 });
 
-// Login
+// User login
 app.post("/api/login", async (req, res) => {
   const { email, password } = req.body;
   try {
     const { rows } = await pool.query("SELECT * FROM users WHERE email=$1", [email]);
-    if (rows.length === 0) return res.status(400).json({ error: "Invalid login" });
+    if (rows.length === 0)
+      return res.status(400).json({ error: "Invalid login" });
 
     const user = rows[0];
     const valid = await bcrypt.compare(password, user.password);
@@ -129,7 +170,7 @@ app.post("/api/login", async (req, res) => {
   }
 });
 
-// Database table setup and server start
+// Database initialization & server start
 (async () => {
   try {
     await pool.query(`CREATE TABLE IF NOT EXISTS users (
