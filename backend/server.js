@@ -19,6 +19,36 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
+app.post(
+  "/api/products",
+  authenticateToken,
+  verifyAdmin,
+  upload.single('imageFile'),
+  async (req, res) => {
+    try {
+      const { name, description, gender, quality, availability, image } = req.body;
+
+      if (!name) {
+        return res.status(400).json({ error: "Product name is required." });
+      }
+
+      // Use uploaded file path, or fall back to image url in body
+      const imagePath = req.file ? `/uploads/${req.file.filename}` : image || null;
+
+      const { rows } = await pool.query(
+        `INSERT INTO products (name, description, image, gender, quality, availability)
+         VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+        [name, description, imagePath, gender, quality, availability]
+      );
+
+      res.status(201).json(rows[0]);
+    } catch (err) {
+      console.error("Failed to add product:", err);
+      res.status(500).json({ error: "Failed to add product" });
+    }
+  }
+);
+
 
 const { Pool } = pkg;
 
@@ -82,36 +112,6 @@ app.get("/api/products", authenticateToken, verifyAdmin, async (req, res) => {
 });
 
 // Add product (admin only)
-app.post(
-  "/api/products",
-  authenticateToken,
-  verifyAdmin,
-  upload.single('imageFile'),
-  async (req, res) => {
-    try {
-      const { name, description, gender, quality, availability, image } = req.body;
-
-      if (!name) {
-        return res.status(400).json({ error: "Product name is required." });
-      }
-
-      // Use uploaded file path, or fall back to image url in body
-      const imagePath = req.file ? `/uploads/${req.file.filename}` : image || null;
-
-      const { rows } = await pool.query(
-        `INSERT INTO products (name, description, image, gender, quality, availability)
-         VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-        [name, description, imagePath, gender, quality, availability]
-      );
-
-      res.status(201).json(rows[0]);
-    } catch (err) {
-      console.error("Failed to add product:", err);
-      res.status(500).json({ error: "Failed to add product" });
-    }
-  }
-);
-
 
 
 
