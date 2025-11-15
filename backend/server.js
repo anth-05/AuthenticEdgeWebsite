@@ -155,6 +155,28 @@ io.on("connection", socket => {
     console.error("❌ Database init failed:", err);
   }
 })();
+// ==============================
+// PROTECTED TEST ROUTE
+// ==============================
+app.get("/api/protected", authenticateToken, (req, res) => {
+  res.json({
+    message: "Token is valid",
+    user: req.user,
+  });
+});
+// Return all products - add this to your server.js routes section
+app.get("/api/products", authenticateToken, verifyAdmin, async (req, res) => {
+  try {
+    const result = await pool.query(
+      "SELECT id, name, description, image, gender, quality, availability, created_at FROM products ORDER BY created_at DESC"
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Failed to fetch products", err);
+    res.status(500).json({ error: "Failed to fetch products" });
+  }
+});
+
 
 // ==============================
 // AUTH MIDDLEWARE
@@ -332,13 +354,4 @@ const upload = multer({ dest: "uploads/" });
 
 app.post("/api/messages/upload", upload.single("file"), (req, res) => {
   res.json({ url: `/uploads/${req.file.filename}` });
-});
-// ==============================
-// PROTECTED TEST ROUTE
-// ==============================
-app.get("/api/protected", authenticateToken, (req, res) => {
-  res.json({
-    message: "Token is valid",
-    user: req.user,
-  });
 });
