@@ -247,3 +247,95 @@ button.btn:hover {
     border-radius: 10px;
   }
 }
+/* Edit Modal Overlay */
+#edit-modal {
+  display: none;
+  position: fixed;
+  top: 15vh;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 5px 30px rgba(0, 0, 0, 0.25);
+  width: 420px;
+  padding: 1.5rem 2rem;
+  z-index: 1000;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
+}
+
+/* Modal Heading */
+#edit-modal h3 {
+  margin: 0 0 1rem 0;
+  font-weight: 600;
+  font-size: 1.25rem;
+  text-align: center;
+  color: #222;
+}
+
+/* Form Layout */
+#edit-product-form {
+  display: flex;
+  flex-direction: column;
+}
+
+#edit-product-form input[type="text"],
+#edit-product-form input[type="url"],
+#edit-product-form textarea {
+  font-size: 0.9rem;
+  padding: 0.5rem 0.7rem;
+  margin: 0.3rem 0 1rem 0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  color: #444;
+}
+
+#edit-product-form label {
+  font-weight: 500;
+  margin-top: 0.5rem;
+  margin-bottom: 0.2rem;
+  color: #555;
+}
+
+/* Buttons */
+#edit-product-form button {
+  font-size: 1rem;
+  padding: 0.55rem 0.75rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 0.5rem;
+  width: 140px;
+  align-self: center;
+  transition: background-color 0.3s ease;
+}
+
+#edit-product-form button[type="submit"] {
+  background-color: #007BFF;
+  color: white;
+}
+
+#edit-product-form button[type="submit"]:hover {
+  background-color: #0056b3;
+}
+
+#edit-product-form button#edit-cancel {
+  background-color: #dc3545;
+  color: white;
+  margin-left: 1rem;
+}
+
+#edit-product-form button#edit-cancel:hover {
+  background-color: #a71d2a;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  #edit-modal {
+    width: 90vw;
+  }
+  #edit-product-form button {
+    width: 100%;
+    margin-left: 0;
+  }
+}
