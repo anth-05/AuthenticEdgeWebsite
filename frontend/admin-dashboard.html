@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
   <title>Admin Dashboard | AuthenticEdge</title>
   <link rel="stylesheet" href="theme.css" />
   <link rel="stylesheet" href="admin-dashboard.css" />
@@ -10,10 +10,11 @@
 <body class="dashboard-body">
 
   <nav class="sidebar" aria-label="Admin Sidebar Navigation">
-    <h2 class="sidebar-logo">AuthenticEdge</h2>
-    <ul class="sidebar-menu">
-      <li><button class="tab-button active" data-tab="dashboard-tab" type="button">Dashboard</button></li>
-      <li><button class="tab-button" data-tab="products-tab" type="button">Product Management</button></li>
+    <h2 class="sidebar-logo" tabindex="0">AuthenticEdge</h2>
+    <ul class="sidebar-menu" role="tablist" aria-orientation="vertical">
+
+      <li><a href="admin-dashboard.html">Dashboard</a></li>
+      <li><a href="admin-products.html">Product Managment</a></li>
       <li><a href="contact.html">Contact</a></li>
       <li><a href="coming-soon.html">Products</a></li>
       <li><a href="#" id="logout-btn">Logout</a></li>
@@ -22,38 +23,40 @@
 
   <main class="dashboard-main" role="main" tabindex="0">
 
-    <section id="dashboard-tab" class="tab-content active" aria-labelledby="dashboard-tab-label">
+    <section id="dashboard-tab" class="tab-content active" role="tabpanel" aria-labelledby="tab-dashboard" tabindex="0">
       <header class="dashboard-header">
-        <h1 id="dashboard-tab-label">Admin Dashboard</h1>
+        <h1>Admin Dashboard</h1>
         <p id="welcome-message">Loading...</p>
       </header>
-      <!-- Include your analytics, user tables, etc. here -->
+      <!-- Your analytics and user tables go here -->
     </section>
 
-    <section id="products-tab" class="tab-content" aria-labelledby="products-tab-label">
-      <h2 id="products-tab-label">Product Management</h2>
-      <form class="product-form" id="product-form">
-        <label for="product-name">Product Name</label>
-        <input type="text" id="product-name" name="productName" required />
+    <section id="products-tab" class="tab-content" role="tabpanel" aria-labelledby="tab-products" tabindex="0" hidden>
+      <h2>Product Management</h2>
+      <form class="product-form" id="product-form" novalidate>
+        <label for="product-name">Product Name *</label>
+        <input type="text" id="product-name" name="productName" placeholder="Enter product name" required />
 
         <label for="product-image-url">Image URL</label>
-        <input type="text" id="product-image-url" name="productImageUrl" placeholder="Enter an image URL" />
+        <input type="url" id="product-image-url" name="productImageUrl" placeholder="Enter an image URL" />
 
         <label for="product-image-upload">Or Upload Image</label>
         <input type="file" id="product-image-upload" name="productImageUpload" accept="image/*" />
 
-        <label for="product-quality">Quality</label>
-        <input type="text" id="product-quality" name="productQuality" required />
+        <label for="product-quality">Quality *</label>
+        <input type="text" id="product-quality" name="productQuality" placeholder="Enter product quality" required />
 
         <label for="product-description">Description</label>
-        <textarea id="product-description" name="productDescription" rows="4"></textarea>
+        <textarea id="product-description" name="productDescription" rows="5" placeholder="Add an optional description"></textarea>
 
-        <button type="submit">Add Product</button>
+        <button type="submit" aria-label="Add product">Add Product</button>
       </form>
     </section>
 
   </main>
-<script src="admin-dashboard.js"></script>
-</body>
 
+  <script src="admin-dashboard.js" defer></script>
+  <script src="script.js"></script>
+  <script src="header.js"></script>
+</body>
 </html>
