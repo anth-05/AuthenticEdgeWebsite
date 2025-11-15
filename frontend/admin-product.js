@@ -205,7 +205,30 @@ document.getElementById('edit-product-form').addEventListener('submit', async (e
   }
 });
 
+async function setWelcomeMessage() {
+  const token = localStorage.getItem("token");
+  const welcomeEl = document.getElementById("welcome-message");
+  if (!token) {
+    welcomeEl.textContent = "Welcome, Guest";
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/protected`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (!res.ok) throw new Error("Not authenticated");
+    const data = await res.json();
+    welcomeEl.textContent = `Welcome, ${data.user.email}`;
+  } catch (err) {
+    welcomeEl.textContent = "Welcome";
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  setWelcomeMessage();
+  loadProducts(); // your existing call to fetch product list
+});
+
+
 document.getElementById('edit-cancel').addEventListener('click', closeEditModal);
-
-
-document.addEventListener("DOMContentLoaded", loadProducts);
