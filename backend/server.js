@@ -235,6 +235,19 @@ async function getSubscription(userId) {
   );
   return result.rows[0];
 }
+// Protect with auth and admin check
+app.get("/api/products", authenticateToken, verifyAdmin, async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT id, name, description, image, gender, quality, availability, created_at 
+       FROM products ORDER BY created_at DESC`
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Failed to fetch products:", err);
+    res.status(500).json({ error: "Failed to fetch products" });
+  }
+});
 
 app.get("/api/subscription", authenticateToken, async (req, res) => {
   let sub = await getSubscription(req.user.id);
