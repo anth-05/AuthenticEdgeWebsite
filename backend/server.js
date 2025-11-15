@@ -155,19 +155,28 @@ io.on("connection", socket => {
     console.error("❌ Database init failed:", err);
   }
 })();
-// Protect with auth and admin check
 app.get("/api/products", authenticateToken, verifyAdmin, async (req, res) => {
+  // sends list of products
+});
+
+app.post("/api/products", authenticateToken, verifyAdmin, async (req, res) => {
   try {
+    const { name, description, image, gender, quality, availability } = req.body;
+
     const result = await pool.query(
-      `SELECT id, name, description, image, gender, quality, availability, created_at 
-       FROM products ORDER BY created_at DESC`
+      `INSERT INTO products (name, description, image, gender, quality, availability)
+       VALUES ($1, $2, $3, $4, $5, $6)
+       RETURNING *`,
+      [name, description, image, gender, quality, availability]
     );
-    res.json(result.rows);
+
+    res.status(201).json(result.rows[0]);
   } catch (err) {
-    console.error("Failed to fetch products:", err);
-    res.status(500).json({ error: "Failed to fetch products" });
+    console.error("Failed to add product:", err);
+    res.status(500).json({ error: "Failed to add product" });
   }
 });
+
 
 // ==============================
 // AUTH MIDDLEWARE
