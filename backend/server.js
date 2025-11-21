@@ -7,9 +7,12 @@ import pkg from "pg";
 import nodemailer from "nodemailer";
 import fs from "fs";
 import path from "path";
+import { fileURLToPath } from "url";
 import http from "http";
 
 const { Pool } = pkg;
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 dotenv.config();
 
@@ -60,6 +63,15 @@ function verifyAdmin(req, res, next) {
 
 // Routes
 
+
+// Nodemailer transporter
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.CONTACT_EMAIL,
+    pass: process.env.CONTACT_EMAIL_PASSWORD, // Your Gmail App Password
+  },
+});
 // Email route
 app.post("/contact", async (req, res) => {
   const { name, email, phone, message } = req.body;
