@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import pkg from "pg";
+import nodemailer from "nodemailer";
 import http from "http";
 
 const { Pool } = pkg;
@@ -57,6 +58,53 @@ function verifyAdmin(req, res, next) {
 
 // Routes
 
+// Email route
+app.post("/api/contact", async (req, res) => {
+  const { name, email, phone, description } = req.body;
+
+  try {
+    // OPTIONAL — Save message to database
+    await pool.query(
+      `INSERT INTO contact_messages (name, email, phone, description)
+       VALUES ($1, $2, $3, $4)`,
+      [name, email, phone, description]
+    );
+
+    // EMAIL SETUP
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.CONTACT_EMAIL,
+        pass: process.env.EMAIL_APP_PASSWORD,
+      },
+    });
+
+    const mailOptions = {
+      from: `"Website Contact" <${process.env.CONTACT_EMAIL}>`,
+      to: "mediawebsitenl@gmail.com", // Email sent to you
+      subject: "New Contact Form Message",
+      text: `
+New contact form submission:
+
+Name: ${name}
+Email: ${email}
+Phone: ${phone}
+
+Message:
+${description}
+      `,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Email error:", err);
+    res.json({ success: false, error: err });
+  }
+});
+
+app.listen(3000, () => console.log("Server running"));
 // Get products (admin only)
 app.get("/api/products", authenticateToken, verifyAdmin, async (req, res) => {
   try {

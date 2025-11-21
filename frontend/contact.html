@@ -19,28 +19,29 @@
     <!-- Dynamic buttons inserted by header.js -->
   </nav>
 </header>
+<main class="contact">
+  <section class="contact-page">
+    <h2>Contact</h2>
 
-  <main class="contact">
-    <section class="contact-page" >
-      <h2>Contact</h2>
-      <form class="contact-form">
-        <label>Name:</label>
-        <input type="text" required>
+    <form id="contactForm" class="contact-form">
+      <label>Name</label>
+      <input type="text" required>
 
-        <label>Email address:</label>
-        <input type="email" required>
+      <label>Email address</label>
+      <input type="email" required>
 
-        <label>Phone number:</label>
-        <input type="tel">
+      <label>Phone number</label>
+      <input type="tel">
 
-        <label>Description:</label>
-        <textarea></textarea>
+      <label>Description</label>
+      <textarea required></textarea>
 
-        <button type="submit" class="btn">Send</button>
-      </form>
-    </section>
-  </main>
-  <script src="script.js"></script>
+      <button type="submit" class="btn">Send</button>
+    </form>
+  </section>
+</main>
+
+  <script src="contact.js"></script>
   <script src="header.js"></script>
 
 

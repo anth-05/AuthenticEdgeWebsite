@@ -111,3 +111,49 @@
     font-size: 1.05rem;
   }
 }
+/* Footer */
+.site-footer {
+  background-color: #111;
+  color: #eee;
+  padding: 15px 25px;
+  font-family: Arial, sans-serif;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.brand {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.footer-right {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.email {
+  color: #ccc;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.email:hover {
+  color: #fff;
+}
+
+.insta-btn {
+  background-color: #e1306c;
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: background 0.3s ease;
+}
+
+.insta-btn:hover {
+  background-color: #ff4c87;
+}
