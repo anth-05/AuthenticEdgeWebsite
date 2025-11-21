@@ -64,11 +64,12 @@ app.post("/api/contact", async (req, res) => {
 
   try {
     // OPTIONAL — Save message to database
-    await pool.query(
-      `INSERT INTO contact_messages (name, email, phone, description)
-       VALUES ($1, $2, $3, $4)`,
-      [name, email, phone, description]
-    );
+
+    // await pool.query(
+    //   `INSERT INTO contact_messages (name, email, phone, description)
+    //    VALUES ($1, $2, $3, $4)`,
+    //   [name, email, phone, description]
+    // );
 
     // EMAIL SETUP
     const transporter = nodemailer.createTransport({
