@@ -80,6 +80,30 @@
   background: #ffb733;
   transform: translateY(-2px);
 }
+.phone-group {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
+.country-code {
+  width: 120px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  background: #fff;
+  cursor: pointer;
+}
+
+.phone-input {
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+}
+
 
 @keyframes fadeIn {
   from {

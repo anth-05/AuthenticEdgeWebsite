@@ -1,14 +1,17 @@
 document.getElementById("contactForm").addEventListener("submit", async (e) => {
   e.preventDefault();
 
+    const countryCode = document.querySelector(".country-code").value;
+    const phoneNumber = document.querySelector(".phone-input").value;
+
   const data = {
-    name: document.querySelector("input[type='text']").value,
+    name: document.getElementById("contactName").value,
     email: document.querySelector("input[type='email']").value,
-    phone: document.querySelector("input[type='tel']").value,
+    phone: `${countryCode} ${phoneNumber}`,
     description: document.querySelector("textarea").value
   };
 
-  const res = await fetch("https://authenticedgewebsite.onrender.com/api/contact", {
+  const res = await fetch("https://authenticedgewebsite.onrender.com/contact", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data)
