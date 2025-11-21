@@ -66,7 +66,7 @@ app.post("/contact", async (req, res) => {
 
   try {
     // Load HTML template
-    const templatePath = path.join(process.cwd(), "emailTemplates/contact.html");
+    const templatePath = path.join(__dirname, "emailTemplates", "contact.html");
     let htmlTemplate = fs.readFileSync(templatePath, "utf8");
 
     // Replace placeholders
