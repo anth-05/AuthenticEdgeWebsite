@@ -5,6 +5,8 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import pkg from "pg";
 import nodemailer from "nodemailer";
+import fs from "fs";
+import path from "path";
 import http from "http";
 
 const { Pool } = pkg;
@@ -59,51 +61,35 @@ function verifyAdmin(req, res, next) {
 // Routes
 
 // Email route
-app.post("/api/contact", async (req, res) => {
-  const { name, email, phone, description } = req.body;
+app.post("/contact", async (req, res) => {
+  const { name, email, phone, message } = req.body;
 
   try {
-    // OPTIONAL — Save message to database
+    // Load HTML template
+    const templatePath = path.join(process.cwd(), "emailTemplates/contact.html");
+    let htmlTemplate = fs.readFileSync(templatePath, "utf8");
 
-    // await pool.query(
-    //   `INSERT INTO contact_messages (name, email, phone, description)
-    //    VALUES ($1, $2, $3, $4)`,
-    //   [name, email, phone, description]
-    // );
+    // Replace placeholders
+    htmlTemplate = htmlTemplate
+      .replace("{{name}}", name)
+      .replace("{{email}}", email)
+      .replace("{{phone}}", phone || "Not provided")
+      .replace("{{message}}", message);
 
-    // EMAIL SETUP
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.CONTACT_EMAIL,
-        pass: process.env.EMAIL_APP_PASSWORD,
-      },
+    await transporter.sendMail({
+      from: `"Website Contact" <${process.env.CONTACT_EMAIL}>`,
+      to: process.env.CONTACT_EMAIL,
+      subject: `New Contact Message from ${name}`,
+      html: htmlTemplate,    // <--- send HTML
     });
 
-    const mailOptions = {
-      from: `"Website Contact" <${process.env.CONTACT_EMAIL}>`,
-      to: "mediawebsitenl@gmail.com", // Email sent to you
-      subject: "New Contact Form Message",
-      text: `
-New contact form submission:
-
-Name: ${name}
-Email: ${email}
-Phone: ${phone}
-
-Message:
-${description}
-      `,
-    };
-
-    await transporter.sendMail(mailOptions);
-
-    res.json({ success: true });
+    res.json({ success: true, message: "Message sent successfully!" });
   } catch (err) {
     console.error("Email error:", err);
-    res.json({ success: false, error: err });
+    res.status(500).json({ success: false, message: "Email failed to send" });
   }
 });
+
 
 app.listen(3000, () => console.log("Server running"));
 // Get products (admin only)
