@@ -8,7 +8,7 @@ document.getElementById("contactForm").addEventListener("submit", async (e) => {
     name: document.getElementById("contactName").value,
     email: document.querySelector("input[type='email']").value,
     phone: `${countryCode} ${phoneNumber}`,
-    description: document.getElementById("contactDescription").value,
+    message: document.getElementById("contactDescription").value,
     recaptcha: token
   };
 
