@@ -1,6 +1,6 @@
 document.getElementById("contactForm").addEventListener("submit", async (e) => {
   e.preventDefault();
-    const token = await grecaptcha.execute("6LfBhRQsAAAAANIKzqgbUZnKkNAH09Tgfd0d3s9I", { action: "submit" });
+    //const token = await grecaptcha.execute("6LfBhRQsAAAAANIKzqgbUZnKkNAH09Tgfd0d3s9I", { action: "submit" });
     const countryCode = document.querySelector(".country-code").value;
     const phoneNumber = document.querySelector(".phone-input").value;
 
