@@ -8,7 +8,7 @@ document.getElementById("contactForm").addEventListener("submit", async (e) => {
     name: document.getElementById("contactName").value,
     email: document.querySelector("input[type='email']").value,
     phone: `${countryCode} ${phoneNumber}`,
-    description: document.querySelector("textarea").value
+    description: document.getElementById("contactDescription").value
   };
 
   const res = await fetch("https://authenticedgewebsite.onrender.com/contact", {
@@ -21,6 +21,8 @@ document.getElementById("contactForm").addEventListener("submit", async (e) => {
 
   if (json.success) {
     alert("Your message has been sent!");
+    window.location.reload();
+
   } else {
     alert("Error sending message.");
   }
