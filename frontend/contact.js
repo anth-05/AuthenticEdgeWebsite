@@ -9,7 +9,7 @@ document.getElementById("contactForm").addEventListener("submit", async (e) => {
     email: document.querySelector("input[type='email']").value,
     phone: `${countryCode} ${phoneNumber}`,
     message: document.getElementById("contactDescription").value,
-    recaptcha: token
+    // recaptcha: token
   };
 
   const res = await fetch("https://authenticedgewebsite.onrender.com/contact", {
