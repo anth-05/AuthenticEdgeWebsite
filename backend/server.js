@@ -9,6 +9,9 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import http from "http";
+import rateLimit from "express-rate-limit";
+import sanitize from "sanitize-html";
+import fetch from "node-fetch";
 
 const { Pool } = pkg;
 const __filename = fileURLToPath(import.meta.url);
@@ -72,10 +75,37 @@ const transporter = nodemailer.createTransport({
     pass: process.env.CONTACT_EMAIL_PASSWORD, // Your Gmail App Password
   },
 });
+// Rate limiter for contact form
+const contactLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 5,              // 5 submissions per minute
+  message: { success: false, message: "Too many requests" }
+});
+
+app.use("/contact", contactLimiter);
 // Email route
 app.post("/contact", async (req, res) => {
   const { name, email, phone, message } = req.body;
+  if (!name || !email || !message) {
+  return res.status(400).json({ success: false, message: "Missing fields" });
+  }
 
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return res.status(400).json({ success: false, message: "Invalid email" });
+  }
+  const cleanMessage = sanitize(message);
+
+  const verify = await fetch(
+  `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.RECAPTCHA_SECRET}&response=${recaptcha}`,
+  { method: "POST" }
+  );
+
+  const out = await verify.json();
+
+  if (!out.success || out.score < 0.5) {
+    return res.status(400).json({ success: false, message: "reCAPTCHA failed" });
+  }
   try {
     // Load HTML template
     const templatePath = path.join(__dirname, "emailTemplates", "contact.html");
@@ -86,7 +116,7 @@ app.post("/contact", async (req, res) => {
       .replace("{{name}}", name)
       .replace("{{email}}", email)
       .replace("{{phone}}", phone || "Not provided")
-      .replace("{{message}}", message);
+      .replace("{{message}}", cleanMessage);
 
     await transporter.sendMail({
       from: `"Website Contact" <${process.env.CONTACT_EMAIL}>`,

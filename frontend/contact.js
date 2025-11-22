@@ -1,6 +1,6 @@
 document.getElementById("contactForm").addEventListener("submit", async (e) => {
   e.preventDefault();
-
+    const token = await grecaptcha.execute("6LfBhRQsAAAAANIKzqgbUZnKkNAH09Tgfd0d3s9I", { action: "submit" });
     const countryCode = document.querySelector(".country-code").value;
     const phoneNumber = document.querySelector(".phone-input").value;
 
@@ -8,7 +8,8 @@ document.getElementById("contactForm").addEventListener("submit", async (e) => {
     name: document.getElementById("contactName").value,
     email: document.querySelector("input[type='email']").value,
     phone: `${countryCode} ${phoneNumber}`,
-    description: document.getElementById("contactDescription").value
+    description: document.getElementById("contactDescription").value,
+    recaptcha: token
   };
 
   const res = await fetch("https://authenticedgewebsite.onrender.com/contact", {
