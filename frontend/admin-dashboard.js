@@ -8,24 +8,12 @@ document.addEventListener("DOMContentLoaded", () => {
   loadDashboard();
 });
 
-function setupTabs() {
-  const tabButtons = document.querySelectorAll(".tab-button");
-  const tabContents = document.querySelectorAll(".tab-content");
-
-  tabButtons.forEach(button => {
-    button.addEventListener("click", () => {
-      tabButtons.forEach(btn => btn.classList.remove("active"));
-      tabContents.forEach(content => content.classList.remove("active"));
-
-      button.classList.add("active");
-      const tabId = button.getAttribute("data-tab");
-      document.getElementById(tabId).classList.add("active");
-    });
-  });
-}
-
 function setupLogout() {
   const logoutBtn = document.getElementById("logout-btn");
+  document.querySelectorAll(".logout-link").forEach(btn => {
+  btn.addEventListener("click", logout);
+});
+
   if (logoutBtn) {
     logoutBtn.addEventListener("click", logout);
   }
