@@ -48,6 +48,8 @@ app.use(
   })
 );
 
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
 // Serve uploaded files
 const UPLOADS_DIR = path.join(process.cwd(), "uploads");
 const PRODUCTS_UPLOAD_DIR = path.join(UPLOADS_DIR, "products");
