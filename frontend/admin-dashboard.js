@@ -34,9 +34,6 @@ async function loadDashboard() {
       logout();
       return;
     }
-    const verifyData = await verify.json();
-    document.getElementById("welcome-message").textContent = `Welcome, ${verifyData.user.email} (${verifyData.user.role})`;
-
     const statsRes = await fetch(`${API_BASE_URL}/api/stats`, {
       headers: { Authorization: `Bearer ${token}` }
     });
