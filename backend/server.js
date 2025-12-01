@@ -13,6 +13,9 @@ import rateLimit from "express-rate-limit";
 import sanitize from "sanitize-html";
 import fetch from "node-fetch";
 import multer from "multer";
+// Optional Cloudinary
+import { v2 as cloudinary } from "cloudinary";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
 
 const { Pool } = pkg;
 const __filename = fileURLToPath(import.meta.url);
@@ -48,37 +51,56 @@ app.use(
   })
 );
 
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-
-// Serve uploaded files
+// ---------- Uploads folders (local fallback) ----------
 const UPLOADS_DIR = path.join(process.cwd(), "uploads");
 const PRODUCTS_UPLOAD_DIR = path.join(UPLOADS_DIR, "products");
 if (!fs.existsSync(PRODUCTS_UPLOAD_DIR)) {
   fs.mkdirSync(PRODUCTS_UPLOAD_DIR, { recursive: true });
 }
+// serve uploads statically
 app.use("/uploads", express.static(UPLOADS_DIR));
 
-// Database pool
+// ---------- Database pool ----------
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false,
 });
 
-// ---------- Multer (file upload) ----------
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, PRODUCTS_UPLOAD_DIR);
-  },
-  filename: function (req, file, cb) {
-    const ext = path.extname(file.originalname).toLowerCase();
-    const name = `${Date.now()}${Math.round(Math.random() * 1e6)}${ext}`;
-    cb(null, name);
-  }
-});
-const upload = multer({
-  storage,
-  limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit (adjust as needed)
-});
+// ---------- Configure Multer storage (Cloudinary if configured) ----------
+let upload; // multer instance
+
+if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
+  // Cloudinary configured -> use CloudinaryStorage
+  cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+  });
+
+  const cloudStorage = new CloudinaryStorage({
+    cloudinary,
+    params: {
+      folder: "products",
+      allowed_formats: ["jpg", "jpeg", "png", "webp"],
+      // you can add transformation here if desired
+    },
+  });
+
+  upload = multer({ storage: cloudStorage, limits: { fileSize: 8 * 1024 * 1024 } }); // 8MB
+  console.log("Uploads: using Cloudinary storage.");
+} else {
+  // Local disk storage fallback
+  const diskStorage = multer.diskStorage({
+    destination: (req, file, cb) => cb(null, PRODUCTS_UPLOAD_DIR),
+    filename: (req, file, cb) => {
+      const ext = path.extname(file.originalname).toLowerCase();
+      const name = `${Date.now()}-${Math.round(Math.random() * 1e6)}${ext}`;
+      cb(null, name);
+    }
+  });
+  upload = multer({ storage: diskStorage, limits: { fileSize: 8 * 1024 * 1024 } });
+  console.log("Uploads: using local disk storage at", PRODUCTS_UPLOAD_DIR);
+}
 
 // ---------- Helpers / Middleware ----------
 function respondServerError(res, err, msg = "Server error") {
@@ -106,7 +128,7 @@ function verifyAdmin(req, res, next) {
   next();
 }
 
-// ---------- Rate limiters ----------
+// ---------- Rate limiter ----------
 const contactLimiter = rateLimit({ windowMs: 60 * 1000, max: 5, message: { success: false, message: "Too many requests" } });
 
 // ---------- Email transport ----------
@@ -121,6 +143,7 @@ const transporter = nodemailer.createTransport({
 // ---------- Routes: Public ----------
 app.get("/", (req, res) => res.json({ ok: true, message: "API is up" }));
 
+// contact route (unchanged)
 app.post("/contact", contactLimiter, async (req, res) => {
   try {
     const { name, email, phone, message, recaptcha } = req.body;
@@ -129,7 +152,6 @@ app.post("/contact", contactLimiter, async (req, res) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) return res.status(400).json({ success: false, message: "Invalid email" });
 
-    // verify recaptcha token (client must send `recaptcha` field)
     if (!process.env.RECAPTCHA_SECRET) {
       console.warn("RECAPTCHA_SECRET not set — skipping recaptcha verification");
     } else {
@@ -147,9 +169,7 @@ app.post("/contact", contactLimiter, async (req, res) => {
 
     const cleanMessage = sanitize(message);
 
-    // Load email template if exists
     let htmlTemplate = `
-
 New contact message
 Name: ${name}
 Email: ${email}
@@ -178,7 +198,7 @@ Message: ${cleanMessage}
   }
 });
 
-// ---------- Routes: Auth ----------
+// ---------- Routes: Auth (unchanged) ----------
 app.post("/api/register", async (req, res) => {
   try {
     const { email, password, role } = req.body;
@@ -215,7 +235,7 @@ app.post("/api/login", async (req, res) => {
   }
 });
 
-// ---------- Routes: User info (protected) ----------
+// ---------- Protected user routes ----------
 app.get("/api/protected", authenticateToken, async (req, res) => {
   try {
     const { rows } = await pool.query("SELECT id, email, role, created_at FROM users WHERE id=$1", [req.user.id]);
@@ -236,7 +256,6 @@ app.get("/api/user", authenticateToken, async (req, res) => {
   }
 });
 
-// Update email/password/delete account
 app.put("/api/user/email", authenticateToken, async (req, res) => {
   try {
     const { email } = req.body;
@@ -269,7 +288,7 @@ app.delete("/api/user", authenticateToken, async (req, res) => {
   }
 });
 
-// ---------- Routes: Admin (users/products/stats) ----------
+// ---------- Admin routes (users/stats) ----------
 app.get("/api/users", authenticateToken, verifyAdmin, async (req, res) => {
   try {
     const { rows } = await pool.query("SELECT id, email, role, created_at FROM users ORDER BY created_at DESC");
@@ -303,7 +322,6 @@ app.delete("/api/users/:id", authenticateToken, verifyAdmin, async (req, res) =>
   }
 });
 
-// Stats route for admin dashboard
 app.get("/api/stats", authenticateToken, verifyAdmin, async (req, res) => {
   try {
     const usersRes = await pool.query("SELECT COUNT(*)::int FROM users");
@@ -315,8 +333,8 @@ app.get("/api/stats", authenticateToken, verifyAdmin, async (req, res) => {
   }
 });
 
-// ---------- Routes: Products (admin) ----------
-// GET /api/products (admin)
+// ---------- Products routes (supports file upload or url) ----------
+// GET
 app.get("/api/products", authenticateToken, verifyAdmin, async (req, res) => {
   try {
     const { rows } = await pool.query("SELECT id, name, description, image, gender, quality, availability, created_at FROM products ORDER BY created_at DESC");
@@ -326,23 +344,24 @@ app.get("/api/products", authenticateToken, verifyAdmin, async (req, res) => {
   }
 });
 
-// POST /api/products (supports multipart/form-data or JSON)
+// POST (multipart/form-data with imageFile OR JSON with image URL)
 app.post("/api/products", authenticateToken, verifyAdmin, upload.single("imageFile"), async (req, res) => {
   try {
-    // Accept either JSON body with `image` (URL) OR multipart with file `imageFile`
     const { name, description = "", image: imageUrl, gender = null, quality = null, availability = null } = req.body;
-
     if (!name) return res.status(400).json({ error: "Product name is required." });
 
-    // Use uploaded file if present
+    // Determine final image URL/path:
     let finalImage = null;
     if (req.file) {
-      finalImage = `/uploads/products/${req.file.filename}`;
+      // If using Cloudinary storage, multer's file.path will be a remote url
+      // If using disk storage, multer's file.filename is local filename under uploads/products
+      finalImage = (req.file.path) ? req.file.path :
+                   (req.file.secure_url) ? req.file.secure_url :
+                   `/uploads/products/${req.file.filename}`;
     } else if (imageUrl) {
       finalImage = imageUrl;
     }
 
-    // sanitize text fields
     const sName = sanitize(name);
     const sDescription = sanitize(description);
     const sGender = gender ? sanitize(gender) : null;
@@ -361,18 +380,15 @@ app.post("/api/products", authenticateToken, verifyAdmin, upload.single("imageFi
   }
 });
 
-// PUT /api/products/:id (update product; supports file upload as well)
+// PUT (supports file upload too)
 app.put("/api/products/:id", authenticateToken, verifyAdmin, upload.single("imageFile"), async (req, res) => {
   try {
     const { id } = req.params;
-
-    // Read product first to potentially delete old uploaded file
     const existing = await pool.query("SELECT * FROM products WHERE id=$1", [id]);
     if (existing.rowCount === 0) return res.status(404).json({ error: "Product not found" });
     const existingProduct = existing.rows[0];
 
-    // Accept fields either from JSON body (if Content-Type JSON) or form-data
-    // When using form-data, fields are in req.body and file in req.file
+    // fields (when multipart/form-data they come in req.body)
     const {
       name = existingProduct.name,
       description = existingProduct.description,
@@ -382,12 +398,14 @@ app.put("/api/products/:id", authenticateToken, verifyAdmin, upload.single("imag
       availability = existingProduct.availability
     } = req.body;
 
-    // If a new file was uploaded, set finalImage and remove old uploaded file if it's in our uploads folder
+    // Determine final image
     let finalImage = imageUrl;
     if (req.file) {
-      finalImage = `/uploads/products/${req.file.filename}`;
+      finalImage = (req.file.path) ? req.file.path :
+                   (req.file.secure_url) ? req.file.secure_url :
+                   `/uploads/products/${req.file.filename}`;
 
-      // Remove old file if it was an uploaded file in our uploads dir (not if it's an external URL)
+      // Remove old local file if it exists and was stored locally
       if (existingProduct.image && existingProduct.image.startsWith("/uploads/products/")) {
         try {
           const oldPath = path.join(process.cwd(), existingProduct.image);
@@ -398,7 +416,6 @@ app.put("/api/products/:id", authenticateToken, verifyAdmin, upload.single("imag
       }
     }
 
-    // sanitize text fields
     const sName = sanitize(name);
     const sDescription = sanitize(description);
     const sGender = gender ? sanitize(gender) : null;
@@ -411,24 +428,21 @@ app.put("/api/products/:id", authenticateToken, verifyAdmin, upload.single("imag
       [sName, sDescription, finalImage, sGender, sQuality, sAvailability, id]
     );
 
-    if (result.rowCount === 0) return res.status(404).json({ error: "Product not found" });
     res.json(result.rows[0]);
   } catch (err) {
     respondServerError(res, err, "Failed to update product");
   }
 });
 
-// DELETE product
+// DELETE
 app.delete("/api/products/:id", authenticateToken, verifyAdmin, async (req, res) => {
   try {
     const { id } = req.params;
-    // Optionally delete uploaded image file
     const existing = await pool.query("SELECT * FROM products WHERE id=$1", [id]);
     if (existing.rowCount === 0) return res.status(404).json({ error: "Product not found" });
-
     const product = existing.rows[0];
 
-    const result = await pool.query("DELETE FROM products WHERE id = $1", [id]);
+    const result = await pool.query("DELETE FROM products WHERE id=$1", [id]);
     if (result.rowCount === 0) return res.status(404).json({ error: "Product not found" });
 
     // Remove local file if it exists and is in our uploads folder
@@ -447,7 +461,7 @@ app.delete("/api/products/:id", authenticateToken, verifyAdmin, async (req, res)
   }
 });
 
-// ---------- Optional: Subscriptions & Messages scaffold ----------
+// ---------- Subscriptions & Messages (scaffold) ----------
 app.get("/api/subscriptions", authenticateToken, async (req, res) => {
   try {
     const { rows } = await pool.query("SELECT * FROM subscriptions WHERE user_id=$1", [req.user.id]);
@@ -524,7 +538,7 @@ app.get("/api/messages", authenticateToken, async (req, res) => {
   }
 })();
 
-// ---------- Global error handler (optional) ----------
+// ---------- Global error handler ----------
 app.use((err, req, res, next) => {
   console.error("Unhandled error:", err);
   res.status(500).json({ error: "Unexpected server error" });
