@@ -389,7 +389,7 @@ app.put("/api/products/:id", authenticateToken, verifyAdmin, upload.single("imag
     const existingProduct = existing.rows[0];
 
     // fields (when multipart/form-data they come in req.body)
-    const {
+    const { 
       name = existingProduct.name,
       description = existingProduct.description,
       image: imageUrl = existingProduct.image,
