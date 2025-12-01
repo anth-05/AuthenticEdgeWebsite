@@ -65,43 +65,33 @@ body, html {
   overflow-y: auto;
 }
 
-.sidebar-menu a,
-.sidebar-menu button {
-  color: var(--text-color-light);
-  padding: 1.8rem 1.5rem;
-  font-weight: 600;
+/* Sidebar Menu Items */
+.sidebar-menu a {
+  padding: 0.65rem 0.9rem;
+  display: block;
+  font-size: 1rem;
+  color: var(--text-subtle);
   border-radius: 12px;
-  background: none;
-  border: none;
-  text-align: left;
-  cursor: pointer;
-  font-size: 15px;
-  outline-offset: 2px;
-  transition: background-color 0.3s ease, color 0.3s ease;
-  position: relative;
+  transition: color 0.25s var(--smooth), transform 0.25s var(--smooth);
 }
 
-.sidebar-menu a:hover,
-.sidebar-menu button:hover,
-.sidebar-menu a[aria-current="page"],
-.sidebar-menu button.active {
-  background-color: var(--accent);
-  color: white;
-  font-weight: 700;
-  box-shadow: 0 0 22px var(--accent);
+/* Clean subtle hover — NO background */
+.sidebar-menu a:hover {
+  background: none !important;
+  color: var(--accent);
+  transform: translateX(6px);
 }
 
-.sidebar-menu button.active::before {
-  content: "";
-  position: absolute;
-  left: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 6px;
-  height: 55%;
-  background-color: var(--accent);
-  border-radius: 3px;
+/* ACTIVE ITEM — Apple highlight pill */
+.sidebar-menu a.active {
+  background: var(--accent);
+  color: #fff !important;
+  font-weight: 600;
+  border-radius: 14px;
+  box-shadow: 0 6px 18px rgba(255,184,77,0.45);
+  transform: none !important;
 }
+
 
 /* Main dashboard content */
 .dashboard-main {
