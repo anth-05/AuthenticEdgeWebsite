@@ -12,6 +12,7 @@ import http from "http";
 import rateLimit from "express-rate-limit";
 import sanitize from "sanitize-html";
 import fetch from "node-fetch";
+import multer from "multer";
 
 const { Pool } = pkg;
 const __filename = fileURLToPath(import.meta.url);
@@ -47,10 +48,34 @@ app.use(
   })
 );
 
+// Serve uploaded files
+const UPLOADS_DIR = path.join(process.cwd(), "uploads");
+const PRODUCTS_UPLOAD_DIR = path.join(UPLOADS_DIR, "products");
+if (!fs.existsSync(PRODUCTS_UPLOAD_DIR)) {
+  fs.mkdirSync(PRODUCTS_UPLOAD_DIR, { recursive: true });
+}
+app.use("/uploads", express.static(UPLOADS_DIR));
+
 // Database pool
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false,
+});
+
+// ---------- Multer (file upload) ----------
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, PRODUCTS_UPLOAD_DIR);
+  },
+  filename: function (req, file, cb) {
+    const ext = path.extname(file.originalname).toLowerCase();
+    const name = `${Date.now()}${Math.round(Math.random() * 1e6)}${ext}`;
+    cb(null, name);
+  }
+});
+const upload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit (adjust as needed)
 });
 
 // ---------- Helpers / Middleware ----------
@@ -189,7 +214,6 @@ app.post("/api/login", async (req, res) => {
 });
 
 // ---------- Routes: User info (protected) ----------
-// Keep /api/protected for compatibility, and also expose /api/user
 app.get("/api/protected", authenticateToken, async (req, res) => {
   try {
     const { rows } = await pool.query("SELECT id, email, role, created_at FROM users WHERE id=$1", [req.user.id]);
@@ -201,7 +225,6 @@ app.get("/api/protected", authenticateToken, async (req, res) => {
 });
 
 app.get("/api/user", authenticateToken, async (req, res) => {
-  // Same as /api/protected but with a different route name
   try {
     const { rows } = await pool.query("SELECT id, email, role, created_at FROM users WHERE id=$1", [req.user.id]);
     if (rows.length === 0) return res.status(404).json({ error: "User not found" });
@@ -291,6 +314,7 @@ app.get("/api/stats", authenticateToken, verifyAdmin, async (req, res) => {
 });
 
 // ---------- Routes: Products (admin) ----------
+// GET /api/products (admin)
 app.get("/api/products", authenticateToken, verifyAdmin, async (req, res) => {
   try {
     const { rows } = await pool.query("SELECT id, name, description, image, gender, quality, availability, created_at FROM products ORDER BY created_at DESC");
@@ -300,26 +324,91 @@ app.get("/api/products", authenticateToken, verifyAdmin, async (req, res) => {
   }
 });
 
-app.post("/api/products", authenticateToken, verifyAdmin, async (req, res) => {
+// POST /api/products (supports multipart/form-data or JSON)
+app.post("/api/products", authenticateToken, verifyAdmin, upload.single("imageFile"), async (req, res) => {
   try {
-    const { name, description, image, gender, quality, availability } = req.body;
+    // Accept either JSON body with `image` (URL) OR multipart with file `imageFile`
+    const { name, description = "", image: imageUrl, gender = null, quality = null, availability = null } = req.body;
+
     if (!name) return res.status(400).json({ error: "Product name is required." });
-    const { rows } = await pool.query(`INSERT INTO products (name, description, image, gender, quality, availability) VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`, [
-      name, description, image, gender, quality, availability
-    ]);
+
+    // Use uploaded file if present
+    let finalImage = null;
+    if (req.file) {
+      finalImage = `/uploads/products/${req.file.filename}`;
+    } else if (imageUrl) {
+      finalImage = imageUrl;
+    }
+
+    // sanitize text fields
+    const sName = sanitize(name);
+    const sDescription = sanitize(description);
+    const sGender = gender ? sanitize(gender) : null;
+    const sQuality = quality ? sanitize(quality) : null;
+    const sAvailability = availability ? sanitize(availability) : null;
+
+    const { rows } = await pool.query(
+      `INSERT INTO products (name, description, image, gender, quality, availability)
+       VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`,
+      [sName, sDescription, finalImage, sGender, sQuality, sAvailability]
+    );
+
     res.status(201).json(rows[0]);
   } catch (err) {
     respondServerError(res, err, "Failed to add product");
   }
 });
 
-app.put("/api/products/:id", authenticateToken, verifyAdmin, async (req, res) => {
+// PUT /api/products/:id (update product; supports file upload as well)
+app.put("/api/products/:id", authenticateToken, verifyAdmin, upload.single("imageFile"), async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, description, image, gender, quality, availability } = req.body;
-    const result = await pool.query(`UPDATE products SET name=$1, description=$2, image=$3, gender=$4, quality=$5, availability=$6 WHERE id=$7 RETURNING *`, [
-      name, description, image, gender, quality, availability, id
-    ]);
+
+    // Read product first to potentially delete old uploaded file
+    const existing = await pool.query("SELECT * FROM products WHERE id=$1", [id]);
+    if (existing.rowCount === 0) return res.status(404).json({ error: "Product not found" });
+    const existingProduct = existing.rows[0];
+
+    // Accept fields either from JSON body (if Content-Type JSON) or form-data
+    // When using form-data, fields are in req.body and file in req.file
+    const {
+      name = existingProduct.name,
+      description = existingProduct.description,
+      image: imageUrl = existingProduct.image,
+      gender = existingProduct.gender,
+      quality = existingProduct.quality,
+      availability = existingProduct.availability
+    } = req.body;
+
+    // If a new file was uploaded, set finalImage and remove old uploaded file if it's in our uploads folder
+    let finalImage = imageUrl;
+    if (req.file) {
+      finalImage = `/uploads/products/${req.file.filename}`;
+
+      // Remove old file if it was an uploaded file in our uploads dir (not if it's an external URL)
+      if (existingProduct.image && existingProduct.image.startsWith("/uploads/products/")) {
+        try {
+          const oldPath = path.join(process.cwd(), existingProduct.image);
+          if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+        } catch (err) {
+          console.warn("Could not remove old image:", err);
+        }
+      }
+    }
+
+    // sanitize text fields
+    const sName = sanitize(name);
+    const sDescription = sanitize(description);
+    const sGender = gender ? sanitize(gender) : null;
+    const sQuality = quality ? sanitize(quality) : null;
+    const sAvailability = availability ? sanitize(availability) : null;
+
+    const result = await pool.query(
+      `UPDATE products SET name=$1, description=$2, image=$3, gender=$4, quality=$5, availability=$6
+       WHERE id=$7 RETURNING *`,
+      [sName, sDescription, finalImage, sGender, sQuality, sAvailability, id]
+    );
+
     if (result.rowCount === 0) return res.status(404).json({ error: "Product not found" });
     res.json(result.rows[0]);
   } catch (err) {
@@ -327,11 +416,29 @@ app.put("/api/products/:id", authenticateToken, verifyAdmin, async (req, res) =>
   }
 });
 
+// DELETE product
 app.delete("/api/products/:id", authenticateToken, verifyAdmin, async (req, res) => {
   try {
     const { id } = req.params;
+    // Optionally delete uploaded image file
+    const existing = await pool.query("SELECT * FROM products WHERE id=$1", [id]);
+    if (existing.rowCount === 0) return res.status(404).json({ error: "Product not found" });
+
+    const product = existing.rows[0];
+
     const result = await pool.query("DELETE FROM products WHERE id = $1", [id]);
     if (result.rowCount === 0) return res.status(404).json({ error: "Product not found" });
+
+    // Remove local file if it exists and is in our uploads folder
+    if (product.image && product.image.startsWith("/uploads/products/")) {
+      try {
+        const delPath = path.join(process.cwd(), product.image);
+        if (fs.existsSync(delPath)) fs.unlinkSync(delPath);
+      } catch (err) {
+        console.warn("Failed to delete product image:", err);
+      }
+    }
+
     res.json({ message: "Deleted" });
   } catch (err) {
     respondServerError(res, err, "Failed to delete product");
@@ -339,7 +446,6 @@ app.delete("/api/products/:id", authenticateToken, verifyAdmin, async (req, res)
 });
 
 // ---------- Optional: Subscriptions & Messages scaffold ----------
-// (Implement real business logic as needed)
 app.get("/api/subscriptions", authenticateToken, async (req, res) => {
   try {
     const { rows } = await pool.query("SELECT * FROM subscriptions WHERE user_id=$1", [req.user.id]);

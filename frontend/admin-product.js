@@ -1,28 +1,33 @@
 import { API_BASE_URL } from "./config.js";
 
-// --- UI Handlers for form input type ---
+/* -------------------------------------------------------
+   IMAGE TYPE SWITCHER (URL ↔ FILE)
+------------------------------------------------------- */
 document.querySelectorAll('input[name="imageType"]').forEach(radio => {
-  radio.addEventListener('change', (e) => {
-    const showUrl = e.target.value === 'url';
-    document.getElementById('image-url-row').style.display = showUrl ? '' : 'none';
-    document.getElementById('image-upload-row').style.display = showUrl ? 'none' : '';
+  radio.addEventListener('change', () => {
+    const isUrl = radio.value === "url";
+    document.getElementById('image-url-row').style.display = isUrl ? '' : 'none';
+    document.getElementById('image-upload-row').style.display = isUrl ? 'none' : '';
   });
 });
 
-// --- PRODUCTS TABLE/CRUD ---
+/* -------------------------------------------------------
+   LOAD PRODUCTS INTO TABLE
+------------------------------------------------------- */
 async function loadProducts() {
   const token = localStorage.getItem("token");
   const tbody = document.querySelector("#product-table tbody");
-  tbody.innerHTML = "<tr><td colspan='7' role='row'><em>Loading products...</em></td></tr>";
+  tbody.innerHTML = "<tr><td colspan='7'><em>Loading...</em></td></tr>";
 
   try {
     const res = await fetch(`${API_BASE_URL}/api/products`, {
       headers: { Authorization: `Bearer ${token}` }
     });
-    if (!res.ok) throw new Error("Failed to fetch products");
-    const products = await res.json();
 
-    if (products.length === 0) {
+    if (!res.ok) throw new Error("Failed to fetch products");
+
+    const products = await res.json();
+    if (!products.length) {
       tbody.innerHTML = "<tr><td colspan='7'>No products found.</td></tr>";
       return;
     }
@@ -36,83 +41,93 @@ async function loadProducts() {
         <td>${p.quality || ""}</td>
         <td>${p.availability || ""}</td>
         <td>
-          <button data-id="${p.id}" class="edit-btn">Edit</button>
-          <button data-id="${p.id}" class="delete-btn">Delete</button>
+          <button class="edit-btn" data-id="${p.id}">Edit</button>
+          <button class="delete-btn" data-id="${p.id}">Delete</button>
         </td>
       </tr>
     `).join("");
 
-    // Add Delete handlers
+    // Bind delete
     tbody.querySelectorAll('.delete-btn').forEach(btn =>
-      btn.addEventListener('click', async function () {
-        if (!confirm('Are you sure you want to delete this product?')) return;
-        await deleteProduct(btn.dataset.id);
+      btn.addEventListener('click', () => {
+        if (confirm("Delete this product?")) deleteProduct(btn.dataset.id);
       })
     );
 
-    // Add Edit handlers
+    // Bind edit
     tbody.querySelectorAll('.edit-btn').forEach(btn =>
       btn.addEventListener('click', () => {
-        const id = btn.dataset.id;
-        const product = products.find(p => p.id == id);
-        if (!product) return alert("Product not found");
+        const product = products.find(p => p.id == btn.dataset.id);
         openEditModal(product);
       })
     );
-  } catch (error) {
-    tbody.innerHTML = `<tr><td colspan='7'>Error loading products: ${error.message}</td></tr>`;
+
+  } catch (err) {
+    tbody.innerHTML = `<tr><td colspan='7'>Error: ${err.message}</td></tr>`;
   }
 }
 
-// --- Delete Product ---
+/* -------------------------------------------------------
+   DELETE PRODUCT
+------------------------------------------------------- */
 async function deleteProduct(id) {
   const token = localStorage.getItem("token");
+
   try {
     const res = await fetch(`${API_BASE_URL}/api/products/${id}`, {
       method: "DELETE",
       headers: { Authorization: `Bearer ${token}` }
     });
+
     if (res.ok) {
-      alert("✅ Product deleted!");
+      alert("🗑️ Product deleted.");
       loadProducts();
     } else {
       const err = await res.json();
-      alert(`❌ Unable to delete: ${err.error || res.statusText}`);
+      alert("❌ " + (err.error || "Failed to delete"));
     }
-  } catch (err) {
-    alert(`❌ Error deleting: ${err.message}`);
+  } catch (e) {
+    alert("❌ Error deleting: " + e.message);
   }
 }
 
-// --- Edit Product Modal Functions ---
-function openEditModal(product) {
-  document.getElementById('edit-product-id').value = product.id;
-  document.getElementById('edit-name').value = product.name;
-  document.getElementById('edit-description').value = product.description || '';
-  document.getElementById('edit-image').value = product.image || '';
-  document.getElementById('edit-gender').value = product.gender || '';
-  document.getElementById('edit-quality').value = product.quality || '';
-  document.getElementById('edit-availability').value = product.availability || '';
-  document.getElementById('edit-modal').style.display = 'block';
+/* -------------------------------------------------------
+   EDIT MODAL
+------------------------------------------------------- */
+function openEditModal(p) {
+  document.getElementById("edit-product-id").value = p.id;
+  document.getElementById("edit-name").value = p.name;
+  document.getElementById("edit-description").value = p.description || "";
+  document.getElementById("edit-image").value = p.image || "";
+  document.getElementById("edit-gender").value = p.gender || "";
+  document.getElementById("edit-quality").value = p.quality || "";
+  document.getElementById("edit-availability").value = p.availability || "";
+
+  document.getElementById("edit-modal").style.display = "block";
 }
 
 function closeEditModal() {
-  document.getElementById('edit-modal').style.display = 'none';
+  document.getElementById("edit-modal").style.display = "none";
 }
 
-// --- Edit Product form submit handler ---
-document.getElementById('edit-product-form').addEventListener('submit', async (e) => {
+document.getElementById("edit-cancel").addEventListener("click", closeEditModal);
+
+/* -------------------------------------------------------
+   SUBMIT EDITED PRODUCT
+------------------------------------------------------- */
+document.getElementById("edit-product-form").addEventListener("submit", async (e) => {
   e.preventDefault();
 
   const token = localStorage.getItem("token");
-  const id = document.getElementById('edit-product-id').value;
-  const updatedProduct = {
-    name: document.getElementById('edit-name').value.trim(),
-    description: document.getElementById('edit-description').value.trim(),
-    image: document.getElementById('edit-image').value.trim(),
-    gender: document.getElementById('edit-gender').value.trim(),
-    quality: document.getElementById('edit-quality').value.trim(),
-    availability: document.getElementById('edit-availability').value.trim(),
+  const id = document.getElementById("edit-product-id").value;
+
+  const updated = {
+    name: document.getElementById("edit-name").value.trim(),
+    description: document.getElementById("edit-description").value.trim(),
+    image: document.getElementById("edit-image").value.trim(),
+    gender: document.getElementById("edit-gender").value.trim(),
+    quality: document.getElementById("edit-quality").value.trim(),
+    availability: document.getElementById("edit-availability").value.trim(),
   };
 
   try {
@@ -122,65 +137,72 @@ document.getElementById('edit-product-form').addEventListener('submit', async (e
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`
       },
-      body: JSON.stringify(updatedProduct)
+      body: JSON.stringify(updated)
     });
+
     if (res.ok) {
       alert("✅ Product updated!");
       closeEditModal();
       loadProducts();
     } else {
       const err = await res.json();
-      alert(`❌ Unable to update: ${err.error || res.statusText}`);
+      alert("❌ " + (err.error || "Update failed"));
     }
   } catch (error) {
-    alert(`❌ Error updating: ${error.message}`);
+    alert("❌ " + error.message);
   }
 });
 
-// --- Cancel edit modal button ---
-document.getElementById('edit-cancel').addEventListener('click', closeEditModal);
-
-// --- Add Product ---
+/* -------------------------------------------------------
+   ADD NEW PRODUCT (URL OR FILE)
+------------------------------------------------------- */
 document.getElementById("add-product-form").addEventListener("submit", async (e) => {
   e.preventDefault();
 
   const token = localStorage.getItem("token");
-  const imageType = document.querySelector('input[name="imageType"]:checked').value;
-  const data = {
-    name: document.getElementById("name").value.trim(),
-    description: document.getElementById("description").value.trim(),
-    gender: document.getElementById("gender").value.trim(),
-    quality: document.getElementById("quality").value.trim(),
-    availability: document.getElementById("availability").value.trim(),
+  const form = e.target;
+
+  const imageType = document.querySelector("input[name='imageType']:checked").value;
+
+  const baseData = {
+    name: form.name.value.trim(),
+    description: form.description.value.trim(),
+    gender: form.gender.value.trim(),
+    quality: form.quality.value.trim(),
+    availability: form.availability.value.trim(),
   };
 
-  let body, headers;
-
-  if (imageType === "upload") {
-    const imageFile = document.getElementById('imageUpload').files[0];
-    if (!imageFile) {
-      alert("Please upload an image file.");
-      return;
-    }
-    const formData = new FormData();
-    Object.entries(data).forEach(([key, value]) => formData.append(key, value));
-    formData.append("imageFile", imageFile);
-    body = formData;
-    headers = { Authorization: `Bearer ${token}` };
-  } else {
-    const imageUrl = document.getElementById("image").value.trim();
-    if (!imageUrl) {
-      alert("Please supply an image URL.");
-      return;
-    }
-    data.image = imageUrl;
-    body = JSON.stringify(data);
-    headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
+  if (!baseData.name) {
+    return alert("Product name is required.");
   }
 
-  if (!data.name) {
-    alert("Please provide the product name.");
-    return;
+  let body;
+  let headers;
+
+  // ---- FILE UPLOAD ----
+  if (imageType === "upload") {
+    const file = document.getElementById("imageUpload").files[0];
+    if (!file) return alert("Upload an image file.");
+
+    const fd = new FormData();
+    Object.entries(baseData).forEach(([k, v]) => fd.append(k, v));
+    fd.append("imageFile", file);
+
+    body = fd;
+    headers = { Authorization: `Bearer ${token}` };
+  }
+
+  // ---- URL UPLOAD ----
+  else {
+    const url = document.getElementById("image").value.trim();
+    if (!url) return alert("Enter an image URL.");
+    baseData.image = url;
+
+    body = JSON.stringify(baseData);
+    headers = {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`
+    };
   }
 
   try {
@@ -190,20 +212,26 @@ document.getElementById("add-product-form").addEventListener("submit", async (e)
       body
     });
 
+    const data = await res.json();
+
     if (res.ok) {
-      alert("✅ Product added successfully!");
-      e.target.reset();
+      alert("✅ Product added!");
+      form.reset();
       loadProducts();
+
       document.querySelector('input[name="imageType"][value="url"]').checked = true;
       document.getElementById('image-url-row').style.display = '';
       document.getElementById('image-upload-row').style.display = 'none';
     } else {
-      const err = await res.json();
-      alert(`❌ Failed to add product: ${err.error || res.statusText}`);
+      alert("❌ " + (data.error || "Failed to add product"));
     }
+
   } catch (error) {
-    alert(`❌ Failed to add product: ${error.message}`);
+    alert("❌ " + error.message);
   }
 });
 
+/* -------------------------------------------------------
+   INIT
+------------------------------------------------------- */
 document.addEventListener("DOMContentLoaded", loadProducts);

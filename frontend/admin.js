@@ -4,10 +4,11 @@ document.addEventListener("DOMContentLoaded", () => {
   setupTabs();
   setupProductForm();
   loadDashboard();
-  loadStats();
 });
 
-
+/* ---------------------------
+     PRODUCT FORM SETUP
+--------------------------- */
 function setupProductForm() {
   const productForm = document.getElementById("product-form");
   if (productForm) {
@@ -15,6 +16,9 @@ function setupProductForm() {
   }
 }
 
+/* ---------------------------
+       LOAD DASHBOARD
+--------------------------- */
 async function loadDashboard() {
   const token = localStorage.getItem("token");
   const role = localStorage.getItem("role");
@@ -26,6 +30,7 @@ async function loadDashboard() {
   }
 
   try {
+    // Verify session
     const verify = await fetch(`${API_BASE_URL}/api/protected`, {
       headers: { Authorization: `Bearer ${token}` }
     });
@@ -35,18 +40,15 @@ async function loadDashboard() {
       logout();
       return;
     }
-    const statsRes = await fetch(`${API_BASE_URL}/api/stats`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    const statsData = await statsRes.json();
 
-    document.getElementById("user-count").textContent = statsData.users;
-    document.getElementById("admin-count").textContent = statsData.admins;
-    document.getElementById("regular-count").textContent = statsData.regularUsers;
+    // Load stats
+    await loadStats();
 
+    // Fetch users
     const usersRes = await fetch(`${API_BASE_URL}/api/users`, {
       headers: { Authorization: `Bearer ${token}` }
     });
+
     const users = await usersRes.json();
 
     renderRecentUsers(users);
@@ -58,9 +60,40 @@ async function loadDashboard() {
   }
 }
 
+/* ---------------------------
+        LOAD STATS
+--------------------------- */
+async function loadStats() {
+  const token = localStorage.getItem("token");
+
+  if (!token) return;
+
+  const response = await fetch(`${API_BASE_URL}/api/stats`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + token
+    }
+  });
+
+  const data = await response.json();
+
+  if (response.ok) {
+    document.getElementById("user-count").textContent = data.users;
+    document.getElementById("admin-count").textContent = data.admins;
+    document.getElementById("regular-count").textContent = data.regularUsers;
+  } else {
+    console.error("Failed to load stats:", data.error);
+  }
+}
+
+/* ---------------------------
+    RENDER RECENT USERS
+--------------------------- */
 function renderRecentUsers(users) {
   const recentTbody = document.querySelector("#recent-users tbody");
   recentTbody.innerHTML = "";
+
   users.slice(0, 5).forEach(u => {
     const tr = document.createElement("tr");
     tr.innerHTML = `
@@ -72,6 +105,9 @@ function renderRecentUsers(users) {
   });
 }
 
+/* ---------------------------
+    RENDER ALL USERS
+--------------------------- */
 function renderAllUsers(users) {
   const manageTbody = document.querySelector("#all-users tbody");
   manageTbody.innerHTML = "";
@@ -99,6 +135,9 @@ function renderAllUsers(users) {
   });
 }
 
+/* ---------------------------
+      UPDATE USER ROLE
+--------------------------- */
 async function updateUserRole(id, role) {
   const token = localStorage.getItem("token");
 
@@ -113,16 +152,19 @@ async function updateUserRole(id, role) {
     });
 
     if (res.ok) {
-      alert("✅ User role updated successfully!");
+      alert("User role updated!");
       loadDashboard();
     } else {
-      alert("❌ Failed to update user role.");
+      alert("Failed to update user role.");
     }
   } catch (error) {
-    alert("❌ Error updating user role: " + error.message);
+    alert("Error updating user role: " + error.message);
   }
 }
 
+/* ---------------------------
+      DELETE USER
+--------------------------- */
 async function deleteUser(id) {
   if (!confirm("Are you sure you want to delete this user?")) return;
 
@@ -135,92 +177,78 @@ async function deleteUser(id) {
     });
 
     if (res.ok) {
-      alert("🗑️ User deleted!");
+      alert("User deleted!");
       loadDashboard();
     } else {
-      alert("❌ Failed to delete user.");
+      alert("Failed to delete user.");
     }
   } catch (error) {
-    alert("❌ Error deleting user: " + error.message);
+    alert("Error deleting user: " + error.message);
   }
 }
 
+/* ---------------------------
+    ADD PRODUCT (NO MULTER)
+--------------------------- */
 async function handleAddProduct(event) {
   event.preventDefault();
 
   const token = localStorage.getItem("token");
-
   const form = event.target;
+
   const name = form.productName.value.trim();
   const imageUrl = form.productImageUrl.value.trim();
   const imageFile = form.productImageUpload.files[0];
   const quality = form.productQuality.value.trim();
   const description = form.productDescription.value.trim();
+  const gender = form.productGender.value;
+  const availability = form.productAvailability.value;
 
   if (!name || !quality) {
     alert("Please provide required fields: Name and Quality.");
     return;
   }
 
-  const formData = new FormData();
-  formData.append("name", name);
-  formData.append("quality", quality);
-  formData.append("description", description);
+  let finalImage = null;
 
-  if (imageFile) {
-    formData.append("imageFile", imageFile);
-  } else if (imageUrl) {
-    formData.append("imageUrl", imageUrl);
-  }
+  // Use file name OR URL
+  if (imageFile) finalImage = imageFile.name;
+  else if (imageUrl) finalImage = imageUrl;
+
+  const body = {
+    name,
+    description,
+    image: finalImage,
+    gender,
+    quality,
+    availability
+  };
 
   try {
     const res = await fetch(`${API_BASE_URL}/api/products`, {
       method: "POST",
       headers: {
+        "Content-Type": "application/json",
         Authorization: `Bearer ${token}`
       },
-      body: formData
+      body: JSON.stringify(body)
     });
 
     if (res.ok) {
-      alert("✅ Product added successfully!");
+      alert("Product added successfully!");
       form.reset();
     } else {
-      alert("❌ Failed to add product.");
+      alert("Failed to add product.");
     }
   } catch (error) {
-    alert("❌ Error connecting to server.");
+    alert("Error connecting to server.");
   }
 }
 
+/* ---------------------------
+          LOGOUT
+--------------------------- */
 function logout() {
   localStorage.clear();
   window.location.href = "login.html";
-}
-async function loadStats() {
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-        console.error("No token found");
-        return;
-    }
-
-const response = await fetch("https://authenticedgewebsite.onrender.com/api/stats", {
-    method: "GET",
-    headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer " + localStorage.getItem("token")
-    }
-});
-
-
-    const data = await response.json();
-
-    if (response.ok) {
-        document.getElementById("totalUsers").textContent = data.users;
-        document.getElementById("totalAdmins").textContent = data.admins;
-        document.getElementById("totalRegularUsers").textContent = data.regularUsers;
-    } else {
-        console.error("Failed to load stats:", data.error);
-    }
 }
