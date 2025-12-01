@@ -2,22 +2,10 @@ import { API_BASE_URL } from "./config.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   setupTabs();
-  setupLogout();
   setupProductForm();
-
   loadDashboard();
 });
 
-function setupLogout() {
-  const logoutBtn = document.getElementById("logout-btn");
-  document.querySelectorAll(".logout-link").forEach(btn => {
-  btn.addEventListener("click", logout);
-});
-
-  if (logoutBtn) {
-    logoutBtn.addEventListener("click", logout);
-  }
-}
 
 function setupProductForm() {
   const productForm = document.getElementById("product-form");

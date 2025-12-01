@@ -4,22 +4,30 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>User Dashboard | AuthenticEdge</title>
+
+  <!-- Styles -->
   <link rel="stylesheet" href="theme.css" />
   <link rel="stylesheet" href="user-dashboard.css" />
   <link rel="stylesheet" href="user-chat.css" />
 </head>
+
 <body class="dashboard-body">
 
+  <!-- SIDEBAR -->
   <nav class="sidebar" aria-label="User Sidebar Navigation">
     <h2 class="sidebar-logo">AuthenticEdge</h2>
-    <ul class="sidebar-menu">
-      <li><a href="index.html">Home</a></li>
-      <li><a href="shop.html">Shop</a></li>
-      <li><a href="#" id="logout-btn">Logout</a></li>
+
+    <ul class="sidebar-menu" role="menu">
+      <li role="menuitem"><a href="index.html">Home</a></li>
+      <li role="menuitem"><a href="coming-soon.html">Shop</a></li>
+      <li role="menuitem"><a href="#" id="logout-btn" class="logout-link">Logout</a></li>
     </ul>
   </nav>
 
+  <!-- MAIN -->
   <main class="dashboard-main" role="main" tabindex="0">
+
+    <!-- ACCOUNT SECTION -->
     <section class="dashboard-container" aria-labelledby="account-section-label">
       <h2 id="account-section-label">Your Account</h2>
 
@@ -28,17 +36,18 @@
       </div>
 
       <h3>Update Email</h3>
-      <input type="email" id="new-email" name="new-email" placeholder="New email" autocomplete="email" />
+      <input type="email" id="new-email" placeholder="New email" autocomplete="email" />
       <button id="update-email-btn">Update Email</button>
 
       <h3>Change Password</h3>
-      <input type="password" id="new-password" name="new-password" placeholder="New password" autocomplete="new-password" />
-      <button id="update-password-btn">Update Password</button>
+      <input type="password" id="new-password" placeholder="New password" autocomplete="new-password" />
+      <button id="update-password-btn">Change Password</button>
 
       <h3>Danger Zone</h3>
       <button class="delete-btn" id="delete-account-btn">Delete My Account</button>
     </section>
 
+    <!-- SUBSCRIPTION SECTION -->
     <section class="dashboard-container" aria-labelledby="subscription-section-label">
       <h2 id="subscription-section-label">Your Subscription</h2>
 
@@ -59,31 +68,35 @@
       <button id="request-sub-change-btn">Request Change</button>
     </section>
 
-<!-- Other content... -->
-
-<!-- Chat Widget - place near end of body -->
-<div class="chat-widget">
-  <div class="chat-toggle-btn">💬</div>
-  <div class="chat-window">
-    <div class="chat-header">Support</div>
-    <div class="chat-body"></div>
-    <div class="chat-input-bar">
-      <input type="text" placeholder="Type your message..." />
-      <label class="file-btn">📎<input type="file" hidden /></label>
-      <button>➤</button>
+    <!-- CHAT WIDGET -->
+    <div class="chat-widget">
+      <div class="chat-toggle-btn">💬</div>
+      <div class="chat-window">
+        <div class="chat-header">Support</div>
+        <div class="chat-body"></div>
+        <div class="chat-input-bar">
+          <input type="text" placeholder="Type your message..." />
+          <label class="file-btn">
+            📎 <input type="file" hidden />
+          </label>
+          <button>➤</button>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
-
-
 
   </main>
+
+  <!-- Scripts -->
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
   <script src="user-chat.js"></script>
-
   <script src="sub-dashboard.js"></script>
+
+  <!-- Your config + dashboard logic -->
   <script type="module" src="config.js"></script>
   <script type="module" src="user-dashboard.js"></script>
+
+  <!-- NEW: Logout JS (separate file) -->
+  <script src="logout.js"></script>
 
 </body>
 </html>

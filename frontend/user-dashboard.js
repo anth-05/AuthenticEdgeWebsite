@@ -1,141 +1,140 @@
 import { API_BASE_URL } from "./config.js";
 
-document.addEventListener("DOMContentLoaded", initDashboard);
+document.addEventListener("DOMContentLoaded", () => {
+  redirectIfNotLoggedIn();
+  loadUserInfo();
+  setupButtons();
+});
 
-const logoutBtn = document.getElementById("logout-btn");
-const updateEmailBtn = document.getElementById("update-email-btn");
-const updatePasswordBtn = document.getElementById("update-password-btn");
-const deleteAccountBtn = document.getElementById("delete-account-btn");
-
-logoutBtn.addEventListener("click", logout);
-updateEmailBtn.addEventListener("click", updateEmail);
-updatePasswordBtn.addEventListener("click", updatePassword);
-deleteAccountBtn.addEventListener("click", deleteAccount);
-
-async function initDashboard() {
+/* -----------------------------------------------------------
+   AUTH CHECK
+----------------------------------------------------------- */
+function redirectIfNotLoggedIn() {
   const token = localStorage.getItem("token");
   const role = localStorage.getItem("role");
 
-  if (!token) {
-    alert("You must be logged in.");
+  if (!token || role !== "user") {
     window.location.href = "login.html";
-    return;
+  }
+}
+
+/* -----------------------------------------------------------
+   API REQUEST WRAPPER
+----------------------------------------------------------- */
+async function apiRequest(path, method = "GET", body = null) {
+  const token = localStorage.getItem("token");
+
+  const options = {
+    method,
+    headers: {
+      "Authorization": `Bearer ${token}`,
+      "Content-Type": "application/json"
+    }
+  };
+
+  if (body) options.body = JSON.stringify(body);
+
+  const res = await fetch(API_BASE_URL + path, options);
+
+  let data = {};
+  try {
+    data = await res.json();
+  } catch (e) {}
+
+  if (!res.ok) {
+    throw new Error(data.error || "Request failed");
   }
 
-  // Redirect admins to admin dashboard
-  if (role === "admin") {
-    window.location.href = "admin-dashboard.html";
-    return;
-  }
+  return data;
+}
+
+/* -----------------------------------------------------------
+   LOAD USER INFORMATION
+----------------------------------------------------------- */
+async function loadUserInfo() {
+  const box = document.getElementById("user-info");
 
   try {
-    const res = await fetch(`${API_BASE_URL}/api/protected`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    if (!res.ok) {
-      alert("Session expired. Please log in again.");
-      localStorage.clear();
-      window.location.href = "login.html";
-      return;
-    }
+    const { user } = await apiRequest("/api/user");
 
-    const data = await res.json();
-    renderUserInfo(data.user);
-    // Optionally, load subscription info, chat messages, etc here or separate functions
-
+    box.innerHTML = `
+      <p><strong>Email:</strong> ${user.email}</p>
+      <p><strong>Role:</strong> ${user.role}</p>
+      <p><strong>Account Created:</strong> ${new Date(user.created_at).toLocaleString()}</p>
+    `;
   } catch (err) {
-    console.error("Error loading dashboard:", err);
-    alert("Failed to load user data. Please try again later.");
+    box.innerHTML = `<p class="error">Failed to load user info.</p>`;
+    console.error(err);
   }
 }
 
-function renderUserInfo(user) {
-  const infoBox = document.getElementById("user-info");
-  infoBox.innerHTML = `
-    <p><strong>Email:</strong> ${user.email}</p>
-    <p><strong>Role:</strong> ${user.role}</p>
-    <p><strong>Account Created:</strong> ${new Date(user.created_at).toLocaleString()}</p>
-  `;
+/* -----------------------------------------------------------
+   BUTTON SETUP
+----------------------------------------------------------- */
+function setupButtons() {
+  document.getElementById("update-email-btn")
+    .addEventListener("click", updateEmail);
+
+  document.getElementById("update-password-btn")
+    .addEventListener("click", updatePassword);
+
+  document.getElementById("delete-account-btn")
+    .addEventListener("click", deleteAccount);
 }
 
+/* -----------------------------------------------------------
+   UPDATE EMAIL
+----------------------------------------------------------- */
 async function updateEmail() {
   const newEmail = document.getElementById("new-email").value.trim();
-  if (!newEmail) {
-    alert("Enter a valid email.");
-    return;
+
+  if (!newEmail) return alert("Please enter a new email.");
+
+  try {
+    await apiRequest("/api/user/email", "PUT", { email: newEmail });
+
+    alert("Email updated successfully. Please log in again.");
+    localStorage.clear();
+    window.location.href = "login.html";
+  } catch (err) {
+    alert("Error updating email: " + err.message);
   }
-  await updateUserData("email", newEmail, "Email updated! Please log in again.");
 }
 
+/* -----------------------------------------------------------
+   UPDATE PASSWORD
+----------------------------------------------------------- */
 async function updatePassword() {
-  const newPassword = document.getElementById("new-password").value.trim();
-  if (!newPassword) {
-    alert("Enter a valid password.");
-    return;
-  }
-  await updateUserData("password", newPassword, "Password changed successfully.");
-}
+  const newPass = document.getElementById("new-password").value.trim();
 
-async function updateUserData(field, value, successMessage) {
-  const token = localStorage.getItem("token");
-  if (!token) {
-    alert("Session expired. Please log in again.");
-    window.location.href = "login.html";
-    return;
-  }
+  if (!newPass) return alert("Password cannot be empty.");
+
   try {
-    const res = await fetch(`${API_BASE_URL}/api/user/${field}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ [field]: value }),
-    });
-    if (res.ok) {
-      alert(successMessage);
-      if (field === "email") {
-        localStorage.clear();
-        window.location.href = "login.html";
-      }
-    } else {
-      alert(`Failed to update ${field}.`);
-    }
-  } catch (error) {
-    console.error(`Error updating ${field}:`, error);
-    alert(`Error updating ${field}. Please try again.`);
+    await apiRequest("/api/user/password", "PUT", { password: newPass });
+
+    alert("Password updated successfully. Please log in again.");
+    localStorage.clear();
+    window.location.href = "login.html";
+  } catch (err) {
+    alert("Error updating password: " + err.message);
   }
 }
 
+/* -----------------------------------------------------------
+   DELETE ACCOUNT
+----------------------------------------------------------- */
 async function deleteAccount() {
-  if (!confirm("Are you sure? This action cannot be undone.")) return;
-
-  const token = localStorage.getItem("token");
-  if (!token) {
-    alert("Session expired. Please log in again.");
-    window.location.href = "login.html";
+  if (!confirm("Are you sure you want to permanently delete your account?")) {
     return;
   }
 
   try {
-    const res = await fetch(`${API_BASE_URL}/api/user/delete`, {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    if (res.ok) {
-      alert("Your account has been deleted.");
-      localStorage.clear();
-      window.location.href = "index.html";
-    } else {
-      alert("Failed to delete account.");
-    }
-  } catch (error) {
-    console.error("Error deleting account:", error);
-    alert("Error deleting account. Please try again.");
-  }
-}
+    await apiRequest("/api/user", "DELETE");
 
-function logout() {
-  localStorage.clear();
-  window.location.href = "index.html";
+    alert("Account deleted.");
+    localStorage.clear();
+    window.location.href = "register.html";
+  } catch (err) {
+    alert("Failed to delete account: " + err.message);
+  }
 }
