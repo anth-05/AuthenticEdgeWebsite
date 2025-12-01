@@ -1,215 +1,309 @@
+/* -----------------------------------------
+   APPLE-STYLE ADMIN DASHBOARD — POLISHED
+----------------------------------------- */
 :root {
-  --accent: #ffb84d; /* Less intense orange */
-  --tab-bg: #fff;
-  --tab-inactive: #bbb;
-  --tab-active-bg: #fff5e6;
-  --tab-radius: 16px;
-  --tab-shadow: 0 1px 15px rgba(0,0,0,0.07);
+  --accent: #ffb84d;
+  --accent-soft: rgba(255,184,77,0.25);
+
+  /* Typography */
   --main-font: 'Roboto Flex', sans-serif;
   --title-font: 'Libre Baskerville', serif;
+
+  /* Colors */
   --text-color: #111;
-  --text-subtle: #555;
+  --text-subtle: #666;
+  --body-bg-color: #f5f5f7;
+
+  /* Cards / Surfaces */
+  --glass-bg: rgba(255,255,255,0.55);
+  --glass-border: 1px solid rgba(255,255,255,0.4);
+  --glass-blur: blur(18px);
+
   --card-bg: rgba(255,255,255,0.85);
-  --card-radius: 18px;
-  --card-shadow: 0 10px 30px rgba(0,0,0,0.12);
-  --body-bg-color: #fafafa;
+  --card-radius: 20px;
+  --card-shadow: 0 12px 38px rgba(0,0,0,0.09);
+
+  /* Sidebar */
+  --sidebar-width: 260px;
+
+  /* Animations */
+  --smooth: cubic-bezier(.19, .5, .27, 1);
 }
 
-/* Base and Layout */
-body, html {
-  margin: 0; padding: 0;
+/* BASE */
+html, body {
+  margin: 0;
+  padding: 0;
   font-family: var(--main-font);
   background: var(--body-bg-color);
-  color: var(--text-color);
   height: 100vh;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
+  overflow-x: hidden;
+  overflow-y: auto;
+  color: var(--text-color);
 }
 
+/* LAYOUT */
 .dashboard-body {
-  display: flex;
-  flex-direction: row;
-  flex: 1;
   height: 100vh;
+  display: flex;
   overflow: hidden;
 }
 
-/* Sidebar */
-.sidebar {
-  background: rgba(255, 255, 255, 0.6);
-  backdrop-filter: saturate(180%) blur(20px);
-  width: 280px;
-  height: 100vh;
+/* -----------------------------------------
+   SIDEBAR — ALWAYS-VISIBLE PREVIEW (MAC STYLE)
+----------------------------------------- */
+
+.sidebar-container {
   position: fixed;
-  top: 0; left: 0;
-  padding: 2rem 1.5rem;
-  box-shadow: 3px 0 15px rgba(0,0,0,0.12);
+  left: 0;
+  top: 0;
+  height: 100%;
   display: flex;
-  flex-direction: column;
-  z-index: 100;
-  border-radius: 0 20px 20px 0;
-  transition: width 0.3s ease;
-  color: var(--text-color);
+  z-index: 9998;
 }
 
-.sidebar-logo {
-  font-family: var(--title-font);
-  font-size: 1.75rem;
-  font-weight: 700;
-  margin-bottom: 2rem;
-  color: var(--accent);
-  text-align: center;
-  user-select: none;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  text-shadow: 0 0 6px var(--accent);
-}
-
-.sidebar-menu {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  flex-grow: 1;
+/* The visible preview bar */
+.sidebar-preview-edge {
+  width: 42px;
+  background: rgba(255,255,255,0.32);
+  backdrop-filter: blur(18px);
+  border-right: 1px solid rgba(255,255,255,0.45);
   display: flex;
-  flex-direction: column;
-  gap: 1.3rem;
-  overflow-y: auto;
-}
-
-.sidebar-menu li {
-  margin-bottom: 0;
-}
-
-.sidebar-menu a,
-.sidebar-menu button {
-  display: block;
-  color: var(--text-subtle);
-  padding: 0.75rem 1.5rem;
-  font-weight: 600;
-  border-radius: 12px;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  border: none;
-  background: none;
-  text-align: left;
-  font-size: 1rem;
-  outline-offset: 2px;
-  transition: background-color 0.3s ease, color 0.3s ease;
+
+  /* Mac-style subtle inner shadow */
+  box-shadow: inset -5px 0 12px rgba(0,0,0,0.12);
+
+  /* Keep it always visible */
+  z-index: 9999;
+}
+
+/* Vertical label text */
+.sidebar-preview-edge span {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 3px;
+  color: #444;
+  opacity: 0.85;
+}
+
+.sidebar {
+  width: var(--sidebar-width);
+  padding: 2rem 1.4rem;
+  background: var(--glass-bg);
+  backdrop-filter: saturate(180%) blur(25px);
+  border-right: var(--glass-border);
+  border-radius: 0 22px 22px 0;
+  height: 100%;
+
+  box-shadow: 4px 0 20px rgba(0,0,0,0.1);
+
+  /* Start hidden except peek */
+  transform: translateX(-220px);
+  opacity: 0.92;
+  transition: transform .35s var(--smooth), opacity .3s var(--smooth), box-shadow .3s ease;
   position: relative;
+  z-index: 9997;
 }
 
-.sidebar-menu a:hover,
-.sidebar-menu button:hover,
-.sidebar-menu a[aria-current="page"],
-.sidebar-menu button.active {
-  background-color: var(--accent);
-  color: white;
-  font-weight: 700;
-  box-shadow: 0 0 22px var(--accent);
+/* Expand when hovered */
+.sidebar:hover,
+.sidebar-preview-edge:hover + .sidebar {
+  transform: translateX(0);
+  opacity: 1;
+  box-shadow: 12px 0 28px rgba(0,0,0,0.18);
 }
 
-.sidebar-menu button.active::before {
-  content: "";
-  position: absolute;
-  left: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 6px;
-  height: 55%;
-  background-color: var(--accent);
-  border-radius: 3px;
-}
-
-/* Main content */
+/* MAIN CONTENT SHIFT */
 .dashboard-main {
-  margin-left: 280px;
-  padding: 3rem 3rem 4rem;
-  flex: 1;
+  margin-left: 60px;
+  width: calc(100% - 60px);
+  transition: margin-left .35s var(--smooth), width .35s var(--smooth);
+  position: relative;
+  z-index: 1;
+}
+
+.sidebar:hover ~ .dashboard-main,
+.sidebar-preview-edge:hover + .sidebar ~ .dashboard-main {
+  margin-left: var(--sidebar-width);
+  width: calc(100% - var(--sidebar-width));
+}
+
+/* -----------------------------------------
+  MOBILE
+----------------------------------------- */
+@media (max-width: 768px) {
+  .sidebar-container {
+    display: none !important;
+  }
+  .dashboard-main {
+    margin-left: 0 !important;
+    width: 100% !important;
+    padding-bottom: 5.5rem;
+  }
+  .dashboard-tabs {
+    display: flex !important;
+  }
+}
+
+
+/* -----------------------------------------
+   MAIN AREA
+----------------------------------------- */
+.dashboard-main {
+  margin-left: var(--sidebar-width);
+  padding: 2.8rem 3.2rem;
+  width: calc(100% - var(--sidebar-width));
   overflow-y: auto;
-  background: white;
-  min-height: 100vh;
+  height: 100vh;
   box-sizing: border-box;
-  border-radius: 24px 0 0 24px;
-  box-shadow: 0 8px 36px rgba(0, 0, 0, 0.1);
-  transition: margin-left 0.3s ease;
-  color: var(--text-color);
 }
 
-/* Bottom Mobile Tabs (hidden on desktop) */
-.dashboard-tabs {
-  display: none;
+/* -----------------------------------------
+   HEADER
+----------------------------------------- */
+.dashboard-header {
+  margin-bottom: 2.8rem;
 }
 
-@media (max-width: 600px) {
-  /* Hide sidebar on mobile */
+.dashboard-header h1 {
+  font-size: 2.2rem;
+  font-family: var(--title-font);
+  margin: 0;
+}
+
+#welcome-message {
+  margin-top: 0.4rem;
+  font-size: 1rem;
+  color: var(--text-subtle);
+}
+
+/* -----------------------------------------
+   STAT CARDS (APPLE STYLE)
+----------------------------------------- */
+.user-analytics-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 1.4rem;
+  margin-bottom: 3rem;
+}
+
+.stat-item {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  padding: 1.8rem 1.5rem;
+  border-radius: var(--card-radius);
+  box-shadow: var(--card-shadow);
+  border: var(--glass-border);
+  transition: transform .22s var(--smooth), box-shadow .22s var(--smooth);
+  cursor: default;
+}
+
+.stat-item:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+}
+
+.stat-item h3 {
+  font-size: 2rem;
+  margin: 0 0 0.4rem 0;
+  font-weight: 700;
+}
+
+.stat-item p {
+  font-size: 0.95rem;
+  margin: 0;
+  color: var(--text-subtle);
+}
+
+/* -----------------------------------------
+   TABLES — FLOATING CARD STYLE
+----------------------------------------- */
+.recent-users,
+.manage-users {
+  background: var(--card-bg);
+  padding: 2rem;
+  border-radius: var(--card-radius);
+  box-shadow: var(--card-shadow);
+  margin-bottom: 3rem;
+}
+
+.recent-users h2,
+.manage-users h2 {
+  margin-top: 0;
+  font-size: 1.6rem;
+  font-family: var(--title-font);
+}
+
+/* Table design */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1.2rem;
+}
+
+thead tr {
+  background: rgba(0,0,0,0.04);
+}
+
+th, td {
+  padding: 0.9rem 1rem;
+  font-size: 0.95rem;
+  text-align: left;
+}
+
+tbody tr {
+  border-bottom: 1px solid rgba(0,0,0,0.07);
+}
+
+tbody tr:hover {
+  background: rgba(0,0,0,0.03);
+}
+
+/* -----------------------------------------
+   MOBILE (same as your original but cleaner)
+----------------------------------------- */
+@media (max-width: 650px) {
   .sidebar {
     display: none;
   }
 
-  /* Reset main content margin for mobile */
   .dashboard-main {
     margin-left: 0;
-    padding: 1.5rem 1rem 4rem 1rem;
-    border-radius: 12px 12px 0 0;
+    padding: 1.6rem;
   }
+}
+/* Hide bottom bar by default */
+.dashboard-tabs {
+  display: none;
+}
 
-  /* Show mobile tabs */
+/* Show bottom navigation only on admin pages + mobile */
+@media (max-width: 768px) {
   .dashboard-tabs {
     display: flex;
     position: fixed;
     bottom: 0;
     left: 0;
-    width: 100vw;
-    background: var(--tab-bg);
-    box-shadow: var(--tab-shadow);
+    width: 100%;
+    background: #fff;
+    padding: 0.5rem 0;
     justify-content: space-around;
-    align-items: center;
-    padding: 0.2rem 0;
-    border-top-left-radius: var(--tab-radius);
-    border-top-right-radius: var(--tab-radius);
-    z-index: 100;
-    font-size: 1rem;
+    border-top: 1px solid rgba(0,0,0,0.1);
+    z-index: 9999;
+  }
+
+  .dashboard-main {
+    margin-left: 0 !important;
+    padding-bottom: 5.5rem; /* space for the bottom bar */
+  }
+
+  .sidebar {
+    display: none !important;
   }
 }
 
-/* Tabs style */
-.tab-link {
-  flex: 1;
-  text-align: center;
-  padding: 0.3rem 0 0.2rem 0;
-  color: var(--tab-inactive);
-  font-size: 1.1rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-decoration: none;
-  font-family: var(--main-font);
-  transition: color 0.24s, background 0.22s;
-  border-radius: 10px;
-  min-width: 65px;
-}
-
-.tab-link span {
-  font-size: 1.6rem;
-  line-height: 1.6rem;
-  margin-bottom: 2px;
-}
-
-.tab-link label {
-  font-size: 0.83rem;
-  margin-bottom: 0.13em;
-}
-
-.tab-link.active,
-.tab-link:active {
-  color: var(--accent);
-  background: var(--tab-active-bg);
-}
-
-.tab-link.active span {
-  color: var(--accent);
-}
-
-.tab-link:active {
-  filter: brightness(0.95);
-}

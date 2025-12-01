@@ -1,4 +1,12 @@
-/* Mobile menu toggle button */
+/* -----------------------------------------
+   REMOVE OLD MOBILE MENU (dashboard only)
+----------------------------------------- */
+.dashboard-body .menu-toggle,
+.dashboard-body .nav-menu {
+  display: none !important;
+}
+
+/* Keep toggle styles for other pages */
 .menu-toggle {
   display: none;
   font-size: 2.4rem;
@@ -15,19 +23,18 @@
   background-color: rgba(255 157 0 / 0.1);
 }
 
-/* Show toggle button on mobile */
 @media (max-width: 768px) {
   .menu-toggle {
     display: block;
   }
 }
 
-/* Base hidden state for mobile nav menu */
+/* Base dropdown menu (kept for NON-dashboard pages) */
 .nav-menu {
   display: none;
   flex-direction: column;
   position: absolute;
-  top: 60px; /* underneath the header */
+  top: 60px;
   right: 0;
   width: 90%;
   max-width: 320px;
@@ -43,7 +50,6 @@
   pointer-events: none;
 }
 
-/* Visible state */
 .nav-menu.active {
   display: flex;
   opacity: 1;
@@ -51,7 +57,6 @@
   pointer-events: auto;
 }
 
-/* Menu links */
 .nav-menu a {
   padding: 12px 24px;
   font-size: 1.1rem;
@@ -62,14 +67,94 @@
   transition: background-color 0.2s, color 0.2s;
 }
 
-.nav-menu a:hover, 
+.nav-menu a:hover,
 .nav-menu a:focus {
   background-color: var(--accent);
   color: #121214;
-  outline: none;
 }
 
-/* Add some spacing between last link and border */
 .nav-menu a:last-child {
   border-bottom: none;
+}
+
+/* -----------------------------------------
+   APPLE STYLE BOTTOM TABS FOR DASHBOARD
+----------------------------------------- */
+@media (max-width: 768px) {
+
+  /* Hide desktop sidebar */
+  .sidebar {
+    display: none !important;
+  }
+
+  /* Space so content doesn’t sit under tabs */
+  .dashboard-main {
+    margin-left: 0 !important;
+    padding-bottom: 80px;
+  }
+
+  /* Bottom tab bar */
+  .bottom-tabs {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 70px;
+
+    background: rgba(255,255,255,0.75);
+    backdrop-filter: blur(18px) saturate(180%);
+    border-top: 1px solid rgba(255,255,255,0.4);
+    box-shadow: 0 -8px 18px rgba(0,0,0,0.08);
+
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+
+    z-index: 9999;
+  }
+
+  .bottom-tabs a {
+    flex: 1;
+    text-align: center;
+    text-decoration: none;
+    color: var(--text-subtle);
+
+    font-size: 0.82rem;
+    padding-top: 6px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+
+    transition: color 0.25s var(--smooth);
+  }
+
+  .bottom-tabs a i {
+    font-size: 1.4rem;
+    opacity: 0.75;
+    transition: opacity 0.25s var(--smooth);
+  }
+
+  .bottom-tabs a.active {
+    color: var(--accent);
+  }
+
+  .bottom-tabs a.active i {
+    opacity: 1;
+  }
+}
+/* Bottom tabs are visible only on mobile */
+.bottom-tabs {
+  display: none;
+}
+
+/* Show ONLY on screens below 650px */
+@media (max-width: 650px) {
+  .bottom-tabs {
+    display: flex;
+  }
+}
+.bottom-tabs a.active {
+    color: var(--accent);
 }

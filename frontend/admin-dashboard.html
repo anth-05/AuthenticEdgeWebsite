@@ -4,34 +4,44 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
   <title>Admin Dashboard | AuthenticEdge</title>
+
+  <!-- Styles -->
   <link rel="stylesheet" href="theme.css" />
   <link rel="stylesheet" href="admin-dashboard.css" />
   <link rel="stylesheet" href="admin-product.css" />
+  <link rel="stylesheet" href="mobile-header.css" />
 </head>
+
 <body class="dashboard-body">
 
-  <nav class="sidebar" aria-label="Admin Sidebar Navigation">
-    <ul class="sidebar-menu" role="tablist" aria-orientation="vertical">
+<div class="sidebar-container">
+  <div class="sidebar-preview-edge">
+    <span>MENU</span>
+  </div>
+
+  <nav class="sidebar">
+    <ul class="sidebar-menu">
       <li><a href="admin-dashboard.html">Dashboard</a></li>
-      <li><a href="admin-products.html">Product Managment</a></li>
-      <li><a href="contact.html">Contact</a></li>
-      <li><a href="coming-soon.html">Products</a></li>
+      <li><a href="admin-products.html">Products</a></li>
       <li><a href="admin-messages.html">Messages</a></li>
       <li><a href="admin-subscriptions.html">Subscriptions</a></li>
+      <li><a href="contact.html">Contact</a></li>
       <li><a href="#" id="logout-btn">Logout</a></li>
     </ul>
   </nav>
+</div>
 
+
+  <!-- MAIN (Desktop) -->
   <main class="dashboard-main" role="main" tabindex="0">
 
-    <section id="dashboard-tab" class="tab-content active" role="tabpanel" aria-labelledby="tab-dashboard" tabindex="0">
+    <section id="dashboard-tab" class="tab-content active">
       <header class="dashboard-header">
         <h1>Admin Dashboard</h1>
-        <p id="welcome-message">Loading...</p>
       </header>
 
       <!-- User Analytics Summary -->
-      <section aria-label="User statistics summary" class="user-analytics-summary">
+      <section class="user-analytics-summary" aria-label="User statistics summary">
         <div class="stat-item">
           <h3 id="user-count">0</h3>
           <p>Total Users</p>
@@ -47,9 +57,9 @@
       </section>
 
       <!-- Recent Users Table -->
-      <section aria-label="Recent registered users" class="recent-users">
+      <section class="recent-users" aria-label="Recent registered users">
         <h2>Recent Users</h2>
-        <table id="recent-users" role="grid" aria-live="polite">
+        <table id="recent-users" role="grid">
           <thead>
             <tr>
               <th>Email</th>
@@ -57,16 +67,14 @@
               <th>Registered At</th>
             </tr>
           </thead>
-          <tbody>
-            <!-- Filled dynamically -->
-          </tbody>
+          <tbody></tbody>
         </table>
       </section>
 
-      <!-- Manage All Users Table -->
-      <section aria-label="User management" class="manage-users">
+      <!-- Manage All Users -->
+      <section class="manage-users" aria-label="User management">
         <h2>Manage Users</h2>
-        <table id="all-users" role="grid" aria-live="polite">
+        <table id="all-users" role="grid">
           <thead>
             <tr>
               <th>User ID</th>
@@ -75,57 +83,76 @@
               <th>Actions</th>
             </tr>
           </thead>
-          <tbody>
-            <!-- Filled dynamically -->
-          </tbody>
+          <tbody></tbody>
         </table>
       </section>
-      
     </section>
 
-    <section id="products-tab" class="tab-content" role="tabpanel" aria-labelledby="tab-products" tabindex="0" hidden>
+    <!-- PRODUCT TAB -->
+    <section id="products-tab" class="tab-content" hidden>
       <h2>Product Management</h2>
+
       <form class="product-form" id="product-form" novalidate>
         <label for="product-name">Product Name *</label>
-        <input type="text" id="product-name" name="productName" placeholder="Enter product name" required />
+        <input type="text" id="product-name" required />
 
         <label for="product-image-url">Image URL</label>
-        <input type="url" id="product-image-url" name="productImageUrl" placeholder="Enter an image URL" />
+        <input type="url" id="product-image-url" />
 
         <label for="product-image-upload">Or Upload Image</label>
-        <input type="file" id="product-image-upload" name="productImageUpload" accept="image/*" />
+        <input type="file" id="product-image-upload" accept="image/*" />
 
         <label for="product-quality">Quality *</label>
-        <input type="text" id="product-quality" name="productQuality" placeholder="Enter product quality" required />
+        <input type="text" id="product-quality" required />
 
         <label for="product-description">Description</label>
-        <textarea id="product-description" name="productDescription" rows="5" placeholder="Add an optional description"></textarea>
+        <textarea id="product-description" rows="5"></textarea>
 
-        <button type="submit" aria-label="Add product">Add Product</button>
+        <button type="submit">Add Product</button>
       </form>
     </section>
 
   </main>
 
-  <!-- Admin Dashboard Mobile Layout -->
-  <div class="dashboard-mobile">
-    <!-- Main Content Area: Shows one section at a time for each tab -->
-    <main class="dashboard-main" id="main-content">
-      <!-- Home, Product Management, Dashboard, or Logout content gets loaded here -->
-    </main>
+<div class="bottom-tabs">
+    <a href="admin-dashboard.html" class="active">
+        <i class="ri-home-5-line"></i>
+        Dashboard
+    </a>
 
-    <!-- Bottom Navigation Bar -->
-    <nav class="dashboard-tabs">
-      <a href="index.html" class="tab-link active"><span>🏠</span><label>Homepage</label></a>
-      <a href="admin-products.html" class="tab-link"><span>📦</span><label>Products</label></a>
-      <a href="admin-dashboard.html" class="tab-link"><span>📊</span><label>Dashboard</label></a>
-      <a href="login.html" class="tab-link"><span>🚪</span><label>Logout</label></a>
-    </nav>
-  </div>
+    <a href="admin-products.html">
+        <i class="ri-box-3-line"></i>
+        Products
+    </a>
 
+    <a href="admin-messages.html">
+        <i class="ri-message-3-line"></i>
+        Messages
+    </a>
+
+    <a href="admin-subscriptions.html">
+        <i class="ri-vip-crown-line"></i>
+        Subs
+    </a>
+
+    <a href="contact.html">
+        <i class="ri-contacts-book-line"></i>
+        Contact
+    </a>
+
+    <a href="#" id="logout-btn">
+        <i class="ri-logout-circle-line"></i>
+        Logout
+    </a>
+</div>
+
+
+  <!-- Scripts -->
   <script src="admin-dashboard.js" defer></script>
   <script src="header.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
   <script src="logout.js"></script>
+  <script src="tabs-active.js"></script>
 
 </body>
 </html>
