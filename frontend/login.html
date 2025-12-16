@@ -83,14 +83,25 @@
       feedback.textContent = "Unable to connect to the server. Please try again later.";
     }
   });
+if (res.ok) {
+  localStorage.setItem("token", data.token);
+  localStorage.setItem("role", data.role);
+
   const selectedPlan = localStorage.getItem("selectedPlan");
 
-    if (selectedPlan) {
-      localStorage.removeItem("selectedPlan");
-      window.location.href = "coming-soon.html";
-    } else {
-      window.location.href = "user-dashboard.html";
-    }
+  if (selectedPlan) {
+    localStorage.removeItem("selectedPlan");
+    window.location.href = "coming-soon.html";
+    return;
+  }
+
+  if (data.role === "admin") {
+    window.location.href = "admin-dashboard.html";
+  } else {
+    window.location.href = "user-dashboard.html";
+  }
+}
+
 
 </script>
 <script src="header.js"></script>
