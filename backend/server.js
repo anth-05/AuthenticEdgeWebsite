@@ -275,7 +275,7 @@ app.post("/api/subscription/request", authenticateToken, async (req, res) => {
   const { plan } = req.body;
   if (!plan) return res.status(400).json({ error: "Missing plan" });
 
-  // 🔴 USER CHOOSES "NONE" → FULL UNSUBSCRIBE
+  // 🔴 NONE = unsubscribe
   if (plan === "None") {
     await pool.query(
       `
@@ -294,22 +294,24 @@ app.post("/api/subscription/request", authenticateToken, async (req, res) => {
     return res.json({ success: true, status: "none" });
   }
 
-  // 🟡 NORMAL SUBSCRIPTION REQUEST
+  // 🟢 IMMEDIATE SUBSCRIPTION CHANGE
   await pool.query(
     `
-    INSERT INTO subscriptions (user_id, requested_plan, status)
-    VALUES ($1, $2, 'pending')
+    INSERT INTO subscriptions (user_id, current_plan, requested_plan, status)
+    VALUES ($1, $2, NULL, 'active')
     ON CONFLICT (user_id)
     DO UPDATE SET
-      requested_plan = $2,
-      status = 'pending',
+      current_plan = $2,
+      requested_plan = NULL,
+      status = 'active',
       updated_at = NOW()
     `,
     [req.user.id, plan]
   );
 
-  res.json({ success: true, status: "pending" });
+  res.json({ success: true, status: "active", plan });
 });
+
 
 
 // ADMIN: get all pending subscription requests
