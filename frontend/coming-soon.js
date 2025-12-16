@@ -42,7 +42,7 @@ document.addEventListener("DOMContentLoaded", () => {
           "Confirm Subscription",
           `Subscribe to the "${plan}" plan?`,
           async () => {
-            const createRes = await fetch(`${API_URL}/api/subscription/activate`, {
+            const createRes = await fetch(`${API_URL}/api/subscription/request`, {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
