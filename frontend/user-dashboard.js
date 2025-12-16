@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 /* -----------------------------------------------------------
-   LOAD SUBSCRIPTION INFO
+   LOAD USER SUBSCRIPTION
 ----------------------------------------------------------- */
 async function loadSubscription() {
   const token = localStorage.getItem("token");
@@ -18,41 +18,42 @@ async function loadSubscription() {
       }
     });
 
-    const data = await res.json();
+    if (!res.ok) throw new Error("Failed to load subscription");
+
+    const sub = await res.json();
 
     document.getElementById("current-plan").textContent =
-      data.current_plan || "None";
+      sub.current_plan || "None";
 
     document.getElementById("requested-plan").textContent =
-      data.requested_plan || "None";
+      sub.requested_plan || "None";
 
     document.getElementById("sub-status").textContent =
-      data.status || "none";
+      sub.status || "none";
 
   } catch (err) {
-    console.error("❌ Failed to load subscription:", err);
+    console.error("❌ Failed to load subscription", err);
   }
 }
 
 /* -----------------------------------------------------------
-   REQUEST CHANGE
+   REQUEST SUBSCRIPTION CHANGE
 ----------------------------------------------------------- */
 function setupRequestButton() {
   const btn = document.getElementById("request-sub-change-btn");
 
   btn.addEventListener("click", async () => {
     const token = localStorage.getItem("token");
-    const newPlan = document.getElementById("new-plan").value;
+    const newPlan = document.getElementById("request-sub-change-btn").value;
 
     try {
-      // 1️⃣ Get current subscription
+      // Get current subscription
       const res = await fetch(`${API_BASE_URL}/api/subscription`, {
         headers: { Authorization: "Bearer " + token }
       });
 
       const sub = await res.json();
 
-      // 2️⃣ Guard checks
       if (sub.status === "pending") {
         alert("You already have a pending request.");
         return;
@@ -63,30 +64,25 @@ function setupRequestButton() {
         return;
       }
 
-      // 3️⃣ Send request
-      const reqRes = await fetch(
-        `${API_BASE_URL}/api/subscription/request`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: "Bearer " + token,
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ plan: newPlan })
-        }
-      );
+      // Send request
+      const req = await fetch(`${API_BASE_URL}/api/subscription/request`, {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer " + token,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ plan: newPlan })
+      });
 
-      if (!reqRes.ok) {
-        throw new Error("Request failed");
-      }
+      if (!req.ok) throw new Error("Request failed");
 
-      alert("✅ Subscription change requested!");
+      alert("✅ Subscription change request sent!");
 
-      // 4️⃣ Refresh UI
+      // Refresh UI
       loadSubscription();
 
     } catch (err) {
-      console.error("❌ Subscription request failed:", err);
+      console.error("❌ Request failed", err);
       alert("Something went wrong.");
     }
   });
