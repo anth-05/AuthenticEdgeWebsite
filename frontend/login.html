@@ -83,6 +83,15 @@
       feedback.textContent = "Unable to connect to the server. Please try again later.";
     }
   });
+  const selectedPlan = localStorage.getItem("selectedPlan");
+
+    if (selectedPlan) {
+      localStorage.removeItem("selectedPlan");
+      window.location.href = "coming-soon.html";
+    } else {
+      window.location.href = "user-dashboard.html";
+    }
+
 </script>
 <script src="header.js"></script>
 

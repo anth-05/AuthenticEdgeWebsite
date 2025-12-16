@@ -1,0 +1,188 @@
+@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=Roboto+Flex:wght@300;400;700&display=swap');
+
+/* =====================================================
+   ADMIN BASE — UNIVERSAL ADMIN LAYOUT
+===================================================== */
+
+:root {
+  --accent: #ff9d00;
+  --bg-light: #fafafa;
+  --bg-dark: #23201d;
+  --text-color-light: #111;
+  --text-color-dark: #ececec;
+  --text-subtle: #555;
+  --card-radius: 18px;
+  --card-shadow: 0 10px 30px rgba(255, 157, 0, 0.25);
+  --main-font: 'Roboto Flex', sans-serif;
+  --title-font: 'Libre Baskerville', serif;
+}
+
+/* Global reset */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--main-font);
+  background: var(--bg-light);
+  color: var(--text-color-light);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* =====================================================
+   ADMIN LAYOUT
+===================================================== */
+
+.dashboard-body {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* =====================================================
+   SIDEBAR (UNIVERSAL)
+===================================================== */
+
+/* Sidebar - fixed on desktop, hidden on mobile */
+.sidebar {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: saturate(180%) blur(20px);
+  border-right: 1px solid rgba(0,0,0,0.07);
+  width: 200px;
+  padding: 2rem 1.5rem;
+  color: var(--text-color-light);
+  box-shadow: 3px 0 15px rgba(0,0,0,0.12);
+  display: flex;
+  flex-direction: column;
+  border-radius: 0 20px 20px 0;
+  transition: width 0.3s ease;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  z-index: 100;
+  overflow-y: auto;
+}
+
+
+.sidebar-menu {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  gap: 1.3rem;
+  padding: 0;
+  margin: 0;
+  overflow-y: auto;
+}
+
+/* Sidebar Menu Items */
+.sidebar-menu a {
+  padding: 0.65rem 0.9rem;
+  display: block;
+  font-size: 1rem;
+  color: var(--text-subtle);
+  border-radius: 12px;
+  transition: color 0.25s var(--smooth), transform 0.25s var(--smooth);
+}
+
+/* Clean subtle hover — NO background */
+.sidebar-menu a:hover {
+  background: none !important;
+  color: var(--accent);
+  transform: translateX(6px);
+}
+
+/* ACTIVE ITEM — Apple highlight pill */
+.sidebar-menu a.active {
+  background: var(--accent);
+  color: #fff !important;
+  font-weight: 600;
+  border-radius: 14px;
+  box-shadow: 0 6px 18px rgba(255,184,77,0.45);
+  transform: none !important;
+}
+
+
+/* =====================================================
+   MAIN CONTENT
+===================================================== */
+
+.dashboard-main {
+  margin-left: 220px;
+  flex: 1;
+  padding: 3rem;
+  background: linear-gradient(135deg, #fffdef, #f4f1e8 85%);
+  min-height: 100vh;
+}
+
+/* =====================================================
+   ADMIN CARDS
+===================================================== */
+
+.admin-card {
+  background: #fff;
+  border-radius: var(--card-radius);
+  padding: 2rem 2.5rem;
+  box-shadow: var(--card-shadow);
+  margin-bottom: 2rem;
+}
+
+/* =====================================================
+   TABLES
+===================================================== */
+
+.admin-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 14px;
+}
+
+.admin-table th {
+  background: var(--accent);
+  color: var(--bg-dark);
+  padding: 1rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.admin-table td {
+  background: #fff8e1;
+  padding: 1rem;
+  border-radius: 12px;
+}
+
+/* =====================================================
+   BUTTONS
+===================================================== */
+
+button.btn {
+  background: var(--accent);
+  color: var(--bg-dark);
+  padding: 0.8rem 2.2rem;
+  font-weight: 800;
+  border-radius: 30px;
+  border: none;
+  cursor: pointer;
+}
+
+/* =====================================================
+   RESPONSIVE
+===================================================== */
+
+@media (max-width: 900px) {
+  .dashboard-main {
+    margin-left: 0;
+    padding: 2rem 1rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .sidebar {
+    display: none;
+  }
+
+  .dashboard-main {
+    margin-left: 0;
+    padding: 1rem;
+  }
+}

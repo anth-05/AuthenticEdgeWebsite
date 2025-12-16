@@ -1,0 +1,150 @@
+/* =====================================================
+   ADMIN SUBSCRIPTIONS — PAGE ONLY
+===================================================== */
+
+.subscriptions-card {
+  background: #fff;
+  border-radius: var(--card-radius);
+  padding: 2rem 2.5rem;
+  box-shadow: var(--card-shadow);
+}
+
+.subscriptions-card h1 {
+  font-family: var(--title-font);
+  margin-top: 0;
+}
+
+.subtitle {
+  color: var(--text-subtle);
+  margin-bottom: 2rem;
+}
+
+/* Use base table styling */
+.sub-table {
+  width: 100%;
+}
+
+/* Status pills */
+.status {
+  padding: 0.35rem 0.9rem;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.status.pending {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.status.approved {
+  background: #d4edda;
+  color: #155724;
+}
+
+.status.rejected {
+  background: #f8d7da;
+  color: #721c24;
+}
+/* ======================================================
+   ADMIN SUB-PAGES — MOBILE ONLY
+====================================================== */
+@media (max-width: 768px) {
+
+  /* Sidebar is NEVER visible on sub pages */
+  .sidebar,
+  .sidebar-container {
+    display: none !important;
+  }
+
+  /* Main admin content fills screen */
+  .admin-content,
+  .dashboard-main {
+    margin-left: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 1.2rem 0.8rem 2.5rem !important;
+    border-radius: 0 !important;
+  }
+
+  /* Card containers go edge-to-edge */
+  .card,
+  .subscription-card,
+  .manage-products,
+  .add-product {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 0 1.2rem 0 !important;
+    padding: 1rem !important;
+    border-radius: 16px !important;
+  }
+
+  /* Tables scroll horizontally */
+  table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  th, td {
+    padding: 0.6rem 0.7rem !important;
+    font-size: 0.85rem;
+  }
+
+  /* Headings tighten up */
+  h1 {
+    font-size: 1.4rem;
+  }
+
+  h2, h3 {
+    font-size: 1.1rem;
+  }
+
+  p {
+    font-size: 0.95rem;
+  }
+
+  /* Buttons become finger-friendly */
+  button,
+  .btn {
+    width: 100%;
+    padding: 0.9rem 1rem;
+    font-size: 0.95rem;
+  }
+}
+/* ======================================================
+   MOBILE HORIZONTAL SCROLL — STATS
+====================================================== */
+@media (max-width: 768px) {
+
+  .stats-row {
+    display: flex;
+    gap: 1rem;
+    overflow-x: auto;
+    padding: 0.5rem 0.3rem 1rem;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Hide ugly scrollbar */
+  .stats-row::-webkit-scrollbar {
+    display: none;
+  }
+
+  .stat-card {
+    min-width: 75%;
+    flex: 0 0 auto;
+    scroll-snap-align: start;
+    border-radius: 16px;
+  }
+  .table-scroll {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .sub-table {
+    min-width: 900px; /* controls swipe distance */
+  }
+
+}

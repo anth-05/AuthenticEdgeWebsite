@@ -38,61 +38,47 @@ document.getElementById("modal-confirm").onclick = async () => {
   subscribe(currentPlan);
 };
 
-// ===== Subscription click handling =====
-const cards = document.querySelectorAll(".sub-card");
-cards.forEach(card => {
-  card.addEventListener("click", () => {
-    const token = localStorage.getItem("token");
-    currentPlan = card.querySelector("h3").innerText.trim();
+const API_URL = API_BASE_URL;
+const token = localStorage.getItem("token");
 
-    // Not logged in → show login modal
+document.querySelectorAll(".sub-card").forEach(card => {
+  card.addEventListener("click", async () => {
+    const plan = card.dataset.plan;
+
+    // 1️⃣ Not logged in → redirect
     if (!token) {
-      openModal(loginModal);
+      localStorage.setItem("selectedPlan", plan);
+      window.location.href = "login.html";
       return;
     }
 
-    // Logged in → show confirm modal
-    modalTitle.innerText = `Subscribe to ${currentPlan}?`;
-    modalText.innerText = `Do you want to subscribe to the “${currentPlan}” plan?`;
-    openModal(subModal);
-  });
-});
+    // 2️⃣ Logged in → check subscription
+    const res = await fetch(`${API_URL}/api/subscription`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
 
-// ===== Call backend =====
-async function subscribe(plan) {
-  const token = localStorage.getItem("token");
+    const sub = await res.json();
 
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/subscription/change`, {
+    // 3️⃣ Already has active subscription
+    if (sub.current_plan) {
+      alert(
+        "You already have an active subscription.\n\n" +
+        "To change your plan, go to User Settings."
+      );
+      return;
+    }
+
+    // 4️⃣ No subscription yet → create request
+    await fetch(`${API_URL}/api/subscription/request`, {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${token}`,
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
       },
       body: JSON.stringify({ plan })
     });
 
-    const data = await res.json();
-
-    if (!res.ok) {
-      alert(data.error || "Failed to subscribe.");
-      return;
-    }
-
-    alert(`Your subscription request for "${plan}" has been submitted.`);
-    window.location.href = "user-dashboard.html";
-
-  } catch (err) {
-    alert("Server connection error.");
-  }
-}
-await fetch(`${API_BASE_URL}/api/messages/send`, {
-  method: "POST",
-  headers: {
-    Authorization: `Bearer ${token}`,
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify({
-    message: `User requested subscription plan: ${plan}`
-  })
+    alert("Subscription request sent!");
+  });
 });
+

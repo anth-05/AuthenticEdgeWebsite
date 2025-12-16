@@ -198,6 +198,83 @@ Message: ${cleanMessage}
   }
 });
 
+// admin review sub request
+app.get("/api/admin/subscriptions", authenticateToken, verifyAdmin, async (req, res) => {
+  const { rows } = await pool.query(`
+    SELECT u.email, s.*
+    FROM subscriptions s
+    JOIN users u ON u.id = s.user_id
+    ORDER BY s.updated_at DESC
+  `);
+
+  res.json(rows);
+});
+
+
+// sub scription route (scaffold)
+app.get("/api/subscription", authenticateToken, async (req, res) => {
+  const { rows } = await pool.query(
+    "SELECT * FROM subscriptions WHERE user_id=$1",
+    [req.user.id]
+  );
+
+  if (rows.length === 0) {
+    return res.json({
+      current_plan: "Comfort",
+      requested_plan: null,
+      status: "none",
+    });
+  }
+
+  res.json(rows[0]);
+});
+
+// admin approve sub request
+app.post("/api/admin/subscriptions/:userId", authenticateToken, verifyAdmin, async (req, res) => {
+  const { action } = req.body;
+
+  if (action === "approve") {
+    await pool.query(`
+      UPDATE subscriptions
+      SET current_plan = requested_plan,
+          requested_plan = NULL,
+          status = 'active',
+          updated_at = NOW()
+      WHERE user_id = $1
+    `, [req.params.userId]);
+  }
+
+  if (action === "reject") {
+    await pool.query(`
+      UPDATE subscriptions
+      SET requested_plan = NULL,
+          status = 'active'
+      WHERE user_id = $1
+    `, [req.params.userId]);
+  }
+
+  res.json({ success: true });
+});
+
+
+// sub scription update route (scaffold)
+app.post("/api/subscription/request", authenticateToken, async (req, res) => {
+  const { plan } = req.body;
+  if (!plan) return res.status(400).json({ error: "Missing plan" });
+
+  await pool.query(
+    `
+    INSERT INTO subscriptions (user_id, requested_plan, status)
+    VALUES ($1, $2, 'pending')
+    ON CONFLICT (user_id)
+    DO UPDATE SET requested_plan=$2, status='pending', updated_at=NOW()
+    `,
+    [req.user.id, plan]
+  );
+
+  res.json({ success: true });
+});
+
 // ---------- Routes: Auth (unchanged) ----------
 app.post("/api/register", async (req, res) => {
   try {
@@ -504,7 +581,7 @@ app.get("/api/messages", authenticateToken, async (req, res) => {
 
     await pool.query(`CREATE TABLE IF NOT EXISTS subscriptions (
       id SERIAL PRIMARY KEY,
-      user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+      user_id INTEGER REFERENCES users(id) ON DELETE CASCADE UNIQUE,
       current_plan TEXT,
       requested_plan TEXT,
       status TEXT CHECK(status IN ('active','pending','none')) DEFAULT 'none',
