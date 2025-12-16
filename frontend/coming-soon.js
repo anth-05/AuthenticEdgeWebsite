@@ -39,27 +39,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         // ✅ status === "none" → allow new subscription
         openModal(
-          "Confirm Subscription",
-          `Subscribe to the "${plan}" plan?`,
-          async () => {
-            const createRes = await fetch(`${API_URL}/api/subscription/activate`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`
-              },
-              body: JSON.stringify({ plan })
-            });
-
-            if (!createRes.ok) {
-              alert("Something went wrong. Please try again.");
-              return;
-            }
-
-            alert("✅ Subscription request sent!");
-          }
+          "Choose your plan in account dashboard",
+          "You can now choose a plan in your account dashboard.",
+          () => window.location.href = "user-dashboard.html"
         );
-
       } catch (err) {
         console.error("❌ Subscription error:", err);
         alert("Something went wrong. Please try again.");
