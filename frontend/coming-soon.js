@@ -1,3 +1,5 @@
+import { API_BASE_URL } from "./config.js";
+
 document.addEventListener("DOMContentLoaded", () => {
   const API_URL = API_BASE_URL;
   const cards = document.querySelectorAll(".sub-card");
