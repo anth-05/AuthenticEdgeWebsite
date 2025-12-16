@@ -1,8 +1,9 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const logoutBtns = document.querySelectorAll("#logout-btn, .logout-link");
+  const logoutBtns = document.querySelectorAll("#logout-btn");
 
   function logout() {
-    localStorage.clear();
+    localStorage.removeItem("token"); // safer than clear()
+    localStorage.removeItem("role");
     window.location.href = "login.html";
   }
 
