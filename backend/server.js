@@ -199,71 +199,75 @@ Message: ${cleanMessage}
 });
 
 // admin review sub request
+// USER: get own subscription
 app.get("/api/subscription", authenticateToken, async (req, res) => {
-  const { rows } = await pool.query(
-    "SELECT * FROM subscriptions WHERE user_id=$1",
-    [req.user.id]
-  );
-
-  if (rows.length === 0) {
-    const insert = await pool.query(
-      `INSERT INTO subscriptions (user_id, current_plan, status)
-       VALUES ($1, 'Comfort', 'active')
-       RETURNING *`,
+  try {
+    const { rows } = await pool.query(
+      "SELECT * FROM subscriptions WHERE user_id=$1",
       [req.user.id]
     );
 
-    return res.json(insert.rows[0]);
+    if (rows.length === 0) {
+      return res.json({
+        current_plan: "Comfort",
+        requested_plan: null,
+        status: "none",
+      });
+    }
+
+    res.json(rows[0]);
+  } catch (err) {
+    respondServerError(res, err, "Failed to fetch subscription");
   }
-
-  res.json(rows[0]);
-});
-
-
-// sub scription route (scaffold)
-app.get("/api/subscription", authenticateToken, async (req, res) => {
-  const { rows } = await pool.query(
-    "SELECT * FROM subscriptions WHERE user_id=$1",
-    [req.user.id]
-  );
-
-  if (rows.length === 0) {
-    return res.json({
-      current_plan: "Comfort",
-      requested_plan: null,
-      status: "none",
-    });
-  }
-
-  res.json(rows[0]);
 });
 
 // admin approve sub request
-app.post("/api/admin/subscriptions/:userId", authenticateToken, verifyAdmin, async (req, res) => {
-  const { action } = req.body;
+// ADMIN: approve / reject subscription
+app.post(
+  "/api/admin/subscriptions/:userId",
+  authenticateToken,
+  verifyAdmin,
+  async (req, res) => {
+    const { action } = req.body;
 
-  if (action === "approve") {
-    await pool.query(`
-      UPDATE subscriptions
-      SET current_plan = requested_plan,
-          requested_plan = NULL,
-          status = 'active',
-          updated_at = NOW()
-      WHERE user_id = $1
-    `, [req.params.userId]);
+    if (!["approve", "reject"].includes(action)) {
+      return res.status(400).json({ error: "Invalid action" });
+    }
+
+    try {
+      if (action === "approve") {
+        await pool.query(
+          `
+          UPDATE subscriptions
+          SET current_plan = requested_plan,
+              requested_plan = NULL,
+              status = 'active',
+              updated_at = NOW()
+          WHERE user_id = $1
+        `,
+          [req.params.userId]
+        );
+      }
+
+      if (action === "reject") {
+        await pool.query(
+          `
+          UPDATE subscriptions
+          SET requested_plan = NULL,
+              status = 'active',
+              updated_at = NOW()
+          WHERE user_id = $1
+        `,
+          [req.params.userId]
+        );
+      }
+
+      res.json({ success: true });
+    } catch (err) {
+      respondServerError(res, err, "Failed to process subscription");
+    }
   }
-
-  if (action === "reject") {
-    await pool.query(`
-      UPDATE subscriptions
-      SET requested_plan = NULL,
-          status = 'active'
-      WHERE user_id = $1
-    `, [req.params.userId]);
-  }
-
-  res.json({ success: true });
-});
+);
 
 
 // sub scription update route (scaffold)
@@ -283,6 +287,32 @@ app.post("/api/subscription/request", authenticateToken, async (req, res) => {
 
   res.json({ success: true });
 });
+// ADMIN: get all pending subscription requests
+app.get(
+  "/api/admin/subscriptions",
+  authenticateToken,
+  verifyAdmin,
+  async (req, res) => {
+    try {
+      const { rows } = await pool.query(`
+        SELECT
+          s.user_id,
+          u.email,
+          s.current_plan,
+          s.requested_plan,
+          s.status
+        FROM subscriptions s
+        JOIN users u ON u.id = s.user_id
+        WHERE s.status = 'pending'
+        ORDER BY s.updated_at DESC
+      `);
+
+      res.json(rows);
+    } catch (err) {
+      respondServerError(res, err, "Failed to fetch admin subscriptions");
+    }
+  }
+);
 
 // ---------- Routes: Auth (unchanged) ----------
 app.post("/api/register", async (req, res) => {
