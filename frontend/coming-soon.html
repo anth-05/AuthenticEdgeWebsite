@@ -77,13 +77,6 @@
   </div>
 </footer>
 
-
-<script src="header.js"></script>
-<script src="config.js"></script>
-
-<script>
-
-</script>
 <!-- Chat Widget - place near end of body -->
 <div class="chat-widget">
   <div class="chat-toggle-btn">💬</div>
@@ -97,11 +90,29 @@
     </div>
   </div>
 </div>
+<!-- Custom Modal -->
+<div id="custom-modal" class="modal hidden">
+  <div class="modal-backdrop"></div>
+
+  <div class="modal-box">
+    <h3 id="modal-title"></h3>
+    <p id="modal-message"></p>
+
+    <div class="modal-actions">
+      <button id="modal-cancel" class="btn secondary">Cancel</button>
+      <button id="modal-confirm" class="btn primary">Confirm</button>
+    </div>
+  </div>
+</div>
 
 
+<script src="config.js"></script>
 <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 <script src="user-chat.js"></script>
 <script src="coming-soon.js" type="module"></script>
+<script src="header.js"></script>
+
+
 
 </body>
 </html>
