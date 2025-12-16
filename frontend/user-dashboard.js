@@ -77,7 +77,11 @@ function setupRequestButton() {
         body: JSON.stringify({ plan: newPlan })
       });
 
-      if (!req.ok) throw new Error("Request failed");
+      if (!req.ok) {
+  const err = await req.json();
+  throw new Error(err.error || "Request failed");
+}
+
 
       alert("✅ Subscription change request sent!");
       loadSubscription();

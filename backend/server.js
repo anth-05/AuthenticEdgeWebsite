@@ -199,15 +199,24 @@ Message: ${cleanMessage}
 });
 
 // admin review sub request
-app.get("/api/admin/subscriptions", authenticateToken, verifyAdmin, async (req, res) => {
-  const { rows } = await pool.query(`
-    SELECT u.email, s.*
-    FROM subscriptions s
-    JOIN users u ON u.id = s.user_id
-    ORDER BY s.updated_at DESC
-  `);
+app.get("/api/subscription", authenticateToken, async (req, res) => {
+  const { rows } = await pool.query(
+    "SELECT * FROM subscriptions WHERE user_id=$1",
+    [req.user.id]
+  );
 
-  res.json(rows);
+  if (rows.length === 0) {
+    const insert = await pool.query(
+      `INSERT INTO subscriptions (user_id, current_plan, status)
+       VALUES ($1, 'Comfort', 'active')
+       RETURNING *`,
+      [req.user.id]
+    );
+
+    return res.json(insert.rows[0]);
+  }
+
+  res.json(rows[0]);
 });
 
 
