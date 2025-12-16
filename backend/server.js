@@ -273,20 +273,31 @@ app.post(
 // sub scription update route (scaffold)
 app.post("/api/subscription/request", authenticateToken, async (req, res) => {
   const { plan } = req.body;
-  if (!plan) return res.status(400).json({ error: "Missing plan" });
 
-  await pool.query(
-    `
+  // If user chooses NONE → clear subscription
+  if (!plan) {
+    await pool.query(`
+      UPDATE subscriptions
+      SET current_plan = NULL,
+          requested_plan = NULL,
+          status = 'none',
+          updated_at = NOW()
+      WHERE user_id = $1
+    `, [req.user.id]);
+
+    return res.json({ success: true });
+  }
+
+  await pool.query(`
     INSERT INTO subscriptions (user_id, requested_plan, status)
     VALUES ($1, $2, 'pending')
     ON CONFLICT (user_id)
     DO UPDATE SET requested_plan=$2, status='pending', updated_at=NOW()
-    `,
-    [req.user.id, plan]
-  );
+  `, [req.user.id, plan]);
 
   res.json({ success: true });
 });
+
 // ADMIN: get all pending subscription requests
 app.get(
   "/api/admin/subscriptions",
