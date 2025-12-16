@@ -1,19 +1,11 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const logoutBtns = document.querySelectorAll("#logout-btn");
-
-  function logout() {
-    localStorage.removeItem("token"); // safer than clear()
-    localStorage.removeItem("role");
-    window.location.href = "login.html";
-  }
-
-  logoutBtns.forEach((btn) => {
-    btn.addEventListener("click", (e) => {
+  const logoutBtn = document.getElementById("logout-btn");
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", (e) => {
       e.preventDefault();
-      logout();
+      localStorage.clear();
+      window.location.href = "index.html";
     });
-  });
-});
+  }
   import { API_BASE_URL } from "./config.js";
 
     document.getElementById("registerBtn").addEventListener("click", register);
