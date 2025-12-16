@@ -1,4 +1,5 @@
 import { API_BASE_URL } from "./config.js";
+import { openModal } from "./modal.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   const API_URL = API_BASE_URL;
