@@ -272,39 +272,55 @@ app.post(
 
 // sub scription update route (scaffold)
 // POST /api/subscription/request
-router.post("/subscription/request", auth, async (req, res) => {
-  const userId = req.user.id;
-  const { plan } = req.body;
+// USER: request subscription change (NO auto-approval)
+app.post("/api/subscription/request", authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { plan } = req.body;
 
-  // NONE = unsubscribe
-  if (plan === "None") {
-    await db.query(
-      `
-      UPDATE subscriptions
-      SET
-        current_plan = NULL,
-        requested_plan = NULL,
-        status = 'none'
-      WHERE user_id = $1
-      `,
+    if (!plan) {
+      return res.status(400).json({ error: "Plan is required" });
+    }
+
+    // Fetch existing subscription
+    const { rows } = await pool.query(
+      "SELECT * FROM subscriptions WHERE user_id = $1",
       [userId]
     );
 
-    return res.json({ message: "Subscription removed" });
+    const sub = rows[0];
+
+    // Prevent duplicate pending requests
+    if (sub && sub.status === "pending") {
+      return res.status(400).json({ error: "You already have a pending request" });
+    }
+
+    // Create row if missing
+    if (!sub) {
+      await pool.query(
+        `
+        INSERT INTO subscriptions (user_id, requested_plan, status)
+        VALUES ($1, $2, 'pending')
+        `,
+        [userId, plan]
+      );
+    } else {
+      await pool.query(
+        `
+        UPDATE subscriptions
+        SET requested_plan = $1,
+            status = 'pending',
+            updated_at = NOW()
+        WHERE user_id = $2
+        `,
+        [plan, userId]
+      );
+    }
+
+    res.json({ message: "Subscription request sent for admin approval" });
+  } catch (err) {
+    respondServerError(res, err, "Failed to request subscription change");
   }
-
-  await db.query(
-    `
-    UPDATE subscriptions
-    SET
-      requested_plan = $1,
-      status = 'pending'
-    WHERE user_id = $2
-    `,
-    [plan, userId]
-  );
-
-  res.json({ message: "Subscription request created" });
 });
 
 
