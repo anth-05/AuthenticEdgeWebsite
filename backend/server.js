@@ -209,7 +209,7 @@ app.get("/api/subscription", authenticateToken, async (req, res) => {
 
     if (rows.length === 0) {
       return res.json({
-        current_plan: "Comfort",
+        current_plan: null,
         requested_plan: null,
         status: "none",
       });

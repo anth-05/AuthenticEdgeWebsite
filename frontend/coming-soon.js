@@ -29,16 +29,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const sub = await res.json();
 
-        // 🚫 Already subscribed OR pending
-        if (sub.status === "active" && sub.current_plan !== null || sub.status === "pending" && sub.current_plan !== null) {
-          openModal(
-            "Subscription Exists",
-            "You already have or requested a subscription.\nManage it in your dashboard?",
-            () => window.location.href = "user-dashboard.html"
-          );
-          return;
+        if (sub.status !== "none") {
+        openModal(
+          "Subscription Exists",
+          "You already have or requested a subscription.\nManage it in your dashboard?",
+          () => window.location.href = "user-dashboard.html"
+        );
+        return;
         }
-
         // ✅ status === "none" → allow new subscription
         openModal(
           "Confirm Subscription",
