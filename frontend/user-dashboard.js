@@ -173,55 +173,72 @@ async function loadSubscription() {
 /* -----------------------------------------------------------
    REQUEST SUBSCRIPTION CHANGE
 ----------------------------------------------------------- */
-btn.addEventListener("click", async () => {
-  const token = localStorage.getItem("token");
-  const newPlan = document.getElementById("new-plan").value;
+function setupRequestButton() {
+  const btn = document.getElementById("request-sub-change-btn");
 
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/subscription`, {
-      headers: { Authorization: "Bearer " + token }
-    });
-
-    const sub = await res.json();
-
-    // 🚫 Pending request exists
-    if (sub.status === "pending") {
-      alert("You already have a pending request.");
-      return;
-    }
-
-    // ✅ User selected NONE
-    if (!newPlan) {
-      alert("You are now on no subscription.");
-      return;
-    }
-
-    // 🚫 Same plan
-    if (sub.current_plan === newPlan) {
-      alert("You are already on this plan.");
-      return;
-    }
-
-    // ✅ Send request
-    const req = await fetch(`${API_BASE_URL}/api/subscription/request`, {
-      method: "POST",
-      headers: {
-        Authorization: "Bearer " + token,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ plan: newPlan })
-    });
-
-    if (!req.ok) {
-      const err = await req.json();
-      throw new Error(err.error || "Request failed");
-    }
-
-    alert("✅ Subscription request sent!");
-    loadSubscription();
-
-  } catch (err) {
-    console.error("❌ Request failed", err);
-    alert("Something went wrong.");
+  if (!btn) {
+    console.warn("⚠️ Request subscription button not found");
+    return;
   }
-});
+
+  btn.onclick = async () => {
+    console.log("🟢 Request button clicked");
+
+    const token = localStorage.getItem("token");
+    const newPlan = document.getElementById("new-plan")?.value;
+
+    if (!token) {
+      alert("You are not logged in.");
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/subscription`, {
+        headers: { Authorization: "Bearer " + token }
+      });
+
+      if (!res.ok) throw new Error("Failed to fetch subscription");
+
+      const sub = await res.json();
+
+      // 🚫 Pending request exists
+      if (sub.status === "pending") {
+        alert("You already have a pending request.");
+        return;
+      }
+
+      // ✅ NONE selected
+      if (!newPlan) {
+        alert("You are already on no subscription.");
+        return;
+      }
+
+      // 🚫 Same plan
+      if (sub.current_plan === newPlan) {
+        alert("You are already on this plan.");
+        return;
+      }
+
+      const req = await fetch(`${API_BASE_URL}/api/subscription/request`, {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer " + token,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ plan: newPlan })
+      });
+
+      if (!req.ok) {
+        const err = await req.json();
+        throw new Error(err.error || "Request failed");
+      }
+
+      alert("✅ Subscription request sent!");
+      loadSubscription();
+
+    } catch (err) {
+      console.error("❌ Subscription request error:", err);
+      alert("Subscription request failed.");
+    }
+  };
+}
