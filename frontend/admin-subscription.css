@@ -1,35 +1,81 @@
 /* =====================================================
-   ADMIN SUBSCRIPTIONS — PAGE ONLY
+   SUBSCRIPTIONS — MATCH PRODUCT LOOK & FEEL
 ===================================================== */
 
+/* Make subscriptions card identical to product cards */
 .subscriptions-card {
-  background: #fff;
+  background: white;
   border-radius: var(--card-radius);
   padding: 2rem 2.5rem;
+  margin-bottom: 2rem;
   box-shadow: var(--card-shadow);
+  color: var(--text-color-light);
 }
 
+/* Headings match product cards */
 .subscriptions-card h1 {
   font-family: var(--title-font);
-  margin-top: 0;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 0.5rem;
+  text-shadow: 0 0 12px rgba(255,157,0,0.35);
 }
 
-.subtitle {
-  color: var(--text-subtle);
-  margin-bottom: 2rem;
+.subscriptions-card .subtitle {
+  color: #666;
+  margin-bottom: 1.5rem;
 }
 
-/* Use base table styling */
+/* Make subscription table inherit product table styling */
 .sub-table {
   width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 14px;
+  background: #f6f1e8;
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(255,157,0,0.16);
+  display: block;
+  overflow-x: auto;
 }
 
-/* Status pills */
+/* Table headers */
+.sub-table th {
+  background: var(--accent);
+  color: var(--bg-dark);
+  font-weight: 900;
+  font-size: 0.85rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 1.1rem 1.3rem;
+  white-space: nowrap;
+}
+
+/* Table cells */
+.sub-table td {
+  background: #fff8e1;
+  padding: 1.1rem 1.3rem;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+/* Table rows */
+.sub-table tr {
+  border-radius: 13px;
+  transition: background 0.18s ease;
+}
+
+.sub-table tr:hover td {
+  background: #f5e1a4;
+}
+
+/* Status pills — polished */
 .status {
+  display: inline-block;
   padding: 0.35rem 0.9rem;
   border-radius: 999px;
-  font-weight: 700;
-  font-size: 0.85rem;
+  font-weight: 800;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
 }
 
 .status.pending {
@@ -46,73 +92,7 @@
   background: #f8d7da;
   color: #721c24;
 }
-/* ======================================================
-   ADMIN SUB-PAGES — MOBILE ONLY
-====================================================== */
-@media (max-width: 768px) {
 
-  /* Sidebar is NEVER visible on sub pages */
-  .sidebar,
-  .sidebar-container {
-    display: none !important;
-  }
-
-  /* Main admin content fills screen */
-  .admin-content,
-  .dashboard-main {
-    margin-left: 0 !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    padding: 1.2rem 0.8rem 2.5rem !important;
-    border-radius: 0 !important;
-  }
-
-  /* Card containers go edge-to-edge */
-  .card,
-  .subscription-card,
-  .manage-products,
-  .add-product {
-    width: 100% !important;
-    max-width: 100% !important;
-    margin: 0 0 1.2rem 0 !important;
-    padding: 1rem !important;
-    border-radius: 16px !important;
-  }
-
-  /* Tables scroll horizontally */
-  table {
-    display: block;
-    width: 100%;
-    overflow-x: auto;
-    white-space: nowrap;
-  }
-
-  th, td {
-    padding: 0.6rem 0.7rem !important;
-    font-size: 0.85rem;
-  }
-
-  /* Headings tighten up */
-  h1 {
-    font-size: 1.4rem;
-  }
-
-  h2, h3 {
-    font-size: 1.1rem;
-  }
-
-  p {
-    font-size: 0.95rem;
-  }
-
-  /* Buttons become finger-friendly */
-  button,
-  .btn {
-    width: 100%;
-    padding: 0.9rem 1rem;
-    font-size: 0.95rem;
-  }
-}
 /* ======================================================
    MOBILE HORIZONTAL SCROLL — STATS
 ====================================================== */
