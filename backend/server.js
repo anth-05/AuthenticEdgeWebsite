@@ -271,46 +271,42 @@ app.post(
 
 
 // sub scription update route (scaffold)
-app.post("/api/subscription/request", authenticateToken, async (req, res) => {
+// POST /api/subscription/request
+router.post("/subscription/request", auth, async (req, res) => {
+  const userId = req.user.id;
   const { plan } = req.body;
-  if (!plan) return res.status(400).json({ error: "Missing plan" });
 
-  // 🔴 NONE = unsubscribe
+  // NONE = unsubscribe
   if (plan === "None") {
-    await pool.query(
+    await db.query(
       `
-      INSERT INTO subscriptions (user_id, current_plan, requested_plan, status)
-      VALUES ($1, NULL, NULL, 'none')
-      ON CONFLICT (user_id)
-      DO UPDATE SET
+      UPDATE subscriptions
+      SET
         current_plan = NULL,
         requested_plan = NULL,
-        status = 'none',
-        updated_at = NOW()
+        status = 'none'
+      WHERE user_id = $1
       `,
-      [req.user.id]
+      [userId]
     );
 
-    return res.json({ success: true, status: "none" });
+    return res.json({ message: "Subscription removed" });
   }
 
-  // 🟢 IMMEDIATE SUBSCRIPTION CHANGE
-  await pool.query(
+  await db.query(
     `
-    INSERT INTO subscriptions (user_id, current_plan, requested_plan, status)
-    VALUES ($1, $2, NULL, 'active')
-    ON CONFLICT (user_id)
-    DO UPDATE SET
-      current_plan = $2,
-      requested_plan = NULL,
-      status = 'active',
-      updated_at = NOW()
+    UPDATE subscriptions
+    SET
+      requested_plan = $1,
+      status = 'pending'
+    WHERE user_id = $2
     `,
-    [req.user.id, plan]
+    [plan, userId]
   );
 
-  res.json({ success: true, status: "active", plan });
+  res.json({ message: "Subscription request created" });
 });
+
 
 
 
