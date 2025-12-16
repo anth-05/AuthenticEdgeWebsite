@@ -419,6 +419,34 @@ app.get("/api/stats", authenticateToken, verifyAdmin, async (req, res) => {
   }
 });
 
+// ADMIN: get all pending subscription requests
+app.get(
+  "/api/admin/subscriptions",
+  authenticateToken,
+  verifyAdmin,
+  async (req, res) => {
+    try {
+      const { rows } = await pool.query(`
+        SELECT
+          s.user_id,
+          u.email,
+          s.current_plan,
+          s.requested_plan,
+          s.status
+        FROM subscriptions s
+        JOIN users u ON u.id = s.user_id
+        WHERE s.status = 'pending'
+        ORDER BY s.updated_at DESC
+      `);
+
+      res.json(rows);
+    } catch (err) {
+      respondServerError(res, err, "Failed to fetch admin subscriptions");
+    }
+  }
+);
+
+
 // ---------- Products routes (supports file upload or url) ----------
 // GET
 app.get("/api/products", authenticateToken, verifyAdmin, async (req, res) => {
@@ -548,14 +576,6 @@ app.delete("/api/products/:id", authenticateToken, verifyAdmin, async (req, res)
 });
 
 // ---------- Subscriptions & Messages (scaffold) ----------
-app.get("/api/subscriptions", authenticateToken, async (req, res) => {
-  try {
-    const { rows } = await pool.query("SELECT * FROM subscriptions WHERE user_id=$1", [req.user.id]);
-    res.json(rows);
-  } catch (err) {
-    respondServerError(res, err, "Failed to fetch subscriptions");
-  }
-});
 
 app.get("/api/messages", authenticateToken, async (req, res) => {
   try {
