@@ -1,22 +1,25 @@
 export function openModal(title, message, onConfirm) {
-  const modal = document.getElementById("modal");
-
+  const modal = document.getElementById("custom-modal");
   if (!modal) {
-    alert(message);
-    return;
-  }
+  console.error("❌ Modal HTML missing on this page");
+  return;
+}
 
-  modal.querySelector(".modal-title").textContent = title;
-  modal.querySelector(".modal-message").textContent = message;
 
-  modal.classList.add("show");
+  document.getElementById("modal-title").textContent = title;
+  document.getElementById("modal-message").textContent = message;
 
-  modal.querySelector(".confirm").onclick = () => {
-    modal.classList.remove("show");
+  modal.classList.remove("hidden");
+
+  const confirmBtn = document.getElementById("modal-confirm");
+  const cancelBtn = document.getElementById("modal-cancel");
+
+  confirmBtn.onclick = () => {
+    modal.classList.add("hidden");
     onConfirm?.();
   };
 
-  modal.querySelector(".cancel").onclick = () => {
-    modal.classList.remove("show");
+  cancelBtn.onclick = () => {
+    modal.classList.add("hidden");
   };
 }
