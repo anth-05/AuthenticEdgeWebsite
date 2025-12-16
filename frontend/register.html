@@ -33,6 +33,7 @@
 </section>
 
 <script>
+    import { API_BASE_URL } from "./config.js";
 async function register() {
   const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value.trim();
@@ -48,7 +49,7 @@ async function register() {
   }
 
   try {
-    const res = await fetch("http://localhost:5000/api/register", {
+    const res = await fetch(`${API_BASE_URL}/api/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password, role: "user" })
