@@ -13,67 +13,100 @@ async function loadRequests() {
   }
 
   try {
-    const res = await fetch(`${API_BASE_URL}/api/admin/subscriptions/pending`, {
-      headers: { Authorization: "Bearer " + token }
+    // ✅ Correct backend route
+    const res = await fetch(`${API_BASE_URL}/api/admin/subscriptions`, {
+      headers: {
+        Authorization: "Bearer " + token
+      }
     });
 
     const data = await res.json();
+
+    // ✅ Show only pending requests
+    const pending = data.filter(r => r.status === "pending");
+
     const table = document.getElementById("sub-table-body");
     table.innerHTML = "";
 
-    if (data.length === 0) {
-      table.innerHTML = `<tr><td colspan="5" class="empty">No pending requests.</td></tr>`;
+    if (pending.length === 0) {
+      table.innerHTML = `
+        <tr>
+          <td colspan="5" class="empty">No pending requests.</td>
+        </tr>`;
       return;
     }
 
-    data.forEach(req => {
+    pending.forEach(req => {
       const row = document.createElement("tr");
+
       row.innerHTML = `
         <td>${req.email}</td>
         <td>${req.current_plan || "-"}</td>
         <td><strong>${req.requested_plan}</strong></td>
         <td>${req.status}</td>
         <td>
-          <button class="approve-btn" onclick="approve(${req.id})">Approve</button>
-          <button class="reject-btn" onclick="rejectReq(${req.id})">Reject</button>
+          <button class="approve-btn" data-user="${req.user_id}">Approve</button>
+          <button class="reject-btn" data-user="${req.user_id}">Reject</button>
         </td>
       `;
+
       table.appendChild(row);
     });
 
+    // ✅ Attach listeners AFTER render
+    document.querySelectorAll(".approve-btn").forEach(btn => {
+      btn.addEventListener("click", () =>
+        handleAction(btn.dataset.user, "approve")
+      );
+    });
+
+    document.querySelectorAll(".reject-btn").forEach(btn => {
+      btn.addEventListener("click", () =>
+        handleAction(btn.dataset.user, "reject")
+      );
+    });
+
   } catch (err) {
-    console.error("Error loading subscription requests:", err);
+    console.error("❌ Error loading subscription requests:", err);
+    alert("Failed to load subscription requests.");
   }
 }
 
-window.approve = async function (id) {
+/* -----------------------------------------------------------
+   APPROVE / REJECT HANDLER
+----------------------------------------------------------- */
+async function handleAction(userId, action) {
   const token = localStorage.getItem("token");
 
-  const res = await fetch(`${API_BASE_URL}/api/admin/subscriptions/${id}/approve`, {
-    method: "PUT",
-    headers: { Authorization: "Bearer " + token }
-  });
+  try {
+    const res = await fetch(
+      `${API_BASE_URL}/api/admin/subscriptions/${userId}`,
+      {
+        method: "POST", // ✅ backend expects POST
+        headers: {
+          "Authorization": "Bearer " + token,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ action }) // "approve" or "reject"
+      }
+    );
 
-  if (res.ok) {
-    alert("Approved!");
-    loadRequests();
+    if (!res.ok) {
+      throw new Error("Action failed");
+    }
+
+    alert(action === "approve" ? "Approved!" : "Rejected");
+    loadRequests(); // refresh table
+
+  } catch (err) {
+    console.error(`❌ Failed to ${action} request:`, err);
+    alert("Something went wrong.");
   }
-};
+}
 
-window.rejectReq = async function (id) {
-  const token = localStorage.getItem("token");
-
-  const res = await fetch(`${API_BASE_URL}/api/admin/subscriptions/${id}/reject`, {
-    method: "PUT",
-    headers: { Authorization: "Bearer " + token }
-  });
-
-  if (res.ok) {
-    alert("Rejected");
-    loadRequests();
-  }
-};
-
+/* -----------------------------------------------------------
+   LOGOUT
+----------------------------------------------------------- */
 function logout() {
   localStorage.clear();
   window.location.href = "login.html";

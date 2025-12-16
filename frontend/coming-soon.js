@@ -76,7 +76,7 @@ document.addEventListener("DOMContentLoaded", () => {
           openModal(
             "Active Subscription",
             "You already have a subscription.\nGo to Account Settings to change it?",
-            () => (window.location.href = "account.html")
+            () => (window.location.href = "user-dashboard.html")
             // Cancel = return
           );
           return;

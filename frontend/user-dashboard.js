@@ -138,3 +138,46 @@ async function deleteAccount() {
     alert("Failed to delete account: " + err.message);
   }
 }
+document.addEventListener("DOMContentLoaded", () => {
+  loadSubscription();
+  document
+    .getElementById("request-sub-change-btn")
+    .addEventListener("click", requestSubChange);
+});
+
+async function loadSubscription() {
+  try {
+    const data = await apiRequest("/api/subscription");
+
+    document.getElementById("current-plan").textContent =
+      data.current_plan || "None";
+
+    document.getElementById("requested-plan").textContent =
+      data.requested_plan || "None";
+
+    document.getElementById("sub-status").textContent =
+      data.status || "Inactive";
+
+  } catch (err) {
+    console.error("Failed to load subscription:", err);
+    document.getElementById("sub-status").textContent = "Error";
+  }
+}
+async function requestSubChange() {
+  const newPlan = document.getElementById("new-plan").value;
+
+  if (!confirm(`Request change to "${newPlan}" plan?`)) return;
+
+  try {
+    await apiRequest("/api/subscription/request", "POST", {
+      plan: newPlan
+    });
+
+    alert("✅ Subscription change request sent!");
+
+    // Reload subscription info
+    loadSubscription();
+  } catch (err) {
+    alert("Failed to request change: " + err.message);
+  }
+}
