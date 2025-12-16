@@ -24,7 +24,7 @@
 
   <input type="email" id="email" placeholder="Email" required />
   <input type="password" id="password" placeholder="Password" required />
-  <button onclick="register()">Create Account</button>
+  <button id="registerBtn">Create Account</button>
 
   <p class="create-account-text">
     Already have an account?
@@ -34,6 +34,8 @@
 
 <script>
     import { API_BASE_URL } from "./config.js";
+
+    document.getElementById("registerBtn").addEventListener("click", register);
 async function register() {
   const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value.trim();
