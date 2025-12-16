@@ -56,7 +56,7 @@ document.addEventListener("DOMContentLoaded", () => {
               return;
             }
 
-            alert("✅ Subscription request sent!");
+            alert("✅ Subscription changed!");
           }
         );
 
