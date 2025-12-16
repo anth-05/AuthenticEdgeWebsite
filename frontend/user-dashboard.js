@@ -157,13 +157,13 @@ async function loadSubscription() {
     const sub = await res.json();
 
     document.getElementById("current-plan").textContent =
-      sub.current_plan || "None";
+      sub.current_plan ?? "None";
 
     document.getElementById("requested-plan").textContent =
-      sub.requested_plan || "None";
+      sub.requested_plan ?? "None";
 
     document.getElementById("sub-status").textContent =
-      sub.status || "none";
+      sub.status ?? "none";
 
   } catch (err) {
     console.error("❌ Failed to load subscription", err);
@@ -208,9 +208,13 @@ function setupRequestButton() {
       }
 
       // ✅ NONE selected
-      if (!newPlan) {
-        alert("You are already on no subscription.");
-        return;
+      // User selects NONE
+      if (newPlan === "None") {
+        const confirmNone = confirm(
+          "This will remove your current subscription. Continue?"
+        );
+
+        if (!confirmNone) return;
       }
 
       // 🚫 Same plan
