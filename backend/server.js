@@ -588,14 +588,24 @@ app.get("/api/messages", authenticateToken, async (req, res) => {
       created_at TIMESTAMP DEFAULT NOW()
     )`);
 
-    await pool.query(`CREATE TABLE IF NOT EXISTS subscriptions (
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS subscriptions (
       id SERIAL PRIMARY KEY,
-      user_id INTEGER REFERENCES users(id) ON DELETE CASCADE UNIQUE,
+      user_id INTEGER UNIQUE
+        REFERENCES users(id)
+        ON DELETE CASCADE,
+
       current_plan TEXT,
       requested_plan TEXT,
-      status TEXT CHECK(status IN ('active','pending','none')) DEFAULT 'none',
+
+      status TEXT
+        CHECK (status IN ('active', 'pending', 'none'))
+        DEFAULT 'none',
+
       updated_at TIMESTAMP DEFAULT NOW()
-    )`);
+    );
+  `);
+
 
     await pool.query(`CREATE TABLE IF NOT EXISTS messages (
       id SERIAL PRIMARY KEY,
