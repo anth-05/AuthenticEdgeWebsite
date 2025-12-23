@@ -1,0 +1,172 @@
+/* ========== EDITORIAL ADMIN MESSAGES ========== */
+
+.no-padding { padding: 0 !important; }
+
+.messages-layout {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    height: 100vh;
+    background: #fff;
+}
+
+/* INBOX SIDEBAR */
+.inbox-sidebar {
+    border-right: 1px solid #eeeeee;
+    display: flex;
+    flex-direction: column;
+    background: #fcfcfc;
+}
+
+.inbox-header {
+    padding: 50px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #eeeeee;
+    min-height: 80px; /* Ensures alignment with the sidebar logo area */
+}
+
+
+.badge {
+    background: #000;
+    color: #fff;
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    font-weight: 800;
+    border-radius: 2px; /* Sharp corners for editorial look */
+}
+/* USER ITEMS */
+.users-list {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.user-item {
+    padding: 20px 30px;
+    border-bottom: 1px solid #f0f0f0;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.user-item:hover { background: #fff; }
+.user-item.active {
+    background: #fff;
+    border-left: 4px solid #000;
+}
+
+.user-item .user-email {
+    font-weight: 700;
+    font-size: 0.85rem;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.user-item .last-msg {
+    font-size: 0.75rem;
+    color: #999;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* CHAT PANEL */
+.chat-panel {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+.chat-header {
+    padding: 0 40px; /* Vertical padding handled by height */
+    height: 80px; /* Match the inbox header height */
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #eeeeee;
+}
+
+.chat-header .eyebrow {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: #999;
+    font-weight: 600;
+}
+
+.chat-body {
+    flex: 1;
+    padding: 40px;
+    overflow-y: auto;
+    background-color: #fff;
+    background-image: radial-gradient(#e0e0e0 1px, transparent 1px);
+    background-size: 30px 30px; /* Slightly larger grid for a cleaner look */
+    background-position: center;
+}
+
+/* MESSAGE STYLING (Editorial Style) */
+.message {
+    max-width: 70%;
+    padding: 15px 20px;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.message.admin {
+    align-self: flex-end;
+    background: #000;
+    color: #fff;
+    text-align: right;
+}
+
+.message.user {
+    align-self: flex-start;
+    background: #f4f4f4;
+    color: #000;
+}
+
+/* CHAT FOOTER */
+.chat-footer {
+    padding: 30px 40px;
+    border-top: 1px solid #eeeeee;
+}
+
+.input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    border-bottom: 1px solid #000;
+    padding-bottom: 10px;
+}
+
+.input-wrapper input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-family: inherit;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.icon-btn {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: #999;
+}
+
+.send-btn {
+    background: none;
+    border: none;
+    text-transform: uppercase;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    font-size: 0.75rem;
+    cursor: pointer;
+}
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+    .messages-layout { grid-template-columns: 1fr; }
+    .inbox-sidebar { display: none; } /* On mobile, you'd toggle this */
+}

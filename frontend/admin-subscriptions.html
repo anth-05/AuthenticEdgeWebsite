@@ -3,93 +3,66 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin | Subscription Requests</title>
-
-  <!-- UNIVERSAL BASE -->
+  <title>Subscriptions | Authentic Edge Admin</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="theme.css">
   <link rel="stylesheet" href="admin-base.css">
-
-  <!-- PAGE STYLES -->
   <link rel="stylesheet" href="admin-subscriptions.css">
-  <link rel="stylesheet" href="mobile-header.css">
 </head>
 
 <body class="dashboard-body">
 
-  <!-- SIDEBAR -->
   <aside class="sidebar">
-    <h2 class="sidebar-logo">AuthenticEdge</h2>
-
+    <div class="sidebar-top">
+      <h2 class="sidebar-logo">the authentic edge</h2>
+      <span class="admin-badge">Memberships</span>
+    </div>
     <ul class="sidebar-menu">
-      <li><a href="admin-dashboard.html" class="active">Dashboard</a></li>
-      <li><a href="admin-products.html">Products</a></li>
-      <li><a href="admin-messages.html">Messages</a></li>
-      <li><a href="admin-subscriptions.html">Subscriptions</a></li>
-      <li><a href="#" id="logout-btn">Logout</a></li>
+      <li><a href="admin-dashboard.html"><i class="ri-dashboard-line"></i> Dashboard</a></li>
+      <li><a href="admin-products.html"><i class="ri-box-3-line"></i> Products</a></li>
+      <li><a href="admin-messages.html"><i class="ri-message-3-line"></i> Messages</a></li>
+      <li><a href="admin-subscriptions.html" class="active"><i class="ri-vip-crown-line"></i> Subscriptions</a></li>
+      <li class="logout-item"><a href="#" id="logout-btn"><i class="ri-logout-circle-line"></i> Logout</a></li>
     </ul>
   </aside>
 
-
-  <!-- MAIN -->
   <main class="dashboard-main">
+    <header class="main-header">
+       <div class="header-left">
+         <h1>Subscription Requests</h1>
+         <p>Review and authorize membership tier changes.</p>
+       </div>
+    </header>
 
-<div class="admin-card subscriptions-card">
-
-  <h1>Subscription Requests</h1>
-  <p class="subtitle">Review all user subscription change requests.</p>
-
-  <!-- TABLE -->
-  <table class="admin-table sub-table">
-    <thead>
-      <tr>
-        <th>User</th>
-        <th>Current Plan</th>
-        <th>Requested Plan</th>
-        <th>Status</th>
-        <th>Action</th>
-      </tr>
-    </thead>
-
-    <tbody id="sub-table-body">
-      <!-- JS fills this -->
-    </tbody>
-  </table>
-
-</div>
-
-
+    <section class="admin-section">
+      <div class="table-container">
+        <table id="sub-table">
+          <thead>
+            <tr>
+              <th>User Identity</th>
+              <th>Current Tier</th>
+              <th>Requested Tier</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="sub-table-body">
+            </tbody>
+        </table>
+      </div>
+    </section>
   </main>
+
   <div class="bottom-tabs">
-    <a href="admin-dashboard.html" class="active">
-        <i class="ri-home-5-line"></i>
-        Dashboard
-    </a>
-
-    <a href="admin-products.html">
-        <i class="ri-box-3-line"></i>
-        Products
-    </a>
-
-    <a href="admin-messages.html">
-        <i class="ri-message-3-line"></i>
-        Messages
-    </a>
-
-    <a href="admin-subscriptions.html">
-        <i class="ri-vip-crown-line"></i>
-        Subs
-    </a>
-
-    <a href="#" id="logout-btn">
-        <i class="ri-logout-circle-line"></i>
-        Logout
-    </a>
-</div>
+    <a href="admin-dashboard.html"><i class="ri-home-5-line"></i></a>
+    <a href="admin-products.html"><i class="ri-box-3-line"></i></a>
+    <a href="admin-messages.html"><i class="ri-message-3-line"></i></a>
+    <a href="admin-subscriptions.html" class="active"><i class="ri-vip-crown-line"></i></a>
+  </div>
 
   <script src="config.js"></script>
   <script type="module" src="admin-subscriptions.js"></script>
   <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
   <script src="logout.js"></script>
-  <script src="tabs-active.js"></script>
-
 </body>
 </html>

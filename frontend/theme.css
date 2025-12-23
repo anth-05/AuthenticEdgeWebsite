@@ -1,124 +1,133 @@
-@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=Roboto+Flex:wght@300;400;700&display=swap');
-
-/* ========== CSS VARIABLES ========== */
+/* ========== THEME: MINIMALIST LUXE ========== */
 :root {
-  --accent: #ff9d00;
-  --card-bg: rgba(255, 255, 255, 0.1);
-  --header-bg: white;
-  --body-bg-color: #fafafa;
-  --body-bg-image: url('./images/homepage_background.jpg'); /* Include url() here */
-  --main-font: 'Roboto Flex', sans-serif;
-  --title-font: 'Libre Baskerville', serif;
-  --text-color: #111;
-  --subtle-text-color: #444;
-  --card-radius: 18px;
-  --card-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
+  --bg-color: #ffffff;
+  --text-main: #000000;
+  --text-muted: #666666;
+  --accent: #000000;
+  --glass-white: rgba(255, 255, 255, 0.4);
+  --glass-blur: blur(20px) saturate(160%);
 }
 
-/* Apply background image to body and html together */
+/* Ensure the page itself has no edge gaps */
 body, html {
-  width: 100%;
-  min-height: 100vh;
-  font-family: var(--main-font);
-  color: var(--text-color);
-
-  background-color: var(--body-bg-color);
-  background-image: var(--body-bg-image);
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: cover;
-
-  overflow-x: hidden !important;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  padding: 0; margin: 0;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    overflow-x: hidden; /* Prevents unwanted side-scrolling */
 }
 
-/* Ensure header has only the translucent background without image */
+/* If you have a global container, make sure it doesn't wrap the Hero */
+.container {
+    width: 100%;
+    max-width: 100%; /* Change this to 100% for full-bleed sections */
+    margin: 0;
+    padding: 0;
+}
+
+/* NAVIGATION: Editorial Style */
 header {
-  background: var(--header-bg);
-  background-image: none !important;
-  backdrop-filter: saturate(180%) blur(10px);
-  position: sticky;
-  top: 0;
-  z-index: 999;
+  padding: 1.1rem 5%;
   border-bottom: 1px solid rgba(0,0,0,0.05);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-  font-family: var(--title-font);
+}
+
+.header-container {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 2rem;
-  color: var(--text-color);
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
-/* Other styles unchanged */
 .logo {
-  font-size: 1.6rem;
-  font-weight: 700;
-  color: var(--text-color);
-  user-select: none;
+  font-family: 'Inter', sans-serif;
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: 1.2rem;
+  letter-spacing: 0.1em;
+}
+.logo a {
+  text-decoration: none;
+  color: var(--text-main);
 }
 
-/* nav styles... */
-nav a {
-  margin-left: 1rem;
-  color: var(--subtle-text-color);
-  font-weight: 500;
+.nav-menu a {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  padding: 0 1rem;
   text-decoration: none;
+}
+/* ========== EDITORIAL FOOTER ========== */
+.site-footer {
+  width: 100%;
+  background-color: #ffffff; /* Pure white background like the image */
+  padding: 40px 1% 20px 1%; /* Large top padding for a premium feel */
+  display: flex;
+  /* centerlize */
+  justify-content: center;
+  flex-direction: column; /* Stacked layout for modern branding */
+  align-items: center;
+  gap: 40px;
+  border-top: 1px solid #eeeeee; /* Very faint line */
+}
+
+.footer-left .brand {
+  font-size: 1.2rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.2em; /* Extra spacing for luxury look */
+  color: #000000;
+  margin: 0;
+}
+
+.footer-right {
+  display: flex;
+  gap: 30px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.footer-right a {
+  color: #000000;
+  text-decoration: none;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
   position: relative;
-  transition: color 0.25s ease;
+  transition: opacity 0.3s ease;
 }
-nav a:hover {
-  color: var(--accent);
-}
-nav a::after {
+
+/* Subtle underline effect on hover */
+.footer-right a::after {
   content: '';
   position: absolute;
-  left: 0;
-  bottom: -3px;
-  height: 2px;
   width: 0;
-  background: var(--accent);
+  height: 1px;
+  bottom: -4px;
+  left: 0;
+  background-color: #000;
   transition: width 0.3s ease;
 }
-nav a:hover::after {
+
+.footer-right a:hover::after {
   width: 100%;
 }
 
-/* Responsive nav toggle */
-.menu-toggle {
-  display: none;
-}
-@media (max-width: 768px) {
-  .menu-toggle {
-    display: block;
-    font-size: 1.6em;
-    cursor: pointer;
-    color: var(--text-color);
-    z-index: 1000;
-  }
-  .nav-menu {
-    display: none;
-    position: absolute;
-    top: 60px;
-    right: 0;
-    width: 100%;
-    background: rgba(255, 255, 255, 0.95);
-    flex-direction: column;
-    text-align: center;
-    padding: 1rem 0;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    border-radius: 0 0 var(--card-radius) var(--card-radius);
-  }
-  .nav-menu.active {
-    display: flex;
-  }
-  .nav-menu a {
-    margin: 1rem 0;
-    font-size: 1.1rem;
-    color: var(--text-color);
-  }
+.footer-right a:hover {
+  opacity: 0.7;
 }
 
-/* Card base etc. unchanged */
+/* Responsive: Stack vertically on mobile */
+@media (max-width: 768px) {
+  .site-footer {
+    padding: 60px 10%;
+    gap: 30px;
+  }
+  .footer-right {
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+}

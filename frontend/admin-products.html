@@ -3,151 +3,114 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Manage Products | AuthenticEdge Admin</title>
+  <title>Manage Products | Authentic Edge</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap">
   <link rel="stylesheet" href="theme.css" />
-
   <link rel="stylesheet" href="admin-base.css" />
   <link rel="stylesheet" href="admin-product.css" />
-  <link rel="stylesheet" href="mobile-header.css" />
 </head>
 
-  <aside class="sidebar">
-    <h2 class="sidebar-logo">AuthenticEdge</h2>
+<body class="dashboard-body">
 
+  <aside class="sidebar">
+    <div class="sidebar-top">
+      <h2 class="sidebar-logo">the authentic edge</h2>
+      <span class="admin-badge">Inventory</span>
+    </div>
     <ul class="sidebar-menu">
-      <li><a href="admin-dashboard.html" class="active">Dashboard</a></li>
-      <li><a href="admin-products.html">Products</a></li>
-      <li><a href="admin-messages.html">Messages</a></li>
-      <li><a href="admin-subscriptions.html">Subscriptions</a></li>
-      <li><a href="#" id="logout-btn">Logout</a></li>
+      <li><a href="admin-dashboard.html"><i class="ri-dashboard-line"></i> Dashboard</a></li>
+      <li><a href="admin-products.html" class="active"><i class="ri-box-3-line"></i> Products</a></li>
+      <li><a href="admin-messages.html"><i class="ri-message-3-line"></i> Messages</a></li>
+      <li><a href="admin-subscriptions.html"><i class="ri-vip-crown-line"></i> Subscriptions</a></li>
+      <li class="logout-item"><a href="#" id="logout-btn"><i class="ri-logout-circle-line"></i> Logout</a></li>
     </ul>
   </aside>
 
+  <main class="dashboard-main">
+    <header class="main-header">
+       <div class="header-left">
+         <h1>Product Management</h1>
+         <p>Manage your inventory and upcoming drops.</p>
+       </div>
+    </header>
 
-    <!-- ===== MAIN CONTENT ===== -->
-    <main class="dashboard-main" role="main" tabindex="0">
-      <header class="dashboard-header">
-        <h1>Product Management</h1>
-      </header>
+    <section class="admin-section">
+      <div class="section-header">
+        <span class="eyebrow">Inventory Control</span>
+        <h2>Add New Product</h2>
+      </div>
 
-      <!-- ===== ADD PRODUCT FORM ===== -->
-      <section class="add-product card full-width" aria-labelledby="add-product-title">
-  <h3 id="add-product-title">Add New Product</h3>
+      <form id="add-product-form" class="editorial-admin-form" enctype="multipart/form-data">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Product Name</label>
+            <input type="text" name="name" placeholder="e.g. Edge Runner 01" required />
+          </div>
+        </div>
 
-  <!-- MUST have enctype for image upload -->
-  <form id="add-product-form" novalidate enctype="multipart/form-data">
-    
-    <div class="form-row">
-      <input type="text" id="name" name="name" placeholder="Product Name" required aria-required="true" />
-    </div>
+        <div class="form-row type-selector">
+          <label class="radio-label">
+            <input type="radio" name="imageType" value="url" checked> <span>Use URL</span>
+          </label>
+          <label class="radio-label">
+            <input type="radio" name="imageType" value="upload"> <span>Upload File</span>
+          </label>
+        </div>
 
-    <div class="form-row">
-      <label>
-        <input type="radio" name="imageType" value="url" checked> Use Image URL
-      </label>
-      <label style="margin-left: 15px;">
-        <input type="radio" name="imageType" value="upload"> Upload Image
-      </label>
-    </div>
+        <div class="form-group" id="image-url-row">
+          <label>Image URL</label>
+          <input type="url" name="image" placeholder="https://..." />
+        </div>
 
-    <div class="form-row" id="image-url-row">
-      <input type="url" id="image" name="image" placeholder="Image URL" />
-    </div>
+        <div class="form-group" id="image-upload-row" style="display:none;">
+          <label>File Upload</label>
+          <input type="file" name="imageUpload" accept="image/*" />
+        </div>
 
-    <div class="form-row" id="image-upload-row" style="display:none;">
-      <input type="file" id="imageUpload" name="imageUpload" accept="image/*" />
-    </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Gender</label>
+            <input type="text" name="gender" placeholder="Unisex" />
+          </div>
+          <div class="form-group">
+            <label>Quality Tier</label>
+            <input type="text" name="quality" placeholder="Premium" />
+          </div>
+        </div>
 
-    <div class="form-row">
-      <input type="text" id="gender" name="gender" placeholder="Gender (e.g., Men, Women, Unisex)" />
-      <input type="text" id="quality" name="quality" placeholder="Quality (e.g., Premium, Better, Classic)" />
-    </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea name="description" placeholder="Technical specifications..." rows="3"></textarea>
+        </div>
 
-    <div class="form-row">
-      <input type="text" id="availability" name="availability" placeholder="Availability (e.g., In Stock, Out of Stock)" />
-    </div>
+        <button type="submit" class="btn-black">Publish Product</button>
+      </form>
+    </section>
 
-    <textarea id="description" name="description" placeholder="Product Description" rows="3"></textarea>
-
-    <button type="submit" class="btn" aria-label="Add Product">Add Product</button>
-
-  </form>
-</section>
-
-
-      <!-- ===== PRODUCT LIST ===== -->
-      <section class="manage-products card full-width" aria-labelledby="all-products-title">
-        <h3 id="all-products-title">All Products</h3>
-        <table class="user-table" id="product-table" role="table" aria-describedby="all-products-title">
+    <section class="admin-section">
+      <div class="section-header">
+        <h2>Active Inventory</h2>
+      </div>
+      <div class="table-container">
+        <table id="product-table">
           <thead>
             <tr>
-              <th scope="col">ID</th>
-              <th scope="col">Image</th>
-              <th scope="col">Name</th>
-              <th scope="col">Gender</th>
-              <th scope="col">Quality</th>
-              <th scope="col">Availability</th>
-              <th scope="col">Actions</th>
+              <th>Image</th>
+              <th>Name</th>
+              <th>Gender</th>
+              <th>Quality</th>
+              <th>Status</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            <tr><td colspan="7" role="row"><em>Loading products...</em></td></tr>
-          </tbody>
+            </tbody>
         </table>
-      </section>
-    </main>
-  </div>
-  <div id="edit-modal" class="modal" style="display:none;">
-  <div class="modal-content">
-    <h3>Edit Product</h3>
-    <form id="edit-product-form">
-      <input type="hidden" id="edit-product-id" />
-      <input type="text" id="edit-name" placeholder="Name" required />
-      <input type="text" id="edit-description" placeholder="Description" />
-      <input type="text" id="edit-image" placeholder="Image URL" />
-      <input type="text" id="edit-gender" placeholder="Gender" />
-      <input type="text" id="edit-quality" placeholder="Quality" />
-      <input type="text" id="edit-availability" placeholder="Availability" />
-      <button type="submit">Save Changes</button>
-      <button type="button" id="edit-cancel">Cancel</button>
-    </form>
-  </div>
-</div>
-<div class="bottom-tabs">
-    <a href="admin-dashboard.html">
-        <i class="ri-home-5-line"></i>
-        Dashboard
-    </a>
+      </div>
+    </section>
+  </main>
 
-    <a href="admin-products.html">
-        <i class="ri-box-3-line"></i>
-        Products
-    </a>
-
-    <a href="admin-messages.html">
-        <i class="ri-message-3-line"></i>
-        Messages
-    </a>
-
-    <a href="admin-subscriptions.html">
-        <i class="ri-vip-crown-line"></i>
-        Subs
-    </a>
-
-    <a href="#" id="logout-btn">
-        <i class="ri-logout-circle-line"></i>
-        Logout
-    </a>
-</div>
-
-
-
-
-  <!-- ===== SCRIPT ===== -->
-  <script type="module" src="config.js"></script>
   <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
   <script type="module" src="admin-product.js"></script>
-  <script type="module" src="tabs-active.js"></script>
-
 </body>
 </html>

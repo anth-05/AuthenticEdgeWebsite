@@ -1,160 +1,116 @@
-/* -----------------------------------------
-   REMOVE OLD MOBILE MENU (dashboard only)
------------------------------------------ */
-.dashboard-body .menu-toggle,
-.dashboard-body .nav-menu {
-  display: none !important;
-}
-
-/* Keep toggle styles for other pages */
-.menu-toggle {
-  display: none;
-  font-size: 2.4rem;
-  cursor: pointer;
-  user-select: none;
-  color: var(--accent);
-  transition: color 0.3s ease;
-  padding: 0.6rem 1rem;
-  border-radius: 8px;
-}
-
-.menu-toggle:hover {
-  color: #ffa733;
-  background-color: rgba(255 157 0 / 0.1);
-}
-
-@media (max-width: 768px) {
+/* ========== 1. PC NAVIGATION (FORCING VISIBILITY) ========== */
+@media (min-width: 769px) {
   .menu-toggle {
-    display: block;
-  }
-}
-
-/* Base dropdown menu (kept for NON-dashboard pages) */
-.nav-menu {
-  display: none;
-  flex-direction: column;
-  position: absolute;
-  top: 60px;
-  right: 0;
-  width: 90%;
-  max-width: 320px;
-  background: rgba(255 255 255 / 0.95);
-  backdrop-filter: blur(10px);
-  box-shadow: 0 8px 16px rgba(255 157 0 / 0.3);
-  border-radius: 12px;
-  padding: 1rem 0;
-  z-index: 10000;
-  transition: opacity 0.3s ease, transform 0.3s ease;
-  opacity: 0;
-  transform: translateY(-20px);
-  pointer-events: none;
-}
-
-.nav-menu.active {
-  display: flex;
-  opacity: 1;
-  transform: translateY(0);
-  pointer-events: auto;
-}
-
-.nav-menu a {
-  padding: 12px 24px;
-  font-size: 1.1rem;
-  color: #231f20;
-  font-weight: 600;
-  text-decoration: none;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.07);
-  transition: background-color 0.2s, color 0.2s;
-}
-
-.nav-menu a:hover,
-.nav-menu a:focus {
-  background-color: var(--accent);
-  color: #121214;
-}
-
-.nav-menu a:last-child {
-  border-bottom: none;
-}
-
-/* -----------------------------------------
-   APPLE STYLE BOTTOM TABS FOR DASHBOARD
------------------------------------------ */
-@media (max-width: 768px) {
-
-  /* Hide desktop sidebar */
-  .sidebar {
     display: none !important;
   }
 
-  /* Space so content doesn’t sit under tabs */
-  .dashboard-main {
-    margin-left: 0 !important;
-    padding-bottom: 80px;
+  .nav-menu {
+    display: flex !important; /* Force show on PC */
+    flex-direction: row !important;
+    position: static !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    transform: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    width: auto !important;
+    max-width: none !important;
+    padding: 0 !important;
+    gap: 1.5rem;
+    backdrop-filter: none !important;
   }
 
-  /* Bottom tab bar */
+  .nav-menu a {
+    padding: 0 !important;
+    border-bottom: none !important;
+    font-size: 0.9rem !important;
+    color: var(--text-color) !important;
+    font-weight: 500 !important;
+    transition: opacity 0.2s ease;
+  }
+
+  .nav-menu a:hover {
+    background: transparent !important;
+    opacity: 0.6;
+  }
+}
+
+/* ========== 2. MOBILE DROPDOWN (PREMIUM B&W) ========== */
+@media (max-width: 768px) {
+  .menu-toggle {
+    display: block;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--text-color);
+    padding: 0.5rem;
+  }
+
+  .nav-menu {
+    display: none;
+    flex-direction: column;
+    position: absolute;
+    top: 100%; /* Sits exactly under header */
+    right: 0;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+    padding: 1rem 0;
+    z-index: 10000;
+    transition: all 0.3s ease;
+  }
+
+  .nav-menu.active {
+    display: flex;
+  }
+
+  .nav-menu a {
+    padding: 15px 30px;
+    font-size: 1.1rem;
+    color: var(--text-color);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+  }
+
+  /* Remove orange hover, use light grey */
+  .nav-menu a:hover {
+    background-color: #f5f5f7;
+  }
+}
+
+/* ========== 3. APPLE STYLE DASHBOARD TABS (B&W) ========== */
+@media (max-width: 650px) {
   .bottom-tabs {
+    display: flex;
     position: fixed;
     bottom: 0;
     left: 0;
     width: 100%;
-    height: 70px;
-
-    background: rgba(255,255,255,0.75);
-    backdrop-filter: blur(18px) saturate(180%);
-    border-top: 1px solid rgba(255,255,255,0.4);
-    box-shadow: 0 -8px 18px rgba(0,0,0,0.08);
-
-    display: flex;
+    height: 65px;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(20px) saturate(180%);
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
     justify-content: space-around;
     align-items: center;
-
     z-index: 9999;
   }
 
   .bottom-tabs a {
-    flex: 1;
-    text-align: center;
-    text-decoration: none;
-    color: var(--text-subtle);
-
-    font-size: 0.82rem;
-    padding-top: 6px;
-
+    color: #86868b; /* Apple gray */
+    font-size: 0.75rem;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 4px;
-
-    transition: color 0.25s var(--smooth);
+    text-decoration: none;
   }
 
-  .bottom-tabs a i {
-    font-size: 1.4rem;
-    opacity: 0.75;
-    transition: opacity 0.25s var(--smooth);
-  }
-
+  /* Active state is pure black in monochrome theme */
   .bottom-tabs a.active {
-    color: var(--accent);
+    color: #000000;
   }
 
-  .bottom-tabs a.active i {
-    opacity: 1;
+  .dashboard-main {
+    padding-bottom: 80px; /* Space for tabs */
   }
-}
-/* Bottom tabs are visible only on mobile */
-.bottom-tabs {
-  display: none;
-}
-
-/* Show ONLY on screens below 650px */
-@media (max-width: 650px) {
-  .bottom-tabs {
-    display: flex;
-  }
-}
-.bottom-tabs a.active {
-    color: var(--accent);
 }

@@ -1,0 +1,120 @@
+/* ========== SUBSCRIPTIONS PAGE STYLING ========== */
+.subscriptions-page {
+    background-color: #fff;
+}
+
+.subscriptions-hero {
+    padding: 140px 5% 80px;
+    max-width: 1400px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.eyebrow {
+    display: block;
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #999;
+    margin-bottom: 1.2rem;
+}
+
+.section-header h2 {
+    font-size: 3rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: -0.02em;
+    margin-bottom: 1.5rem;
+}
+
+/* THE GRID */
+.sub-grid {
+    display: grid;
+    /* Changed to 4 columns for desktop */
+    grid-template-columns: repeat(4, 1fr); 
+    gap: 1.5rem;
+    margin-top: 60px;
+    width: 100%;
+}
+
+/* Tablet view: 2x2 Grid */
+@media (max-width: 1100px) {
+    .sub-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Mobile view: 1 Column */
+@media (max-width: 650px) {
+    .sub-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .subscriptions-hero {
+        padding-top: 100px;
+    }
+}
+
+.sub-card {
+    padding: 60px 40px;
+    border: 1px solid #eee;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s ease;
+}
+
+.sub-card:hover {
+    border-color: #000;
+}
+
+.plan-label {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    font-weight: 800;
+    margin-bottom: 20px;
+}
+
+.sub-card h3 {
+    font-size: 1.8rem;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+}
+
+.sub-card p {
+    color: #666;
+    line-height: 1.6;
+    margin-bottom: 40px;
+    font-size: 0.95rem;
+}
+
+.sub-card .price {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin-top: auto;
+}
+
+.sub-card .price span {
+    font-size: 0.9rem;
+    color: #999;
+    font-weight: 400;
+}
+
+.btn-select {
+    margin-top: 30px;
+    padding: 18px;
+    background: #000;
+    color: #fff;
+    border: none;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+}
+
+/* Featured Tier */
+.sub-card.highlight {
+    background-color: #dedede;
+    border-color: #a7a6a6;
+}

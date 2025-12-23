@@ -1,130 +1,94 @@
-/* =====================================================
-   SUBSCRIPTIONS — MATCH PRODUCT LOOK & FEEL
-===================================================== */
+/* ========== EDITORIAL ADMIN SUBSCRIPTIONS ========== */
 
-/* Make subscriptions card identical to product cards */
-.subscriptions-card {
-  background: white;
-  border-radius: var(--card-radius);
-  padding: 2rem 2.5rem;
-  margin-bottom: 2rem;
-  box-shadow: var(--card-shadow);
-  color: var(--text-color-light);
+/* TABLE REFINEMENT */
+#sub-table {
+    width: 100%;
+    border-collapse: collapse;
 }
 
-/* Headings match product cards */
-.subscriptions-card h1 {
-  font-family: var(--title-font);
-  font-weight: 700;
-  color: var(--accent);
-  margin-bottom: 0.5rem;
-  text-shadow: 0 0 12px rgba(255,157,0,0.35);
+#sub-table th {
+    background: #fafafa;
+    border-bottom: 1px solid #eee;
+    color: #000;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 20px;
+    text-align: left;
 }
 
-.subscriptions-card .subtitle {
-  color: #666;
-  margin-bottom: 1.5rem;
+#sub-table td {
+    padding: 20px;
+    border-bottom: 1px solid #eee;
+    font-size: 0.85rem;
+    background: #fff; /* Removed the yellow tint */
 }
 
-/* Make subscription table inherit product table styling */
-.sub-table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0 14px;
-  background: #f6f1e8;
-  border-radius: 20px;
-  box-shadow: 0 10px 40px rgba(255,157,0,0.16);
-  display: block;
-  overflow-x: auto;
+#sub-table tr:hover td {
+    background: #fcfcfc;
 }
 
-/* Table headers */
-.sub-table th {
-  background: var(--accent);
-  color: var(--bg-dark);
-  font-weight: 900;
-  font-size: 0.85rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  padding: 1.1rem 1.3rem;
-  white-space: nowrap;
-}
-
-/* Table cells */
-.sub-table td {
-  background: #fff8e1;
-  padding: 1.1rem 1.3rem;
-  font-size: 0.9rem;
-  white-space: nowrap;
-}
-
-/* Table rows */
-.sub-table tr {
-  border-radius: 13px;
-  transition: background 0.18s ease;
-}
-
-.sub-table tr:hover td {
-  background: #f5e1a4;
-}
-
-/* Status pills — polished */
+/* STATUS INDICATORS (Minimalist) */
 .status {
-  display: inline-block;
-  padding: 0.35rem 0.9rem;
-  border-radius: 999px;
-  font-weight: 800;
-  font-size: 0.75rem;
-  letter-spacing: 0.04em;
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 4px 10px;
+    border: 1px solid #ddd;
 }
 
 .status.pending {
-  background: #fff3cd;
-  color: #856404;
+    color: #856404;
+    border-color: #ffeeba;
+    background: #fffdf5;
 }
 
 .status.approved {
-  background: #d4edda;
-  color: #155724;
+    color: #155724;
+    border-color: #c3e6cb;
+    background: #f4fff6;
 }
 
 .status.rejected {
-  background: #f8d7da;
-  color: #721c24;
+    color: #721c24;
+    border-color: #f5c6cb;
+    background: #fff5f6;
 }
 
-/* ======================================================
-   MOBILE HORIZONTAL SCROLL — STATS
-====================================================== */
+/* ACTION BUTTONS */
+.approve-btn, .reject-btn {
+    background: #000;
+    color: #fff;
+    border: none;
+    padding: 8px 15px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    cursor: pointer;
+    margin-right: 5px;
+    transition: opacity 0.2s;
+}
+
+.reject-btn {
+    background: transparent;
+    border: 1px solid #d00000;
+    color: #d00000;
+}
+
+.approve-btn:hover, .reject-btn:hover {
+    opacity: 0.7;
+}
+
+/* RESPONSIVE SCROLL */
 @media (max-width: 768px) {
-
-  .stats-row {
-    display: flex;
-    gap: 1rem;
-    overflow-x: auto;
-    padding: 0.5rem 0.3rem 1rem;
-    scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  /* Hide ugly scrollbar */
-  .stats-row::-webkit-scrollbar {
-    display: none;
-  }
-
-  .stat-card {
-    min-width: 75%;
-    flex: 0 0 auto;
-    scroll-snap-align: start;
-    border-radius: 16px;
-  }
-  .table-scroll {
-    width: 100%;
-    overflow-x: auto;
-  }
-
-  .sub-table {
-    min-width: 900px; /* controls swipe distance */
-  }
-
+    .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    #sub-table {
+        min-width: 700px;
+    }
 }

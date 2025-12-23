@@ -1,188 +1,174 @@
-@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=Roboto+Flex:wght@300;400;700&display=swap');
-
-/* =====================================================
-   ADMIN BASE — UNIVERSAL ADMIN LAYOUT
-===================================================== */
-
+/* ========== EDITORIAL ADMIN BASE ========== */
 :root {
-  --accent: #ff9d00;
-  --bg-light: #fafafa;
-  --bg-dark: #23201d;
-  --text-color-light: #111;
-  --text-color-dark: #ececec;
-  --text-subtle: #555;
-  --card-radius: 18px;
-  --card-shadow: 0 10px 30px rgba(255, 157, 0, 0.25);
-  --main-font: 'Roboto Flex', sans-serif;
-  --title-font: 'Libre Baskerville', serif;
+    --bg-workspace: #ffffff;
+    --bg-sidebar: #f8f8f8;
+    --border-color: #eeeeee;
+    --accent-black: #000000;
+    --text-muted: #888888;
 }
 
-/* Global reset */
-*, *::before, *::after {
-  box-sizing: border-box;
+body {
+    background-color: var(--bg-workspace);
+    color: var(--accent-black);
+    font-family: 'Inter', sans-serif;
 }
 
-html, body {
-  margin: 0;
-  padding: 0;
-  font-family: var(--main-font);
-  background: var(--bg-light);
-  color: var(--text-color-light);
-  min-height: 100vh;
-  overflow-x: hidden;
-}
-
-/* =====================================================
-   ADMIN LAYOUT
-===================================================== */
-
-.dashboard-body {
-  display: flex;
-  min-height: 100vh;
-}
-
-/* =====================================================
-   SIDEBAR (UNIVERSAL)
-===================================================== */
-
-/* Sidebar - fixed on desktop, hidden on mobile */
+/* SIDEBAR */
 .sidebar {
-  background: rgba(255, 255, 255, 0.6);
-  backdrop-filter: saturate(180%) blur(20px);
-  border-right: 1px solid rgba(0,0,0,0.07);
-  width: 200px;
-  padding: 2rem 1.5rem;
-  color: var(--text-color-light);
-  box-shadow: 3px 0 15px rgba(0,0,0,0.12);
-  display: flex;
-  flex-direction: column;
-  border-radius: 0 20px 20px 0;
-  transition: width 0.3s ease;
-  position: fixed;
-  top: 0; left: 0; bottom: 0;
-  z-index: 100;
-  overflow-y: auto;
+    width: 260px;
+    background: var(--bg-sidebar);
+    border-right: 1px solid var(--border-color);
+    padding: 40px 20px;
+    position: fixed;
+    height: 100vh;
 }
 
+.sidebar-logo {
+    font-size: 0.9rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    margin-bottom: 5px;
+}
+
+.admin-badge {
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+}
 
 .sidebar-menu {
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-  gap: 1.3rem;
-  padding: 0;
-  margin: 0;
-  overflow-y: auto;
+    margin-top: 50px;
+    list-style: none;
+    padding: 0;
 }
 
-/* Sidebar Menu Items */
+.sidebar-menu li { margin-bottom: 10px; }
+
 .sidebar-menu a {
-  padding: 0.65rem 0.9rem;
-  display: block;
-  font-size: 1rem;
-  color: var(--text-subtle);
-  border-radius: 12px;
-  transition: color 0.25s var(--smooth), transform 0.25s var(--smooth);
+    text-decoration: none;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 15px;
+    transition: all 0.3s ease;
 }
 
-/* Clean subtle hover — NO background */
-.sidebar-menu a:hover {
-  background: none !important;
-  color: var(--accent);
-  transform: translateX(6px);
+.sidebar-menu a i { font-size: 1.1rem; }
+
+.sidebar-menu a:hover, .sidebar-menu a.active {
+    color: #000;
+    background: #fff;
+    border-radius: 4px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
 }
 
-/* ACTIVE ITEM — Apple highlight pill */
-.sidebar-menu a.active {
-  background: var(--accent);
-  color: #fff !important;
-  font-weight: 600;
-  border-radius: 14px;
-  box-shadow: 0 6px 18px rgba(255,184,77,0.45);
-  transform: none !important;
-}
-
-
-/* =====================================================
-   MAIN CONTENT
-===================================================== */
-
+/* MAIN CONTENT */
 .dashboard-main {
-  margin-left: 220px;
-  flex: 1;
-  padding: 3rem;
-  background: linear-gradient(135deg, #fffdef, #f4f1e8 85%);
-  min-height: 100vh;
+    margin-left: 260px;
+    padding: 60px 5%;
 }
 
-/* =====================================================
-   ADMIN CARDS
-===================================================== */
-
-.admin-card {
-  background: #fff;
-  border-radius: var(--card-radius);
-  padding: 2rem 2.5rem;
-  box-shadow: var(--card-shadow);
-  margin-bottom: 2rem;
+.main-header h1 {
+    font-size: 2rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: -0.02em;
 }
 
-/* =====================================================
-   TABLES
-===================================================== */
-
-.admin-table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0 14px;
+/* STAT CARDS */
+.stat-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+    margin: 40px 0;
 }
 
-.admin-table th {
-  background: var(--accent);
-  color: var(--bg-dark);
-  padding: 1rem;
-  font-weight: 900;
-  text-transform: uppercase;
+.stat-card {
+    border: 1px solid var(--border-color);
+    padding: 30px;
+    text-align: left;
 }
 
-.admin-table td {
-  background: #fff8e1;
-  padding: 1rem;
-  border-radius: 12px;
+.stat-label {
+    display: block;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    color: var(--text-muted);
+    margin-bottom: 10px;
 }
 
-/* =====================================================
-   BUTTONS
-===================================================== */
-
-button.btn {
-  background: var(--accent);
-  color: var(--bg-dark);
-  padding: 0.8rem 2.2rem;
-  font-weight: 800;
-  border-radius: 30px;
-  border: none;
-  cursor: pointer;
+.stat-card h3 {
+    font-size: 2.2rem;
+    font-weight: 800;
+    margin: 0;
 }
 
-/* =====================================================
-   RESPONSIVE
-===================================================== */
+/* TABLES */
+.table-container {
+    margin-top: 20px;
+    border: 1px solid var(--border-color);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th {
+    text-align: left;
+    padding: 15px 20px;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    border-bottom: 1px solid var(--border-color);
+    background: #fafafa;
+}
+
+td {
+    padding: 15px 20px;
+    font-size: 0.9rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+tr:hover td { background-color: #fcfcfc; }
+
+/* ACTIONS / BUTTONS */
+.action-btn {
+    background: #000;
+    color: #fff;
+    border: none;
+    padding: 8px 15px;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+/* MOBILE NAV */
+.bottom-tabs {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background: #fff;
+    border-top: 1px solid var(--border-color);
+    justify-content: space-around;
+    padding: 15px;
+    z-index: 1000;
+}
 
 @media (max-width: 900px) {
-  .dashboard-main {
-    margin-left: 0;
-    padding: 2rem 1rem;
-  }
-}
-
-@media (max-width: 600px) {
-  .sidebar {
-    display: none;
-  }
-
-  .dashboard-main {
-    margin-left: 0;
-    padding: 1rem;
-  }
+    .sidebar { display: none; }
+    .dashboard-main { margin-left: 0; padding-bottom: 100px; }
+    .bottom-tabs { display: flex; }
+    .stat-grid { grid-template-columns: 1fr; }
 }

@@ -3,50 +3,63 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin | Messages</title>
+  <title>Messages | Authentic Edge Admin</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap">
   <link rel="stylesheet" href="theme.css">
   <link rel="stylesheet" href="admin-base.css">
+  <link rel="stylesheet" href="admin-messages.css">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
 </head>
 
-<body>
+<body class="dashboard-body">
   
   <aside class="sidebar">
-    <h2 class="sidebar-logo">AuthenticEdge</h2>
+    <div class="sidebar-top">
+      <h2 class="sidebar-logo">the authentic edge</h2>
+      <span class="admin-badge">Concierge</span>
+    </div>
 
     <ul class="sidebar-menu">
-      <li><a href="admin-dashboard.html" class="active">Dashboard</a></li>
-      <li><a href="admin-products.html">Products</a></li>
-      <li><a href="admin-messages.html">Messages</a></li>
-      <li><a href="admin-subscriptions.html">Subscriptions</a></li>
-      <li><a href="#" id="logout-btn">Logout</a></li>
+      <li><a href="admin-dashboard.html"><i class="ri-dashboard-line"></i> Dashboard</a></li>
+      <li><a href="admin-products.html"><i class="ri-box-3-line"></i> Products</a></li>
+      <li><a href="admin-messages.html" class="active"><i class="ri-message-3-line"></i> Messages</a></li>
+      <li><a href="admin-subscriptions.html"><i class="ri-vip-crown-line"></i> Subscriptions</a></li>
+      <li class="logout-item"><a href="#" id="logout-btn"><i class="ri-logout-circle-line"></i> Logout</a></li>
     </ul>
   </aside>
 
-  <header>
-    <h1>Admin Dashboard — Messages</h1>
-    <div id="message-badge" class="badge hidden">0</div>
-  </header>
+  <main class="dashboard-main no-padding">
+    <div class="messages-layout">
+      
+      <section class="inbox-sidebar">
+        <div class="inbox-header">
+          <h3>Inbox</h3>
+          <div id="message-badge" class="badge">0</div>
+        </div>
+        <div class="users-list" id="usersList">
+          </div>
+      </section>
 
-  <div class="messages-container">
+      <section class="chat-panel">
+        <header class="chat-header" id="chatHeader">
+          <span class="eyebrow">Select a conversation to begin</span>
+        </header>
 
-    <!-- LEFT: LIST OF USERS -->
-    <aside class="users-list" id="usersList"></aside>
+        <div class="chat-body" id="chatBody">
+          </div>
 
-    <!-- RIGHT: CHAT PANEL -->
-    <main class="chat-panel">
-      <div id="chatHeader">Select a user</div>
+        <footer class="chat-footer">
+          <div class="input-wrapper">
+            <button id="attachBtn" class="icon-btn"><i class="ri-attachment-line"></i></button>
+            <input id="adminInput" type="text" placeholder="WRITE A RESPONSE...">
+            <input id="fileInput" type="file" hidden>
+            <button id="adminSend" class="send-btn">Send</button>
+          </div>
+        </footer>
+      </section>
 
-      <div id="chatBody"></div>
-
-      <div class="send-box">
-        <input id="adminInput" type="text" placeholder="Type message…">
-        <input id="fileInput" type="file" hidden>
-        <button id="attachBtn">📎</button>
-        <button id="adminSend">Send</button>
-      </div>
-    </main>
-
-  </div>
+    </div>
+  </main>
 
   <script src="/socket.io/socket.io.js"></script>
   <script type="module" src="admin-messages.js"></script>

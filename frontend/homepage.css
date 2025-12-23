@@ -1,159 +1,90 @@
-/* ===== HERO ===== */
+/* ========== HERO SECTION (NO BORDERS) ========== */
 .hero {
-  min-height: 85vh;
+  height: 90vh;
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 0 1rem;
-  color: var(--text-color, white);
+  align-items: center; 
+  justify-content: flex-start; 
   position: relative;
-  z-index: 1;
-  border-radius: var(--card-radius);
-  font-family: var(--title-font);
+  overflow: hidden;
+  padding: 0 10%; 
+  background: #000;
 }
 
-.hero::before {
-  content: "";
+/* THE IMAGE & GRADIENT OVERLAY */
+.hero-bg-overlay {
   position: absolute;
-  top: 50%; /* control vertical position */
-  left: 50%; /* control horizontal position */
-  transform: translate(-50%, -50%); /* center the backdrop */
-  width: 80%; /* control backdrop width */
-  height: 70%; /* control backdrop height */
-  z-index: 0;
-  border-radius: var(--card-radius);
-  pointer-events: none;
-  background: rgba(255, 255, 255, 0.25); /* translucent white */
-  backdrop-filter: blur(2px);
-  -webkit-backdrop-filter: blur(5px);
-  box-shadow: 0 4px 30px rgba(255, 255, 255, 0.1);
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  
+  /* Your Shoe Image */
+  background: url('images/Homepage-Image.jpg') no-repeat center;
+  background-size: cover;
+  filter: blur(5px) brightness(0.7);
+  
+  /* Gradient ensures text is readable without a box */
+  mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 50%, rgba(0,0,0,0.2) 100%);
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 50%, rgba(0,0,0,0.2) 100%);
 }
 
-
-.hero-text {
+/* THE TEXT CONTENT (Free-floating, No Box) */
+.hero-content {
   position: relative;
-  animation: heroPopIn 0.5s ease-in-out forwards;
-  color: #1d1d1f;
+  z-index: 2;
   max-width: 650px;
-  padding: 0 1rem;
-  user-select: none;
+  text-align: left; /* Left alignment matches modern editorial look */
 }
 
-.hero-text h2 {
-  font-size: 2.8rem;
-  font-weight: 700;
-  color: white;
-  margin-bottom: 2rem;
-  text-shadow: none;
-  letter-spacing: -0.02em;
+.hero-content h2 {
+  font-size: clamp(3rem, 7vw, 5rem); /* Bold, high-impact typography */
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.04em;
+  margin-bottom: 1.5rem;
   line-height: 1.1;
+  text-transform: uppercase;
 }
 
-.hero-buttons {
-  position: relative;
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-  margin-top: 1rem;
-  opacity: 0;
-  animation: heroPopIn 1s ease-out 0.5s forwards;
-}
-
-.hero-buttons .btn {
-  background: #ef890c;
-  color: white;
-  padding: 0.7rem 1.6rem;
-  border-radius: 22px;
-  font-weight: 600;
-  letter-spacing: 0.015em;
-  text-decoration: none;
-  transition: background-color 0.3s ease, transform 0.3s ease;
-  font-size: 1rem;
-  border: none;
-  cursor: pointer;
-  font-family: var(--main-font);
-  user-select: none;
-  box-shadow: 0 6px 12px rgba(206, 120, 7, 0.35);
-}
-
-.hero-buttons .btn:hover,
-.hero-buttons .btn:focus {
-  background-color: #8b4504;
-  outline: none;
-  transform: translateY(-3px);
-}
-
-@keyframes heroPopIn {
-  0% {
-    opacity: 0;
-    transform: scale(0.97) translateY(20px);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
-/* RESPONSIVE */
-@media (max-width: 768px) {
-  .hero-text h2 {
-    font-size: 2rem;
-  }
-  .hero-buttons {
-    flex-direction: column;
-    align-items: center;
-  }
-  .hero-buttons .btn {
-    width: 50%;
-    text-align: center;
-    font-size: 1.05rem;
-  }
-}
-/* Footer */
-.site-footer {
-  background-color: #111;
-  color: #eee;
-  padding: 15px 25px;
-  font-family: Arial, sans-serif;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.brand {
+.hero-content p {
   font-size: 1.1rem;
-  font-weight: 600;
-  margin: 0;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 2.5rem;
+  line-height: 1.6;
+  max-width: 500px;
 }
 
-.footer-right {
+/* EDITORIAL BUTTONS */
+.hero-buttons {
   display: flex;
-  gap: 20px;
-  align-items: center;
+  gap: 1.5rem;
 }
 
-.email {
-  color: #ccc;
+.btn {
+  padding: 16px 40px;
+  font-size: 0.85rem;
+  font-weight: 700;
   text-decoration: none;
-  transition: color 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+  border: none; /* Removed all borders */
 }
 
-.email:hover {
+.btn-primary {
+  background: #fff;
+  color: #000;
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.15); /* Subtle transparent look */
   color: #fff;
+  backdrop-filter: blur(10px);
 }
 
-.insta-btn {
-  background-color: #e1306c;
+.btn:hover {
+  transform: translateY(-5px);
+  background: #000;
   color: #fff;
-  padding: 6px 12px;
-  border-radius: 6px;
-  text-decoration: none;
-  font-size: 0.9rem;
-  transition: background 0.3s ease;
-}
-
-.insta-btn:hover {
-  background-color: #ff4c87;
 }

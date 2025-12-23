@@ -3,72 +3,59 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Authentic Edge | Home</title>
+  <title>Authentic Edge | Editorial Fashion & Streetwear</title>
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap">
+  
   <link rel="stylesheet" href="theme.css">
   <link rel="stylesheet" href="homepage.css">
-  <link rel="stylesheet" href="user-chat.css">
-  <!-- <link rel="stylesheet" href="mobile-header.css"> -->
+  <link rel="stylesheet" href="mobile-header.css">
 </head> 
 
 <body class="home-page"> 
-<header>
-  <h1 class="logo">Authentic Edge</h1>
-  <div class="menu-toggle">☰</div>
 
-  <nav class="nav-menu" id="header-buttons">
-    <!-- Dynamic buttons inserted by header.js -->
-  </nav>
-</header>
+  <header>
+    <div class="header-container">
+      <h1 class="logo"><a href="index.html">Authentic Edge</a></h1>
+      
+      <div class="menu-toggle" aria-label="Toggle navigation">☰</div>
 
+      <nav class="nav-menu" id="header-buttons">
+        </nav>
+    </div>
+  </header>
 
-
+  <main>
   <section class="hero">
-    <div class="hero-text">
-      <h2>Built to Stand Out!</h2>
+    <div class="hero-bg-overlay"></div>
+    
+    <div class="hero-content">
+      <h2>Built to<br>Stand Out!</h2>
+      <p>Experience premium comfort and modern design with our latest streetwear collection. Engineered for those who move differently.</p>
+      
       <div class="hero-buttons">
-        <a href="coming-soon.html" class="btn">New Arrivals</a>
-        <a href="coming-soon.html" class="btn">All Shoes</a>
+        <a href="coming-soon.html" class="btn btn-primary">New Arrivals</a>
+        <a href="coming-soon.html" class="btn btn-secondary">Explore All</a>
       </div>
     </div>
   </section>
-  
+  </main>
 
-
-<!-- Other content... -->
-
-<!-- Chat Widget - place near end of body -->
-<div class="chat-widget">
-  <div class="chat-toggle-btn">💬</div>
-  <div class="chat-window">
-    <div class="chat-header">Support</div>
-    <div class="chat-body"></div>
-    <div class="chat-input-bar">
-      <input type="text" placeholder="Type your message..." />
-      <label class="file-btn">📎<input type="file" hidden /></label>
-      <button>➤</button>
+  <footer class="site-footer">
+    <div class="footer-left">
+      <p class="brand">the authentic edge</p>
     </div>
-  </div>
-</div>
 
-  <!-- Footer -->
-<footer class="site-footer">
-  <div class="footer-left">
-    <p class="brand">The Authentic Edge</p>
-  </div>
+    <div class="footer-right">
+      <a href="mailto:authenticedge@gmail.com" class="email">authenticedge@gmail.com</a>
+      <a href="https://instagram.com/theauthenticedge_/" target="_blank" class="insta-btn">Instagram</a>
+    </div>
+  </footer>
 
-  <div class="footer-right">
-    <a href="mailto:authenticedge@gmail.com" class="email">authenticedge@gmail.com</a>
-    <a href="https://instagram.com/YOURUSERNAME" target="_blank" class="insta-btn">
-      Instagram
-    </a>
-  </div>
-</footer>
-
-<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-<script src="user-chat.js"></script>
-<script src="script.js"></script>
-<script src="header.js"></script>
-
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <script src="header.js"></script>
+  <script src="user-chat.js"></script>
+  <script src="script.js"></script>
 
 </body>
 </html>

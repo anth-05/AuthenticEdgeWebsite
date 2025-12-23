@@ -3,160 +3,44 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Product Details - Authentic Edge</title>
-  <link rel="stylesheet" href="style.css">
+  <title>Authentic Edge | The Collection</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="theme.css">
+  <link rel="stylesheet" href="product.css">
   <link rel="stylesheet" href="mobile-header.css">
-</head>
-<body>
+<body class="products-page">
 
 <header>
-  <h1 class="logo">Authentic Edge</h1>
-  <div class="menu-toggle">☰</div>
-
-  <nav class="nav-menu" id="header-buttons">
-    <!-- Dynamic buttons inserted by header.js -->
-  </nav>
+  <div class="header-container">
+    <h1 class="logo"><a href="index.html">Authentic Edge</a></h1>
+    <nav class="nav-menu" id="header-buttons"></nav>
+  </div>
 </header>
 
-
-<section class="product-details">
-  <div class="product-container">
-    <div class="image-box">
-      <img id="product-image" src="" alt="Product Image">
-    </div>
-    <div class="details-box">
-      <h2 id="product-name">Loading...</h2>
-      <p><strong>Availability:</strong> <span id="product-availability">Loading...</span></p>
-      <p><strong>Gender:</strong> <span id="product-gender">Loading...</span></p>
-
-      <label for="product-quality"><strong>Quality:</strong></label>
-      <select id="product-quality"></select>
-
-      <p id="product-description" style="margin-top: 1em;">Loading product description...</p>
-
-      <div class="contact-btn-container">
-        <a href="contact.html" class="btn">Contact Us to Order</a>
+<main>
+  <section class="hero full-bleed-hero">
+    <div class="hero-bg-overlay product-visual"></div>
+    <div class="hero-content">
+      <span class="eyebrow" style="color: rgba(255,255,255,0.6);">Available Winter 2025</span>
+      <h2 style="color: white;">Inventory<br>Arriving Soon</h2>
+      <p>Standalone apparel and limited footwear drops are in production. Join the waitlist for exclusive early access.</p>
+      
+      <div class="notify-container">
+        <input type="email" placeholder="ENTER YOUR EMAIL" class="notify-input">
+        <button class="btn-notify">Notify Me</button>
       </div>
     </div>
-  </div>
-</section>
+  </section>
+</main>
 
-<script>
-  import { API_BASE_URL } from "./config.js";
-  // Toggle responsive menu
-  document.querySelector(".menu-toggle").addEventListener("click", () => {
-    document.querySelector(".nav-menu").classList.toggle("active");
-  });
+<footer class="site-footer">
+    <p class="brand">the authentic edge</p>
+    <div class="footer-right">
+      <a href="mailto:authenticedge@gmail.com">Email</a>
+      <a href="https://instagram.com/theauthenticedge_/">Instagram</a>
+    </div>
+</footer>
 
-  // Extract product ID from URL
-  const params = new URLSearchParams(window.location.search);
-  const productId = params.get("id");
-
-  // Load product details from backend
-  async function loadProductDetails() {
-    const imageEl = document.getElementById("product-image");
-    const nameEl = document.getElementById("product-name");
-    const genderEl = document.getElementById("product-gender");
-    const availabilityEl = document.getElementById("product-availability");
-    const descriptionEl = document.getElementById("product-description");
-    const qualitySelect = document.getElementById("product-quality");
-
-    if (!productId) {
-      nameEl.textContent = "Product not found";
-      descriptionEl.textContent = "Invalid product ID.";
-      return;
-    }
-
-    try {
-      const res = await fetch(`${API_BASE_URL}/api/products/${productId}`)
-      if (!res.ok) throw new Error("Product not found");
-      const product = await res.json();
-
-      // Fill in product data
-      imageEl.src = product.image || "./images/placeholder.jpg";
-      nameEl.textContent = product.name;
-      genderEl.textContent = product.gender || "Unisex";
-      availabilityEl.textContent = product.availability || "Available";
-      descriptionEl.textContent = product.description || "No description provided.";
-
-      // Handle quality options (stored as JSON or comma-separated)
-      qualitySelect.innerHTML = "";
-      if (product.quality) {
-        let qualities = [];
-        try {
-          qualities = JSON.parse(product.quality);
-        } catch {
-          qualities = product.quality.split(",");
-        }
-        qualities.forEach(q => {
-          const option = document.createElement("option");
-          option.textContent = q.trim();
-          qualitySelect.appendChild(option);
-        });
-      } else {
-        const option = document.createElement("option");
-        option.textContent = "Standard";
-        qualitySelect.appendChild(option);
-      }
-
-    } catch (err) {
-      console.error(err);
-      nameEl.textContent = "Error loading product.";
-      descriptionEl.textContent = "Could not load product details.";
-    }
-  }
-
-    document.addEventListener("DOMContentLoaded", () => {
-    const nav = document.getElementById("header-buttons");
-    const token = localStorage.getItem("token");
-    const role = localStorage.getItem("role");
-
-    let menuHTML = `
-      <a href="index.html">Home</a>
-      <a href="products.html">Products</a>
-      <a href="contact.html">Contact</a">
-    `;
-
-    if (!token) {
-      // NOT LOGGED IN
-      menuHTML += `
-        <a href="login.html">Login</a>
-        <a href="register.html">Register</a>
-      `;
-    } else {
-      // LOGGED IN
-      if (role === "admin") {
-        menuHTML += `<a href="admin-dashboard.html">Admin Dashboard</a>`;
-      } else {
-        menuHTML += `<a href="account.html">Account</a>`;
-      }
-
-      menuHTML += `<a href="#" id="logout-btn">Logout</a>`;
-    }
-
-    nav.innerHTML = menuHTML;
-
-    // Logout handler
-    const logoutBtn = document.getElementById("logout-btn");
-
-    if (logoutBtn) {
-      logoutBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        localStorage.clear();
-        window.location.href = "index.html";
-      });
-    }
-
-    // Mobile menu toggle
-    document.querySelector(".menu-toggle").addEventListener("click", () => {
-      document.querySelector(".nav-menu").classList.toggle("active");
-    });
-  });
-
-  loadProductDetails();
-</script>
 <script src="header.js"></script>
-
-
 </body>
 </html>

@@ -1,174 +1,130 @@
-@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=Roboto+Flex:wght@300;400;700&display=swap');
+/* ========== EDITORIAL LOGIN PAGE ========== */
 
-/* ===== PAGE & BODY ===== */
-body {
-  background: #fafafa;
-  color: #111;
-  font-family: 'Roboto Flex', sans-serif;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  padding: 2rem 1rem;
-  margin: 0;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+.login-page {
+    background-color: #ffffff;
+    color: #000;
+    min-height: 100vh;
 }
 
-/* ===== HEADER ===== */
-header {
-  font-family: 'Libre Baskerville', serif;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 70%;
-  max-width: 100vw;
-  padding: 1rem 1.5rem;
-  background: rgba(255, 255, 255, 0.6);
-  backdrop-filter: saturate(180%) blur(12px);
-  border-radius: 10px;
-  margin-bottom: 3rem;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  color: #ff9d00;
-  user-select: none;
+.login-main {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 100px 5%;
+    min-height: 80vh;
 }
 
-.logo {
-  font-weight: 700;
-  font-size: 1.5rem;
+.login-content {
+    width: 100%;
+    max-width: 450px;
+    text-align: center;
+    animation: fadeIn 0.8s ease;
 }
 
-/* ===== NAVIGATION ===== */
-.nav-menu a {
-  color: #555;
-  margin-left: 1rem;
-  text-decoration: none;
-  font-weight: 500;
-  position: relative;
-  transition: color 0.3s ease;
+.eyebrow {
+    display: block;
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #999;
+    margin-bottom: 1rem;
 }
 
-.nav-menu a:hover {
-  color: #ff9d00;
+.login-content h2 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: -0.02em;
+    margin-bottom: 3rem;
 }
 
-.nav-menu a::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  bottom: -4px;
-  width: 0;
-  height: 2px;
-  background: #ff9d00;
-  transition: width 0.3s ease;
+/* FORM STYLING */
+.editorial-form {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    text-align: left;
 }
 
-.nav-menu a:hover::after {
-  width: 100%;
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
-/* ===== LOGIN CONTAINER ===== */
-.login-container {
-  width: 100%;
-  max-width: 70vw;
-  background: rgba(255, 255, 255, 0.55);
-  padding: 2rem 2.5rem;
-  border-radius: 20px;
-  box-shadow: 0 10px 30px rgba(255, 157, 0, 0.3);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  user-select: none;
-  color: #111;
+.form-group label {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 0.1em;
 }
 
-.login-container h2 {
-  font-family: 'Libre Baskerville', serif;
-  font-weight: 700;
-  font-size: 2rem;
-  margin-bottom: 2rem;
-  color: #ff9d00;
-}
-
-/* ===== INPUTS ===== */
-.login-container input {
-  width: 90%;
-  padding: 0.9rem 1rem;
-  margin-bottom: 1.4rem;
-  border-radius: 12px;
-  border: none;
-  background: rgba(255, 255, 255, 0.8);
-  color: #111;
-  font-size: 1rem;
-  outline: none;
-  box-shadow: inset 0 0 8px rgba(255,255,255,0.5);
-  transition: background-color 0.3s ease, box-shadow 0.3s ease;
-  font-family: 'Roboto Flex', sans-serif;
-}
-
-.login-container input::placeholder {
-  color: rgba(0, 0, 0, 0.4);
-}
-
-.login-container input:focus {
-  background: #fff;
-  box-shadow: 0 0 10px #ff9d00;
-}
-
-/* ===== BUTTON ===== */
-.login-container button {
-  width: 100%;
-  padding: 1rem;
-  background: #ff9d00;
-  border: none;
-  border-radius: 25px;
-  font-weight: 700;
-  font-size: 1.1rem;
-  color: #fff;
-  cursor: pointer;
-  transition: background-color 0.3s ease, box-shadow 0.3s ease;
-  font-family: 'Roboto Flex', sans-serif;
-  box-shadow: 0 6px 20px rgba(255, 157, 0, 0.5);
-}
-
-.login-container button:hover {
-  background: #cc7a00;
-  box-shadow: 0 8px 30px rgba(204, 122, 0, 0.7);
-}
-
-/* ===== CREATE ACCOUNT TEXT ===== */
-.create-account-text {
-  margin-top: 1.5rem;
-  font-size: 0.9rem;
-  color: #555;
-}
-
-.create-account-text a {
-  color: #ff9d00;
-  font-weight: 600;
-  text-decoration: none;
-  margin-left: 5px;
-  transition: color 0.3s ease;
-}
-
-.create-account-text a:hover {
-  text-decoration: underline;
-  color: #cc7a00;
-}
-
-/* ===== RESPONSIVE ===== */
-@media (max-width: 420px) {
-  .login-container {
-    padding: 1.5rem 1.5rem;
-  }
-  .login-container h2 {
-    font-size: 1.6rem;
-  }
-  .login-container input[type="password"], .login-container input[type="email"] {
-    font-size: 0.9rem;
-  }
-  .login-container button {
+.editorial-form input {
+    padding: 15px 0;
+    border: none;
+    border-bottom: 1px solid #ddd;
+    background: transparent;
     font-size: 1rem;
-  }
+    outline: none;
+    transition: border-color 0.3s ease;
+    border-radius: 0;
+}
+
+.editorial-form input:focus {
+    border-bottom-color: #000;
+}
+
+/* BUTTON */
+.btn-black {
+    margin-top: 20px;
+    background: #000;
+    color: #fff;
+    padding: 18px;
+    border: none;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: opacity 0.3s ease;
+}
+
+.btn-black:hover {
+    opacity: 0.8;
+}
+
+/* FOOTER TEXT */
+.login-footer {
+    margin-top: 2rem;
+}
+
+.login-footer p {
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.login-footer a {
+    color: #000;
+    font-weight: 700;
+    text-decoration: none;
+    border-bottom: 1px solid #000;
+    padding-bottom: 2px;
+}
+
+#login-feedback {
+    margin-top: 1.5rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #d00000; /* Subtle red for errors */
+}
+
+/* ANIMATION */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 480px) {
+    .login-content h2 { font-size: 2rem; }
 }
