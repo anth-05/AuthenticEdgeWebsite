@@ -7,7 +7,8 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap">
   <link rel="stylesheet" href="theme.css">
   <link rel="stylesheet" href="product.css">
-  <link rel="stylesheet" href="user-chat.css"> <link rel="stylesheet" href="mobile-header.css">
+  <link rel="stylesheet" href="user-chat.css"> 
+  <link rel="stylesheet" href="mobile-header.css">
 </head>
 <body class="products-page">
 
@@ -84,17 +85,22 @@
         return;
       }
 
+      // UPDATE: Wrapped the card in an <a> tag and added the dynamic ID
       grid.innerHTML = products.map(p => `
-        <div class="product-card">
-          <div class="product-img-frame">
-            <img src="${p.image}" alt="${p.name}" loading="lazy">
+        <a href="single-product.html?id=${p.id}" class="product-card-link">
+          <div class="product-card">
+            <div class="product-img-frame">
+              <img src="${p.image}" alt="${p.name}" loading="lazy">
+            </div>
+            <div class="product-details">
+              <span class="product-cat">${p.quality}</span>
+              <h3>${p.name}</h3>
+              <p class="status ${p.availability === 'available' ? 'in-stock' : 'sold-out'}">
+                ${p.availability === 'available' ? 'Available' : 'Sold Out'}
+              </p>
+            </div>
           </div>
-          <div class="product-details">
-            <span class="product-cat">${p.quality}</span>
-            <h3>${p.name}</h3>
-            <p>${p.availability === 'available' ? 'Available' : 'Sold Out'}</p>
-          </div>
-        </div>
+        </a>
       `).join('');
     } catch (err) {
       grid.innerHTML = `<p>Archive sync unavailable.</p>`;
@@ -105,8 +111,6 @@
   document.getElementById("notifyBtn").onclick = async () => {
     const email = document.getElementById("notifyEmail").value;
     if (!email) return alert("Please enter your email.");
-    
-    // You can point this to your /api/contact or a new /api/waitlist route
     alert("You have been added to the Winter 2025 priority list.");
   };
 

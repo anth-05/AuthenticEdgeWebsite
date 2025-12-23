@@ -84,3 +84,25 @@
     }
     .notify-input { width: 100%; }
 }
+/* Ensure the link doesn't break the layout or styling */
+.product-card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block; /* Makes the whole area clickable */
+    transition: transform 0.3s ease;
+}
+
+.product-card-link:hover {
+    transform: translateY(-5px); /* Subtle lift on hover */
+}
+
+/* Status coloring */
+.status.in-stock {
+    color: #27ae60;
+    font-weight: 600;
+}
+
+.status.sold-out {
+    color: #e74c3c;
+    opacity: 0.8;
+}
