@@ -54,7 +54,7 @@ function verifyAdmin(req, res, next) {
 /* ---------------- AUTH ---------------- */
 // Add this to your server.js
 // GET all user conversations for the admin sidebar
-app.get('/api/admin/conversations', authenticateAdmin, async (req, res) => {
+app.get('/api/admin/conversations', authenticateToken, async (req, res) => {
     try {
         // This gets the latest message from every unique user
         const result = await pool.query(`
@@ -70,7 +70,7 @@ app.get('/api/admin/conversations', authenticateAdmin, async (req, res) => {
 });
 
 // GET full history for a specific user
-app.get('/api/admin/messages/:userId', authenticateAdmin, async (req, res) => {
+app.get('/api/admin/messages/:userId', authenticateToken, async (req, res) => {
     try {
         const { userId } = req.params;
         const result = await pool.query(
@@ -82,7 +82,7 @@ app.get('/api/admin/messages/:userId', authenticateAdmin, async (req, res) => {
         res.status(500).json({ error: "Failed to fetch chat history" });
     }
 });
-app.post('/api/admin/reply', authenticateAdmin, async (req, res) => {
+app.post('/api/admin/reply', authenticateToken, async (req, res) => {
     try {
         const { userId, message } = req.body;
 
