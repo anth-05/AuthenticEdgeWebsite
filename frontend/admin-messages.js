@@ -20,12 +20,19 @@ async function loadInbox() {
         });
         const users = await res.json();
         
+        // FIX: Check if users is actually an array before looping
+        if (!Array.isArray(users)) {
+            console.error("Expected array but got:", users);
+            messageBadge.textContent = "0";
+            usersList.innerHTML = "<p style='padding:20px; font-size:0.7rem;'>No inquiries found.</p>";
+            return;
+        }
+
         messageBadge.textContent = users.length;
         usersList.innerHTML = "";
 
         users.forEach(u => {
             const div = document.createElement("div");
-            // Match the 'active' class from your CSS
             div.className = `user-item ${activeUser === u.user_id ? 'active' : ''}`;
             div.innerHTML = `
                 <span class="user-email">${u.email}</span>
