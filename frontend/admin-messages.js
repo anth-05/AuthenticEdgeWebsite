@@ -27,6 +27,21 @@ async function loadInbox() {
             usersList.innerHTML = "<p style='padding:20px; font-size:0.7rem;'>No inquiries found.</p>";
             return;
         }
+        // ... inside loadInbox ...
+        if (users.length === 0) {
+            usersList.innerHTML = "<p style='padding:20px; font-size:0.7rem; color:#999;'>NO INQUIRIES FOUND.</p>";
+            return;
+        }
+
+        // Only redraw if the content is different or if it's the first load
+        const currentContent = users.map(u => u.email).join('');
+        if (usersList.dataset.lastEmails !== currentContent) {
+            usersList.innerHTML = "";
+            users.forEach(u => {
+                // ... your existing div creation code ...
+            });
+            usersList.dataset.lastEmails = currentContent;
+        }
 
         messageBadge.textContent = users.length;
         usersList.innerHTML = "";
