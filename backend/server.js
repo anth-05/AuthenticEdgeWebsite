@@ -359,6 +359,80 @@ io.on("connection", (socket) => {
 
 });
 
+// ---------- Database initialization ----------
+(async () => {
+  try {
+    await pool.query(`CREATE TABLE IF NOT EXISTS users (
+      id SERIAL PRIMARY KEY,
+      email TEXT UNIQUE NOT NULL,
+      password TEXT NOT NULL,
+      role TEXT CHECK(role IN ('admin', 'user')) DEFAULT 'user',
+      created_at TIMESTAMP DEFAULT NOW()
+    )`);
+
+    await pool.query(`CREATE TABLE IF NOT EXISTS products (
+      id SERIAL PRIMARY KEY,
+      name TEXT NOT NULL,
+      description TEXT,
+      image TEXT,
+      gender TEXT,
+      quality TEXT,
+      availability TEXT,
+      created_at TIMESTAMP DEFAULT NOW()
+    )`);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS subscriptions (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER UNIQUE
+        REFERENCES users(id)
+        ON DELETE CASCADE,
+
+      current_plan TEXT,
+      requested_plan TEXT,
+
+      status TEXT
+        CHECK (status IN ('active', 'pending', 'none'))
+        DEFAULT 'none',
+
+      updated_at TIMESTAMP DEFAULT NOW()
+    );
+  `);
+
+
+    await pool.query(`CREATE TABLE IF NOT EXISTS messages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    sender TEXT CHECK(sender IN ('user', 'admin')) NOT NULL,
+    message TEXT,
+    file_url TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  )`);
+
+    // Seed default accounts (only if truly missing)
+    let result = await pool.query("SELECT 1 FROM users WHERE email='admin'");
+    if (result.rowCount === 0) {
+      await pool.query("INSERT INTO users (email, password, role) VALUES ($1,$2,$3)", ["admin", await bcrypt.hash("admin123", 10), "admin"]);
+    }
+    result = await pool.query("SELECT 1 FROM users WHERE email='user'");
+    if (result.rowCount === 0) {
+      await pool.query("INSERT INTO users (email, password, role) VALUES ($1,$2,$3)", ["user", await bcrypt.hash("user123", 10), "user"]);
+    }
+
+    server.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+  } catch (err) {
+    console.error("❌ Database init failed:", err);
+    process.exit(1);
+  }
+})();
+
+// ---------- Global error handler ----------
+app.use((err, req, res, next) => {
+  console.error("Unhandled error:", err);
+  res.status(500).json({ error: "Unexpected server error" });
+});
     
 /* ===========================
    START SERVER
