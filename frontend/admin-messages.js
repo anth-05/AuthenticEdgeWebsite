@@ -4,114 +4,132 @@ const usersList = document.getElementById("usersList");
 const chatBody = document.getElementById("chatBody");
 const adminInput = document.getElementById("adminInput");
 const sendBtn = document.getElementById("adminSend");
-const attachBtn = document.getElementById("attachBtn");
 const fileInput = document.getElementById("fileInput");
 const badge = document.getElementById("message-badge");
+const chatHeaderName = document.getElementById("chatHeader");
 
 let activeUser = null;
 
-// Connect WebSocket
-const socket = io(API_BASE_URL.replace("/api",""));
-socket.emit("register", { userId: 0, role: "admin" });
+// ---------- Socket.io Connection ----------
+// Point to the base URL (Socket.io lives on the server root, not /api)
+const socket = io(API_BASE_URL.replace("/api", ""));
 
-socket.on("newMessage", msg => {
-  if (msg.userId !== activeUser) {
-    showBadge();
-    return;
-  }
-  appendMessage(msg);
+// Join as admin to receive global notifications
+socket.emit("join", "admin_global");
+
+socket.on("admin_notification", (msg) => {
+    if (activeUser && msg.user_id === activeUser) {
+        appendMessage(msg);
+    } else {
+        showBadge();
+        loadConversations(); // Refresh the list to show newest message preview
+    }
 });
 
-// SHOW BADGE
+// ---------- UI Functions ----------
+
 function showBadge() {
-  badge.classList.remove("hidden");
-  const count = parseInt(badge.textContent) || 0;
-  badge.textContent = count + 1;
+    if (badge) {
+        badge.classList.remove("hidden");
+        const count = parseInt(badge.textContent) || 0;
+        badge.textContent = count + 1;
+    }
 }
 
-// LOAD USERS
-async function loadUsers() {
-  const res = await fetch(`${API_BASE_URL}/api/admin/users-with-messages`);
-  const users = await res.json();
+async function loadConversations() {
+    const token = localStorage.getItem("token");
+    try {
+        const res = await fetch(`${API_BASE_URL}/api/admin/conversations`, {
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+        const conversations = await res.json();
 
-  usersList.innerHTML = "";
-
-  users.forEach(u => {
-    const div = document.createElement("div");
-    div.className = "user-row";
-    div.textContent = `${u.username}`;
-    div.onclick = () => openChat(u.id, u.username);
-    usersList.appendChild(div);
-  });
+        usersList.innerHTML = "";
+        conversations.forEach(u => {
+            const div = document.createElement("div");
+            div.className = `user-row ${activeUser === u.user_id ? 'active' : ''}`;
+            div.innerHTML = `
+                <div class="user-info">
+                    <strong>${u.email}</strong>
+                    <p class="last-msg">${u.message || "No messages yet"}</p>
+                </div>
+            `;
+            div.onclick = () => openChat(u.user_id, u.email);
+            usersList.appendChild(div);
+        });
+    } catch (err) {
+        console.error("Failed to load conversations:", err);
+    }
 }
 
-async function openChat(userId, username) {
-  activeUser = userId;
-  badge.classList.add("hidden");
+async function openChat(userId, email) {
+    activeUser = userId;
+    if (badge) badge.classList.add("hidden");
+    
+    // UI Update
+    chatHeaderName.innerText = email;
+    document.querySelectorAll('.user-row').forEach(row => row.classList.remove('active'));
+    
+    const token = localStorage.getItem("token");
+    try {
+        const res = await fetch(`${API_BASE_URL}/api/admin/messages/${userId}`, {
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+        const msgs = await res.json();
 
-  document.getElementById("chatHeader").innerText = username;
-  
-  const res = await fetch(`${API_BASE_URL}/api/messages/${userId}`);
-  const msgs = await res.json();
-
-  chatBody.innerHTML = "";
-  msgs.forEach(m => appendMessage(m));
+        chatBody.innerHTML = "";
+        msgs.forEach(m => appendMessage(m));
+        chatBody.scrollTop = chatBody.scrollHeight;
+    } catch (err) {
+        console.error("Error loading chat history:", err);
+    }
 }
 
 function appendMessage(m) {
-  const b = document.createElement("div");
-  b.className = m.sender === "admin" ? "bubble-admin" : "bubble-user";
-  
-  if (m.fileUrl) {
-    b.innerHTML = `<img src="${m.fileUrl}" class="chat-image">`;
-  } else {
-    b.textContent = m.message;
-  }
+    const div = document.createElement("div");
+    // Align with backend 'sender' values: 'admin' or 'user'
+    div.className = `message-wrapper ${m.sender === "admin" ? "admin" : "user"}`;
+    
+    div.innerHTML = `
+        <div class="msg-bubble">
+            ${m.file_url ? `<img src="${m.file_url}" class="chat-image">` : m.message}
+            <small class="msg-time">${new Date(m.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</small>
+        </div>
+    `;
 
-  chatBody.appendChild(b);
-  chatBody.scrollTop = chatBody.scrollHeight;
+    chatBody.appendChild(div);
+    chatBody.scrollTop = chatBody.scrollHeight;
 }
 
-// SEND MESSAGE
-sendBtn.onclick = sendMsg;
+// ---------- Actions ----------
 
-function sendMsg() {
-  if (!activeUser || !adminInput.value.trim()) return;
+async function sendMsg() {
+    const text = adminInput.value.trim();
+    if (!activeUser || !text) return;
 
-  const msg = {
-    userId: activeUser,
-    sender: "admin",
-    message: adminInput.value
-  };
+    const msgData = {
+        userId: activeUser,
+        text: text
+    };
 
-  socket.emit("sendMessage", msg);
-  appendMessage(msg);
-  adminInput.value = "";
+    // Emit via Socket for real-time
+    socket.emit("admin_reply", msgData);
+
+    // Optimistic UI update (add to screen immediately)
+    appendMessage({
+        sender: "admin",
+        message: text,
+        created_at: new Date()
+    });
+
+    adminInput.value = "";
 }
 
-// FILE UPLOAD
-attachBtn.onclick = () => fileInput.click();
+// Event Listeners
+sendBtn.addEventListener("click", sendMsg);
+adminInput.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") sendMsg();
+});
 
-fileInput.onchange = async () => {
-  const form = new FormData();
-  form.append("file", fileInput.files[0]);
-
-  const res = await fetch(`${API_BASE_URL}/api/messages/upload`, {
-    method: "POST",
-    body: form
-  });
-
-  const data = await res.json();
-
-  const msg = {
-    userId: activeUser,
-    sender: "admin",
-    message: "",
-    fileUrl: data.url
-  };
-
-  socket.emit("sendMessage", msg);
-  appendMessage(msg);
-};
-
-loadUsers();
+// Initialization
+loadConversations();

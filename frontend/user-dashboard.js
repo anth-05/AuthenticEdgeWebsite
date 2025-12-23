@@ -1,29 +1,30 @@
 import { API_BASE_URL } from "./config.js";
 
 document.addEventListener("DOMContentLoaded", () => {
-  loadSubscription();
-  setupRequestButton();
-  redirectIfNotLoggedIn();
-  loadUserInfo();
-  setupButtons();
+  if (checkAuth()) {
+    loadUserInfo();
+    loadSubscription();
+    setupButtons();
+  }
 });
 
-
-/* -----------------------------------------------------------
-   AUTH CHECK
------------------------------------------------------------ */
-function redirectIfNotLoggedIn() {
+/**
+ * Security: Redirect if not logged in
+ */
+function checkAuth() {
   const token = localStorage.getItem("token");
   const role = localStorage.getItem("role");
 
   if (!token || role !== "user") {
     window.location.href = "login.html";
+    return false;
   }
+  return true;
 }
 
-/* -----------------------------------------------------------
-   API REQUEST WRAPPER
------------------------------------------------------------ */
+/**
+ * Global API Wrapper: Handles headers and token injection
+ */
 async function apiRequest(path, method = "GET", body = null) {
   const token = localStorage.getItem("token");
 
@@ -37,212 +38,118 @@ async function apiRequest(path, method = "GET", body = null) {
 
   if (body) options.body = JSON.stringify(body);
 
-  const res = await fetch(API_BASE_URL + path, options);
-
-  let data = {};
-  try {
-    data = await res.json();
-  } catch (e) {}
-
-  if (!res.ok) {
-    throw new Error(data.error || "Request failed");
+  const res = await fetch(`${API_BASE_URL}${path}`, options);
+  
+  if (res.status === 401) {
+    logout();
+    return;
   }
 
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Action failed");
   return data;
 }
 
-/* -----------------------------------------------------------
-   LOAD USER INFORMATION
------------------------------------------------------------ */
+/**
+ * Profile Management: Load and Render User Data
+ */
 async function loadUserInfo() {
-  const box = document.getElementById("user-info");
+  const infoBox = document.getElementById("user-info");
+  if (!infoBox) return;
 
   try {
     const { user } = await apiRequest("/api/user");
-
-    box.innerHTML = `
-      <p><strong>Email:</strong> ${user.email}</p>
-      <p><strong>Role:</strong> ${user.role}</p>
-      <p><strong>Account Created:</strong> ${new Date(user.created_at).toLocaleString()}</p>
+    
+    infoBox.innerHTML = `
+      <div class="profile-detail">
+        <label>Account Identity</label>
+        <p>${user.email}</p>
+      </div>
+      <div class="profile-detail">
+        <label>Membership Date</label>
+        <p>${new Date(user.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+      </div>
     `;
   } catch (err) {
-    box.innerHTML = `<p class="error">Failed to load user info.</p>`;
-    console.error(err);
+    infoBox.innerHTML = `<p class="error-text">Identity sync failed.</p>`;
   }
 }
 
-/* -----------------------------------------------------------
-   BUTTON SETUP
------------------------------------------------------------ */
-function setupButtons() {
-  document.getElementById("update-email-btn")
-    .addEventListener("click", updateEmail);
-
-  document.getElementById("update-password-btn")
-    .addEventListener("click", updatePassword);
-
-  document.getElementById("delete-account-btn")
-    .addEventListener("click", deleteAccount);
-}
-
-/* -----------------------------------------------------------
-   UPDATE EMAIL
------------------------------------------------------------ */
-async function updateEmail() {
-  const newEmail = document.getElementById("new-email").value.trim();
-
-  if (!newEmail) return alert("Please enter a new email.");
-
-  try {
-    await apiRequest("/api/user/email", "PUT", { email: newEmail });
-
-    alert("Email updated successfully. Please log in again.");
-    localStorage.clear();
-    window.location.href = "login.html";
-  } catch (err) {
-    alert("Error updating email: " + err.message);
-  }
-}
-
-/* -----------------------------------------------------------
-   UPDATE PASSWORD
------------------------------------------------------------ */
-async function updatePassword() {
-  const newPass = document.getElementById("new-password").value.trim();
-
-  if (!newPass) return alert("Password cannot be empty.");
-
-  try {
-    await apiRequest("/api/user/password", "PUT", { password: newPass });
-
-    alert("Password updated successfully. Please log in again.");
-    localStorage.clear();
-    window.location.href = "login.html";
-  } catch (err) {
-    alert("Error updating password: " + err.message);
-  }
-}
-
-/* -----------------------------------------------------------
-   DELETE ACCOUNT
------------------------------------------------------------ */
-async function deleteAccount() {
-  if (!confirm("Are you sure you want to permanently delete your account?")) {
-    return;
-  }
-
-  try {
-    await apiRequest("/api/user", "DELETE");
-
-    alert("Account deleted.");
-    localStorage.clear();
-    window.location.href = "register.html";
-  } catch (err) {
-    alert("Failed to delete account: " + err.message);
-  }
-}
-/* -----------------------------------------------------------
-   LOAD USER SUBSCRIPTION
------------------------------------------------------------ */
+/**
+ * Subscription Management: Sync Status
+ */
 async function loadSubscription() {
-  const token = localStorage.getItem("token");
-
   try {
-    const res = await fetch(`${API_BASE_URL}/api/subscription`, {
-      headers: { Authorization: "Bearer " + token }
-    });
+    const sub = await apiRequest("/api/subscription");
 
-    if (!res.ok) throw new Error("Failed to load subscription");
+    const currentEl = document.getElementById("current-plan");
+    const requestedEl = document.getElementById("requested-plan");
+    const statusEl = document.getElementById("sub-status");
 
-    const sub = await res.json();
-
-    document.getElementById("current-plan").textContent =
-      sub.current_plan ?? "None";
-
-    document.getElementById("requested-plan").textContent =
-      sub.requested_plan ?? "None";
-
-    document.getElementById("sub-status").textContent =
-      sub.status ?? "none";
-
+    if (currentEl) currentEl.textContent = sub.current_plan || "Standard Access";
+    if (requestedEl) requestedEl.textContent = sub.requested_plan || "None";
+    
+    if (statusEl) {
+      statusEl.textContent = sub.status.toUpperCase();
+      statusEl.className = `status-pill ${sub.status.toLowerCase()}`;
+    }
   } catch (err) {
-    console.error("❌ Failed to load subscription", err);
+    console.error("Subscription Sync Error:", err);
   }
 }
 
-/* -----------------------------------------------------------
-   REQUEST SUBSCRIPTION CHANGE
------------------------------------------------------------ */
-function setupRequestButton() {
-  const btn = document.getElementById("request-sub-change-btn");
-
-  if (!btn) {
-    console.warn("⚠️ Request subscription button not found");
-    return;
-  }
-
-  btn.onclick = async () => {
-    console.log("🟢 Request button clicked");
-
-    const token = localStorage.getItem("token");
-    const newPlan = document.getElementById("new-plan")?.value;
-
-    if (!token) {
-      alert("You are not logged in.");
-      return;
-    }
-
+/**
+ * Event Listeners: Setup UI Actions
+ */
+function setupButtons() {
+  // Update Email
+  document.getElementById("update-email-btn")?.addEventListener("click", async () => {
+    const email = document.getElementById("new-email").value.trim();
+    if (!email) return alert("Email required.");
+    
     try {
-      const res = await fetch(`${API_BASE_URL}/api/subscription`, {
-        headers: { Authorization: "Bearer " + token }
-      });
+      await apiRequest("/api/user/email", "PUT", { email });
+      alert("Email updated. Please sign in with your new identity.");
+      logout();
+    } catch (e) { alert(e.message); }
+  });
 
-      if (!res.ok) throw new Error("Failed to fetch subscription");
+  // Update Password
+  document.getElementById("update-password-btn")?.addEventListener("click", async () => {
+    const password = document.getElementById("new-password").value.trim();
+    if (password.length < 6) return alert("Security: Password too short.");
+    
+    try {
+      await apiRequest("/api/user/password", "PUT", { password });
+      alert("Password secured. Please sign in again.");
+      logout();
+    } catch (e) { alert(e.message); }
+  });
 
-      const sub = await res.json();
+  // Delete Account
+  document.getElementById("delete-account-btn")?.addEventListener("click", async () => {
+    if (!confirm("This will permanently remove your membership and history. Proceed?")) return;
+    
+    try {
+      await apiRequest("/api/user", "DELETE");
+      alert("Account closed.");
+      logout();
+    } catch (e) { alert(e.message); }
+  });
 
-      // 🚫 Pending request exists
-      if (sub.status === "pending") {
-        alert("You already have a pending request.");
-        return;
-      }
-
-      // ✅ NONE selected
-      // User selects NONE
-      if (newPlan === "None") {
-        const confirmNone = confirm(
-          "This will remove your current subscription. Continue?"
-        );
-
-        if (!confirmNone) return;
-      }
-
-      // 🚫 Same plan
-      if (sub.current_plan === newPlan) {
-        alert("You are already on this plan.");
-        return;
-      }
-
-      const req = await fetch(`${API_BASE_URL}/api/subscription/request`, {
-        method: "POST",
-        headers: {
-          Authorization: "Bearer " + token,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ plan: newPlan })
-      });
-
-      if (!req.ok) {
-        const err = await req.json();
-        throw new Error(err.error || "Request failed");
-      }
-
-      alert("✅ Subscription request sent!");
+  // Request New Plan
+  document.getElementById("request-sub-change-btn")?.addEventListener("click", async () => {
+    const newPlan = document.getElementById("new-plan")?.value;
+    
+    try {
+      await apiRequest("/api/subscription/request", "POST", { plan: newPlan });
+      alert("Membership request transmitted.");
       loadSubscription();
+    } catch (e) { alert(e.message); }
+  });
+}
 
-    } catch (err) {
-      console.error("❌ Subscription request error:", err);
-      alert("Subscription request failed.");
-    }
-  };
+function logout() {
+  localStorage.clear();
+  window.location.href = "login.html";
 }

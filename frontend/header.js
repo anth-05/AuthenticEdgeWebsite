@@ -1,63 +1,91 @@
+/**
+ * Navigation & Auth Logic
+ */
 function initMenu() {
-  const nav = document.getElementById("header-buttons");
-  if (!nav) return; // Safety check
+    const nav = document.getElementById("header-buttons");
+    if (!nav) return;
 
-  const token = localStorage.getItem("token");
-  const role = localStorage.getItem("role");
+    const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
 
-  // Base navigation links
-  let menuHTML = `
-    <a href="index.html">Home</a>
-    <a href="product.html">Products</a>
-    <a href="subscription.html">Subscriptions</a>
-    <a href="contact.html">Contact</a>
-  `;
-
-  // Auth-based links
-  if (!token) {
-    menuHTML += `
-      <a href="login.html">Login</a>
-      <a href="register.html" class="nav-cta">Register</a>
+    // 1. Define Universal Links (Editorial Style)
+    let menuHTML = `
+        <a href="index.html" class="nav-link">Home</a>
+        <a href="product.html" class="nav-link">Collection</a>
+        <a href="subscription.html" class="nav-link">Membership</a>
+        <a href="contact.html" class="nav-link">Inquiry</a>
     `;
-  } else {
-    if (role === "admin") {
-      menuHTML += `<a href="admin-dashboard.html">Admin</a>`;
+
+    // 2. Conditional Auth Links
+    if (!token) {
+        menuHTML += `
+            <a href="login.html" class="nav-link">Sign In</a>
+            <a href="register.html" class="nav-cta">Apply Now</a>
+        `;
     } else {
-      menuHTML += `<a href="user-dashboard.html">Account</a>`;
+        // Direct to appropriate dashboard
+        if (role === "admin") {
+            menuHTML += `<a href="admin-dashboard.html" class="nav-link admin-link">Dashboard</a>`;
+        } else {
+            menuHTML += `<a href="user-dashboard.html" class="nav-link">Account</a>`;
+        }
+        
+        menuHTML += `<a href="#" id="logout-btn" class="nav-link logout-link">Sign Out</a>`;
     }
-    menuHTML += `<a href="#" id="logout-btn" class="logout-link">Logout</a>`;
-  }
 
-  nav.innerHTML = menuHTML;
+    nav.innerHTML = menuHTML;
 
-  // Logout Logic
-  const logoutBtn = document.getElementById("logout-btn");
-  if (logoutBtn) {
-    logoutBtn.addEventListener("click", (e) => {
-      e.preventDefault();
-      // Only clear auth data, not the whole localStorage (best practice)
-      localStorage.removeItem("token");
-      localStorage.removeItem("role");
-      window.location.href = "index.html";
-    });
-  }
+    // 3. Logout Execution
+    setupLogout();
 
-  // Mobile Toggle Logic
-  const menuToggle = document.querySelector(".menu-toggle");
-  const navMenu = document.querySelector(".nav-menu");
-  
-  if (menuToggle && navMenu) {
-    menuToggle.addEventListener("click", () => {
-      navMenu.classList.toggle("active");
-      // Change icon from hamburger to X when active
-      menuToggle.textContent = navMenu.classList.contains("active") ? "✕" : "☰";
-    });
-  }
+    // 4. Mobile Interaction
+    setupMobileMenu();
 }
 
-// Initialization
+/**
+ * Handle Logout without breaking other local data
+ */
+function setupLogout() {
+    const logoutBtn = document.getElementById("logout-btn");
+    if (logoutBtn) {
+        logoutBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            // Best practice: remove only what we own
+            localStorage.removeItem("token");
+            localStorage.removeItem("role");
+            localStorage.removeItem("userId"); // Used for chat
+            window.location.href = "index.html";
+        });
+    }
+}
+
+/**
+ * Responsive Navigation Toggle
+ */
+function setupMobileMenu() {
+    const menuToggle = document.querySelector(".menu-toggle");
+    const navMenu = document.querySelector(".nav-menu");
+    
+    if (menuToggle && navMenu) {
+        menuToggle.onclick = () => {
+            navMenu.classList.toggle("active");
+            // Toggle between Hamburger and X
+            menuToggle.innerHTML = navMenu.classList.contains("active") ? "&times;" : "&#9776;";
+        };
+        
+        // Close menu if a link is clicked
+        navMenu.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                navMenu.classList.remove("active");
+                menuToggle.innerHTML = "&#9776;";
+            });
+        });
+    }
+}
+
+// Initial Run
 if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", initMenu);
+    document.addEventListener("DOMContentLoaded", initMenu);
 } else {
-  initMenu();
+    initMenu();
 }

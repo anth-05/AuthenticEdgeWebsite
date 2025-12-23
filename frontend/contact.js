@@ -1,30 +1,61 @@
+import { API_BASE_URL } from "./config.js";
+
 document.getElementById("contactForm").addEventListener("submit", async (e) => {
   e.preventDefault();
-    //const token = await grecaptcha.execute("6LfBhRQsAAAAANIKzqgbUZnKkNAH09Tgfd0d3s9I", { action: "submit" });
-    const countryCode = document.querySelector(".country-code").value;
-    const phoneNumber = document.querySelector(".phone-input").value;
+
+  const submitBtn = e.target.querySelector('button[type="submit"]');
+  const originalBtnText = submitBtn ? submitBtn.innerText : "Send";
+
+  // 1. Collect Data
+  const countryCode = document.querySelector(".country-code")?.value || "";
+  const phoneNumber = document.querySelector(".phone-input")?.value || "";
 
   const data = {
-    name: document.getElementById("contactName").value,
-    email: document.querySelector("input[type='email']").value,
-    phone: `${countryCode} ${phoneNumber}`,
-    message: document.getElementById("contactDescription").value,
-    // recaptcha: token
+    name: document.getElementById("contactName").value.trim(),
+    email: document.querySelector("input[type='email']").value.trim(),
+    phone: `${countryCode} ${phoneNumber}`.trim(),
+    message: document.getElementById("contactDescription").value.trim(),
   };
 
-  const res = await fetch("https://authenticedgewebsite.onrender.com/contact", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data)
-  });
+  // 2. Simple Validation
+  if (!data.name || !data.email || !data.message) {
+    alert("Please fill in all required fields.");
+    return;
+  }
 
-  const json = await res.json();
+  try {
+    // UI Feedback: Disable button while sending
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.innerText = "Transmitting...";
+    }
 
-  if (json.success) {
-    alert("Your message has been sent!");
-    window.location.reload();
+    // 3. API Call
+    // Note: ensure your server.js has an app.post("/api/contact") to match this
+    const res = await fetch(`${API_BASE_URL}/api/contact`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    });
 
-  } else {
-    alert("Error sending message.");
+    const result = await res.json();
+
+    if (res.ok && result.success) {
+      alert("Thank you. Your inquiry has been received by the editorial team.");
+      e.target.reset();
+      window.location.reload();
+    } else {
+      throw new Error(result.error || "Server error");
+    }
+
+  } catch (error) {
+    console.error("Contact form error:", error);
+    alert("Communication failed. Please try again later or contact us directly via email.");
+  } finally {
+    // Reset button state
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerText = originalBtnText;
+    }
   }
 });

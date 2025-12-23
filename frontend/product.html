@@ -7,7 +7,8 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap">
   <link rel="stylesheet" href="theme.css">
   <link rel="stylesheet" href="product.css">
-  <link rel="stylesheet" href="mobile-header.css">
+  <link rel="stylesheet" href="user-chat.css"> <link rel="stylesheet" href="mobile-header.css">
+</head>
 <body class="products-page">
 
 <header>
@@ -26,8 +27,16 @@
       <p>Standalone apparel and limited footwear drops are in production. Join the waitlist for exclusive early access.</p>
       
       <div class="notify-container">
-        <input type="email" placeholder="ENTER YOUR EMAIL" class="notify-input">
-        <button class="btn-notify">Notify Me</button>
+        <input type="email" id="notifyEmail" placeholder="ENTER YOUR EMAIL" class="notify-input">
+        <button class="btn-notify" id="notifyBtn">Notify Me</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="collection-grid-section">
+    <div class="container">
+      <div id="product-grid" class="product-grid">
+        <div class="grid-loader">Syncing archives...</div>
       </div>
     </div>
   </section>
@@ -41,6 +50,68 @@
     </div>
 </footer>
 
+<div class="chat-widget" id="chatWidget">
+  <div class="chat-window">
+    <div class="chat-header">Concierge Support</div>
+    <div class="chat-body" id="chatBox"></div>
+    <div class="chat-input-bar">
+      <input type="text" id="chatInput" placeholder="How can we assist you?" autocomplete="off" />
+      <label class="file-btn" title="Attach image">
+        📎<input type="file" id="chatFile" hidden accept="image/*">
+      </label>
+      <button id="chatSend">➤</button>
+    </div>
+  </div>
+  <div class="chat-toggle-btn" id="chatToggle">
+    <span>💬</span>
+  </div>
+</div>
+
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 <script src="header.js"></script>
+<script type="module">
+  import { API_BASE_URL } from "./config.js";
+
+  // 1. Fetch Products
+  async function loadProducts() {
+    const grid = document.getElementById("product-grid");
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/products`);
+      const products = await res.json();
+
+      if (products.length === 0) {
+        grid.innerHTML = `<p class="empty-msg">Our current collection is strictly limited. Check back soon.</p>`;
+        return;
+      }
+
+      grid.innerHTML = products.map(p => `
+        <div class="product-card">
+          <div class="product-img-frame">
+            <img src="${p.image}" alt="${p.name}" loading="lazy">
+          </div>
+          <div class="product-details">
+            <span class="product-cat">${p.quality}</span>
+            <h3>${p.name}</h3>
+            <p>${p.availability === 'available' ? 'Available' : 'Sold Out'}</p>
+          </div>
+        </div>
+      `).join('');
+    } catch (err) {
+      grid.innerHTML = `<p>Archive sync unavailable.</p>`;
+    }
+  }
+
+  // 2. Notify Me Logic
+  document.getElementById("notifyBtn").onclick = async () => {
+    const email = document.getElementById("notifyEmail").value;
+    if (!email) return alert("Please enter your email.");
+    
+    // You can point this to your /api/contact or a new /api/waitlist route
+    alert("You have been added to the Winter 2025 priority list.");
+  };
+
+  window.onload = loadProducts;
+</script>
+<script type="module" src="user-chat.js"></script>
 </body>
 </html>

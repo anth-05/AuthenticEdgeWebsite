@@ -1,226 +1,184 @@
 import { API_BASE_URL } from "./config.js";
 
 document.addEventListener("DOMContentLoaded", () => {
-  setupTabs();
-  setupProductForm();
-  loadDashboard();
-  loadStats();
+    // Check Auth first
+    checkAdminAuth();
+    
+    // Load Data
+    loadDashboardData();
+    
+    // Setup Product Form
+    const productForm = document.getElementById("product-form");
+    if (productForm) {
+        productForm.addEventListener("submit", handleAddProduct);
+    }
 });
 
+/**
+ * Security Gate
+ */
+function checkAdminAuth() {
+    const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
 
-function setupProductForm() {
-  const productForm = document.getElementById("product-form");
-  if (productForm) {
-    productForm.addEventListener("submit", handleAddProduct);
-  }
-}
-
-async function loadDashboard() {
-  const token = localStorage.getItem("token");
-  const role = localStorage.getItem("role");
-
-  if (!token || role !== "admin") {
-    alert("Access denied! Admins only.");
-    window.location.href = "login.html";
-    return;
-  }
-
-  try {
-    const verify = await fetch(`${API_BASE_URL}/api/protected`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-
-    if (!verify.ok) {
-      alert("Session expired. Please log in again.");
-      logout();
-      return;
+    if (!token || role !== "admin") {
+        window.location.href = "login.html";
     }
-    const statsRes = await fetch(`${API_BASE_URL}/api/stats`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    const statsData = await statsRes.json();
-
-    document.getElementById("user-count").textContent = statsData.users;
-    document.getElementById("admin-count").textContent = statsData.admins;
-    document.getElementById("regular-count").textContent = statsData.regularUsers;
-
-    const usersRes = await fetch(`${API_BASE_URL}/api/users`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    const users = await usersRes.json();
-
-    renderRecentUsers(users);
-    renderAllUsers(users);
-
-  } catch (error) {
-    console.error("Dashboard loading failed:", error);
-    alert("Failed to load dashboard data. Please try again.");
-  }
 }
 
-function renderRecentUsers(users) {
-  const recentTbody = document.querySelector("#recent-users tbody");
-  recentTbody.innerHTML = "";
-  users.slice(0, 5).forEach(u => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${u.email}</td>
-      <td>${u.role}</td>
-      <td>${new Date(u.created_at).toLocaleString()}</td>
-    `;
-    recentTbody.appendChild(tr);
-  });
-}
+/**
+ * Orchestrator: Loads stats and users in parallel
+ */
+async function loadDashboardData() {
+    const token = localStorage.getItem("token");
 
-function renderAllUsers(users) {
-  const manageTbody = document.querySelector("#all-users tbody");
-  manageTbody.innerHTML = "";
+    try {
+        const [statsRes, usersRes] = await Promise.all([
+            fetch(`${API_BASE_URL}/api/stats`, {
+                headers: { Authorization: `Bearer ${token}` }
+            }),
+            fetch(`${API_BASE_URL}/api/users`, {
+                headers: { Authorization: `Bearer ${token}` }
+            })
+        ]);
 
-  users.forEach(u => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${u.id}</td>
-      <td>${u.email}</td>
-      <td>
-        <select onchange="updateUserRole(${u.id}, this.value)">
-          <option value="user" ${u.role === "user" ? "selected" : ""}>User</option>
-          <option value="admin" ${u.role === "admin" ? "selected" : ""}>Admin</option>
-        </select>
-      </td>
-      <td><button class="delete-btn" data-userid="${u.id}">Delete</button></td>
-    `;
-    manageTbody.appendChild(tr);
-  });
+        if (statsRes.status === 401 || usersRes.status === 401) {
+            logout();
+            return;
+        }
 
-  manageTbody.querySelectorAll('.delete-btn').forEach(btn => {
-    btn.addEventListener('click', e => {
-      deleteUser(e.target.dataset.userid);
-    });
-  });
-}
+        const stats = await statsRes.json();
+        const users = await usersRes.json();
 
-async function updateUserRole(id, role) {
-  const token = localStorage.getItem("token");
+        updateStatsUI(stats);
+        renderUserTables(users);
 
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/users/${id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`
-      },
-      body: JSON.stringify({ role })
-    });
-
-    if (res.ok) {
-      alert("✅ User role updated successfully!");
-      loadDashboard();
-    } else {
-      alert("❌ Failed to update user role.");
+    } catch (error) {
+        console.error("Dashboard Sync Error:", error);
     }
-  } catch (error) {
-    alert("❌ Error updating user role: " + error.message);
-  }
 }
 
-async function deleteUser(id) {
-  if (!confirm("Are you sure you want to delete this user?")) return;
+/**
+ * UI Updates: Stats Cards
+ */
+function updateStatsUI(data) {
+    // Matches the IDs from our editorial dashboard layout
+    const totalU = document.getElementById("user-count") || document.getElementById("totalUsers");
+    const totalA = document.getElementById("admin-count") || document.getElementById("totalAdmins");
+    const totalR = document.getElementById("regular-count") || document.getElementById("totalRegularUsers");
 
-  const token = localStorage.getItem("token");
+    if (totalU) totalU.textContent = data.users;
+    if (totalA) totalA.textContent = data.admins;
+    if (totalR) totalR.textContent = data.regularUsers;
+}
 
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/users/${id}`, {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${token}` }
-    });
+/**
+ * UI Updates: Tables
+ */
+function renderUserTables(users) {
+    const recentTbody = document.querySelector("#recent-users tbody");
+    const allUsersTbody = document.querySelector("#all-users tbody");
 
-    if (res.ok) {
-      alert("🗑️ User deleted!");
-      loadDashboard();
-    } else {
-      alert("❌ Failed to delete user.");
+    // 1. Recent Users (Top 5)
+    if (recentTbody) {
+        recentTbody.innerHTML = users.slice(0, 5).map(u => `
+            <tr>
+                <td><strong>${u.email}</strong></td>
+                <td><span class="status-badge">${u.role}</span></td>
+                <td>${new Date(u.created_at).toLocaleDateString()}</td>
+            </tr>
+        `).join('');
     }
-  } catch (error) {
-    alert("❌ Error deleting user: " + error.message);
-  }
+
+    // 2. Management Table
+    if (allUsersTbody) {
+        allUsersTbody.innerHTML = users.map(u => `
+            <tr>
+                <td>#${u.id}</td>
+                <td>${u.email}</td>
+                <td>
+                    <select class="editorial-select" onchange="window.updateUserRole(${u.id}, this.value)">
+                        <option value="user" ${u.role === "user" ? "selected" : ""}>User</option>
+                        <option value="admin" ${u.role === "admin" ? "selected" : ""}>Admin</option>
+                    </select>
+                </td>
+                <td>
+                    <button class="delete-link" onclick="window.deleteUser(${u.id})">Remove</button>
+                </td>
+            </tr>
+        `).join('');
+    }
 }
 
+/**
+ * Actions: Role Update
+ */
+window.updateUserRole = async (id, role) => {
+    const token = localStorage.getItem("token");
+    try {
+        const res = await fetch(`${API_BASE_URL}/api/users/${id}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify({ role })
+        });
+
+        if (res.ok) loadDashboardData();
+    } catch (error) {
+        console.error("Role update failed:", error);
+    }
+};
+
+/**
+ * Actions: Delete User
+ */
+window.deleteUser = async (id) => {
+    if (!confirm("Are you sure? This cannot be undone.")) return;
+    const token = localStorage.getItem("token");
+
+    try {
+        const res = await fetch(`${API_BASE_URL}/api/users/${id}`, {
+            method: "DELETE",
+            headers: { Authorization: `Bearer ${token}` }
+        });
+
+        if (res.ok) loadDashboardData();
+    } catch (error) {
+        console.error("Deletion failed:", error);
+    }
+};
+
+/**
+ * Actions: Product Upload
+ */
 async function handleAddProduct(event) {
-  event.preventDefault();
+    event.preventDefault();
+    const token = localStorage.getItem("token");
+    const formData = new FormData(event.target);
 
-  const token = localStorage.getItem("token");
+    // If your HTML names are different from the keys expected by the server, 
+    // the server.js we just built expects: name, description, gender, quality, availability
+    // and a file field named "imageFile"
 
-  const form = event.target;
-  const name = form.productName.value.trim();
-  const imageUrl = form.productImageUrl.value.trim();
-  const imageFile = form.productImageUpload.files[0];
-  const quality = form.productQuality.value.trim();
-  const description = form.productDescription.value.trim();
+    try {
+        const res = await fetch(`${API_BASE_URL}/api/products`, {
+            method: "POST",
+            headers: { Authorization: `Bearer ${token}` },
+            body: formData
+        });
 
-  if (!name || !quality) {
-    alert("Please provide required fields: Name and Quality.");
-    return;
-  }
-
-  const formData = new FormData();
-  formData.append("name", name);
-  formData.append("quality", quality);
-  formData.append("description", description);
-
-  if (imageFile) {
-    formData.append("imageFile", imageFile);
-  } else if (imageUrl) {
-    formData.append("imageUrl", imageUrl);
-  }
-
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/products`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`
-      },
-      body: formData
-    });
-
-    if (res.ok) {
-      alert("✅ Product added successfully!");
-      form.reset();
-    } else {
-      alert("❌ Failed to add product.");
+        if (res.ok) {
+            alert("Product Added");
+            event.target.reset();
+        }
+    } catch (error) {
+        console.error("Product upload error:", error);
     }
-  } catch (error) {
-    alert("❌ Error connecting to server.");
-  }
 }
 
 function logout() {
-  localStorage.clear();
-  window.location.href = "login.html";
-}
-async function loadStats() {
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-        console.error("No token found");
-        return;
-    }
-
-const response = await fetch("https://authenticedgewebsite.onrender.com/api/stats", {
-    method: "GET",
-    headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer " + localStorage.getItem("token")
-    }
-});
-
-
-    const data = await response.json();
-
-    if (response.ok) {
-        document.getElementById("totalUsers").textContent = data.users;
-        document.getElementById("totalAdmins").textContent = data.admins;
-        document.getElementById("totalRegularUsers").textContent = data.regularUsers;
-    } else {
-        console.error("Failed to load stats:", data.error);
-    }
+    localStorage.clear();
+    window.location.href = "login.html";
 }
