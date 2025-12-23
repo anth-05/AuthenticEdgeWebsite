@@ -1,74 +1,125 @@
 import { API_BASE_URL } from "./config.js";
 
-const socket = io("https://authenticedgewebsite-1.onrender.com", {
-  transports: ["websocket", "polling"],
-});
-
 let activeUser = null;
+const usersList = document.getElementById("usersList");
+const chatBody = document.getElementById("chatBody");
+const chatHeader = document.getElementById("chatHeader");
+const adminInput = document.getElementById("adminInput");
+const adminSend = document.getElementById("adminSend");
+const messageBadge = document.getElementById("message-badge");
 
-socket.on("connect", () => {
-  console.log("🟢 Admin connected:", socket.id);
-  socket.emit("join", "admin_global");
-});
-
-socket.on("connect_error", err => {
-  console.error("Socket error:", err.message);
-});
-
-socket.on("admin_notification", msg => {
-  if (activeUser && String(msg.user_id) === String(activeUser)) {
-    appendMessage(msg);
-  } else {
-    showBadge();
-    loadConversations();
-  }
-});
-
-/* ---------- FUNCTIONS ---------- */
-
+/**
+ * Fetch all users who have sent messages
+ */
 async function loadConversations() {
-  const token = localStorage.getItem("token");
-  const res = await fetch(`${API_BASE_URL}/api/admin/conversations`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  const users = await res.json();
-  usersList.innerHTML = "";
+    const token = localStorage.getItem("token");
+    try {
+        const res = await fetch(`${API_BASE_URL}/api/admin/conversations`, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+        const users = await res.json();
+        
+        // Update badge with total inquiry count
+        messageBadge.textContent = users.length;
+        usersList.innerHTML = "";
 
-  users.forEach(u => {
-    const div = document.createElement("div");
-    div.className = "user-row";
-    div.textContent = u.email;
-    div.onclick = () => openChat(u.user_id, u.email);
-    usersList.appendChild(div);
-  });
+        users.forEach((u) => {
+            const div = document.createElement("div");
+            div.className = `user-item ${activeUser === u.user_id ? 'active' : ''}`;
+            div.innerHTML = `
+                <div class="user-avatar">${u.email.charAt(0).toUpperCase()}</div>
+                <div class="user-meta">
+                    <span class="user-email">${u.email}</span>
+                    <span class="last-msg">Click to view inquiry</span>
+                </div>
+            `;
+            div.onclick = () => openChat(u.user_id, u.email);
+            usersList.appendChild(div);
+        });
+    } catch (err) {
+        console.error("Error loading conversations:", err);
+    }
 }
 
+/**
+ * Open specific chat and render bubbles
+ */
 async function openChat(userId, email) {
-  activeUser = userId;
-  chatHeader.textContent = email;
+    activeUser = userId;
+    chatHeader.innerHTML = `<span class="eyebrow">CONVERSATION WITH</span><h3>${email}</h3>`;
+    
+    const token = localStorage.getItem("token");
+    try {
+        const res = await fetch(`${API_BASE_URL}/api/admin/messages/${userId}`, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+        const msgs = await res.json();
 
-  const token = localStorage.getItem("token");
-  const res = await fetch(
-    `${API_BASE_URL}/api/admin/messages/${userId}`,
-    { headers: { Authorization: `Bearer ${token}` } }
-  );
-  const msgs = await res.json();
-
-  chatBody.innerHTML = "";
-  msgs.forEach(appendMessage);
+        chatBody.innerHTML = "";
+        msgs.forEach(renderMessage);
+        chatBody.scrollTop = chatBody.scrollHeight;
+    } catch (err) {
+        console.error("Error loading messages:", err);
+    }
 }
 
-function sendMsg() {
-  const text = adminInput.value.trim();
-  if (!text || !activeUser) return;
+/**
+ * Send reply via REST API
+ */
+async function sendMsg() {
+    const text = adminInput.value.trim();
+    if (!text || !activeUser) return;
 
-  socket.emit("admin_reply", { userId: activeUser, text });
+    const token = localStorage.getItem("token");
+    try {
+        const res = await fetch(`${API_BASE_URL}/api/admin/reply`, {
+            method: "POST",
+            headers: { 
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}` 
+            },
+            body: JSON.stringify({ userId: activeUser, message: text })
+        });
 
-  appendMessage({
-    sender: "admin",
-    message: text,
-    created_at: new Date(),
-  });
-
-  adminInput.value = "";
+        if (res.ok) {
+            renderMessage({ sender: "admin", message: text });
+            adminInput.value = "";
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+    } catch (err) {
+        alert("Failed to send message.");
+    }
 }
+
+function renderMessage(msg) {
+    const div = document.createElement("div");
+    // Perspective: Admin bubbles on right, User on left
+    div.className = `message ${msg.sender}`;
+    div.innerHTML = `<div class="bubble">${msg.message}</div>`;
+    chatBody.appendChild(div);
+}
+
+// 5-Second Polling Loop (Replaces Socket.io)
+setInterval(() => {
+    loadConversations();
+    if (activeUser) {
+        // Refresh active chat history to see new user messages
+        const token = localStorage.getItem("token");
+        fetch(`${API_BASE_URL}/api/admin/messages/${activeUser}`, {
+            headers: { Authorization: `Bearer ${token}` },
+        })
+        .then(res => res.json())
+        .then(msgs => {
+            // Only re-render if message count has changed
+            if (msgs.length !== chatBody.children.length) {
+                chatBody.innerHTML = "";
+                msgs.forEach(renderMessage);
+                chatBody.scrollTop = chatBody.scrollHeight;
+            }
+        });
+    }
+}, 5000);
+
+adminSend.onclick = sendMsg;
+adminInput.onkeypress = (e) => { if (e.key === "Enter") sendMsg(); };
+loadConversations();

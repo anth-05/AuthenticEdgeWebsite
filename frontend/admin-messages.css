@@ -169,4 +169,89 @@
 @media (max-width: 900px) {
     .messages-layout { grid-template-columns: 1fr; }
     .inbox-sidebar { display: none; } /* On mobile, you'd toggle this */
+}.messages-layout {
+    display: flex;
+    height: calc(100vh - 0px); /* Full viewport height */
+}
+
+.inbox-sidebar {
+    width: 320px;
+    border-right: 1px solid #eee;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #fbfbfb;
+}
+
+.chat-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Bubbles Styling */
+.message {
+    max-width: 70%;
+    display: flex;
+}
+
+.message.admin {
+    align-self: flex-end; /* Admin on right */
+}
+
+.message.user {
+    align-self: flex-start; /* User on left */
+}
+
+.bubble {
+    padding: 12px 18px;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.message.admin .bubble {
+    background: #000;
+    color: #fff;
+    border-radius: 20px 20px 2px 20px;
+}
+
+.message.user .bubble {
+    background: #fff;
+    border: 1px solid #eee;
+    color: #000;
+    border-radius: 20px 20px 20px 2px;
+}
+
+/* Custom Editorial Input */
+.chat-footer {
+    padding: 30px;
+    background: #fff;
+    border-top: 1px solid #eee;
+}
+
+.input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    border-bottom: 2px solid #000;
+    padding-bottom: 10px;
+}
+
+#adminInput {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-family: 'Inter', sans-serif;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
 }
