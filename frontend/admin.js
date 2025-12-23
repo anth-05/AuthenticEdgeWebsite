@@ -20,37 +20,20 @@ function checkAdminAuth() {
 /**
  * Main Dashboard Loader
  */
-async function loadDashboard() {
-  const token = localStorage.getItem("token");
+async function loadDashboardData() {
+    try {
+        const data = await apiRequest("/api/admin/users"); // Calls the route we just added
+        
+        // Update Stats Counters
+        document.getElementById("total-users").textContent = data.stats.totalUsers;
+        document.getElementById("admin-users").textContent = data.stats.adminUsers;
+        document.getElementById("regular-users").textContent = data.stats.regularUsers;
 
-  try {
-    // 1. Verify Session & Load Stats in parallel
-    const [verifyRes, statsRes, usersRes] = await Promise.all([
-      fetch(`${API_BASE_URL}/api/protected`, { headers: { Authorization: `Bearer ${token}` } }),
-      fetch(`${API_BASE_URL}/api/stats`, { headers: { Authorization: `Bearer ${token}` } }),
-      fetch(`${API_BASE_URL}/api/users`, { headers: { Authorization: `Bearer ${token}` } })
-    ]);
-
-    if (!verifyRes.ok) {
-      logout();
-      return;
+        // Populate Tables (Recent and Manage)
+        renderUserTables(data.users);
+    } catch (err) {
+        console.error("Dashboard sync failed:", err);
     }
-
-    const stats = await statsRes.json();
-    const users = await usersRes.json();
-
-    // 2. Update Stats UI
-    document.getElementById("user-count").textContent = stats.users;
-    document.getElementById("admin-count").textContent = stats.admins;
-    document.getElementById("regular-count").textContent = stats.regularUsers;
-
-    // 3. Render Tables
-    renderRecentUsers(users);
-    renderAllUsers(users);
-
-  } catch (error) {
-    console.error("Dashboard failed to sync:", error);
-  }
 }
 
 /**
