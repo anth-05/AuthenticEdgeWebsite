@@ -24,21 +24,14 @@ const ALLOWED_ORIGINS = (
 /* ---------------- MIDDLEWARE ---------------- */
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-app.use(
-  cors({
-    origin: ALLOWED_ORIGINS,
-    credentials: true,
-  })
-);
+app.use(cors({ origin: ALLOWED_ORIGINS, credentials: true }));
 
 /* ---------------- DATABASE ---------------- */
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl:
-    process.env.NODE_ENV === "production"
-      ? { rejectUnauthorized: false }
-      : false,
+  ssl: process.env.NODE_ENV === "production"
+    ? { rejectUnauthorized: false }
+    : false,
 });
 
 /* ---------------- AUTH HELPERS ---------------- */
@@ -80,16 +73,16 @@ app.post("/api/login", async (req, res) => {
   res.json({ token, userId: rows[0].id, role: rows[0].role });
 });
 
-/* ---------------- MESSAGES (REST ONLY) ---------------- */
+/* ---------------- MESSAGES ---------------- */
 
 // User sends message
 app.post("/api/messages", authenticateToken, async (req, res) => {
   const { message } = req.body;
-
   if (!message) return res.status(400).json({ error: "Message required" });
 
   const { rows } = await pool.query(
-    "INSERT INTO messages (user_id, sender, message, status) VALUES ($1,'user',$2,'unread') RETURNING *",
+    `INSERT INTO messages (user_id, sender, message, status)
+     VALUES ($1,'user',$2,'unread') RETURNING *`,
     [req.user.id, message]
   );
 
@@ -128,21 +121,23 @@ app.get(
   authenticateToken,
   verifyAdmin,
   async (req, res) => {
+    const { userId } = req.params;
+
     const { rows } = await pool.query(
       "SELECT * FROM messages WHERE user_id=$1 ORDER BY created_at ASC",
-      [req.params.userId]
+      [userId]
     );
 
     await pool.query(
       "UPDATE messages SET status='read' WHERE user_id=$1 AND sender='user'",
-      [req.params.userId]
+      [userId]
     );
 
     res.json(rows);
   }
 );
 
-// Admin replies
+// Admin reply
 app.post(
   "/api/admin/messages/:userId",
   authenticateToken,
@@ -151,21 +146,15 @@ app.post(
     const { message } = req.body;
 
     const { rows } = await pool.query(
-      "INSERT INTO messages (user_id, sender, message, status) VALUES ($1,'admin',$2,'read') RETURNING *",
+      `INSERT INTO messages (user_id, sender, message, status)
+       VALUES ($1,'admin',$2,'read') RETURNING *`,
       [req.params.userId, message]
     );
 
     res.json(rows[0]);
   }
 );
-app.get('/api/admin/conversations', authenticateAdmin, async (req, res) => {
-    // Logic: Select distinct user_ids and their emails from messages
-    // Example SQL: SELECT DISTINCT user_id, email FROM messages JOIN users ON messages.user_id = users.id
-});
-app.get('/api/admin/messages/:userId', authenticateAdmin, async (req, res) => {
-    const { userId } = req.params;
-    // Logic: SELECT * FROM messages WHERE user_id = userId ORDER BY created_at ASC
-});
+
 /* ---------------- PRODUCTS ---------------- */
 app.get("/api/products", async (req, res) => {
   const { rows } = await pool.query(
@@ -173,28 +162,19 @@ app.get("/api/products", async (req, res) => {
   );
   res.json(rows);
 });
-app.post('/api/admin/reply', authenticateAdmin, async (req, res) => {
-    const { userId, message } = req.body;
-    // Logic: INSERT INTO messages (user_id, sender, message) VALUES (userId, 'admin', message)
-    res.sendStatus(200);
-});
-app.post('/api/messages', authenticateUser, async (req, res) => {
-    const { message } = req.body;
-    const userId = req.user.id; // From your JWT token
-    // Logic: INSERT INTO messages (user_id, sender, message) VALUES (userId, 'user', message)
-});
+
 app.post(
   "/api/products",
   authenticateToken,
   verifyAdmin,
   upload.single("imageFile"),
   async (req, res) => {
-    const { name, description, gender, quality, availability, image } =
-      req.body;
+    const { name, description, gender, quality, availability, image } = req.body;
     const finalImage = req.file ? req.file.path : image;
 
     await pool.query(
-      "INSERT INTO products (name, description, image, gender, quality, availability) VALUES ($1,$2,$3,$4,$5,$6)",
+      `INSERT INTO products (name, description, image, gender, quality, availability)
+       VALUES ($1,$2,$3,$4,$5,$6)`,
       [name, description, finalImage, gender, quality, availability]
     );
 
