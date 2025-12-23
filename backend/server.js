@@ -52,6 +52,53 @@ function verifyAdmin(req, res, next) {
 }
 
 /* ---------------- AUTH ---------------- */
+// Add this to your server.js
+// GET all user conversations for the admin sidebar
+app.get('/api/admin/conversations', authenticateAdmin, async (req, res) => {
+    try {
+        // This gets the latest message from every unique user
+        const result = await pool.query(`
+            SELECT DISTINCT ON (user_id) user_id, email, message, created_at 
+            FROM messages 
+            JOIN users ON messages.user_id = users.id 
+            ORDER BY user_id, created_at DESC
+        `);
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: "Failed to fetch conversations" });
+    }
+});
+
+// GET full history for a specific user
+app.get('/api/admin/messages/:userId', authenticateAdmin, async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const result = await pool.query(
+            "SELECT * FROM messages WHERE user_id = $1 ORDER BY created_at ASC",
+            [userId]
+        );
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: "Failed to fetch chat history" });
+    }
+});
+app.post('/api/admin/reply', authenticateAdmin, async (req, res) => {
+    try {
+        const { userId, message } = req.body;
+
+        // 1. Insert the message into your database
+        // Example using SQL (adjust for your DB):
+        await pool.query(
+            "INSERT INTO messages (user_id, sender, message, created_at) VALUES ($1, $2, $3, NOW())",
+            [userId, 'admin', message]
+        );
+
+        res.status(200).json({ success: true, message: "Reply saved." });
+    } catch (err) {
+        console.error("Admin reply error:", err);
+        res.status(500).json({ error: "Server failed to save reply." });
+    }
+});
 app.post("/api/login", async (req, res) => {
   const { email, password } = req.body;
 
