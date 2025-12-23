@@ -106,3 +106,71 @@
     color: #e74c3c;
     opacity: 0.8;
 }
+/* Container for the grid */
+.product-grid {
+    display: grid;
+    /* This creates 3 columns on desktop, 2 on tablet, 1 on mobile */
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 40px 20px; /* 40px between rows, 20px between columns */
+    padding: 20px 0;
+}
+
+/* Individual Card */
+.product-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%; /* Ensures all cards in a row stretch to match */
+    background: #fff;
+    transition: transform 0.3s ease;
+}
+
+/* Image Frame - The secret to uniform sizing */
+.product-img-frame {
+    width: 100%;
+    aspect-ratio: 4 / 5; /* Forces a consistent Portrait shape */
+    background-color: #f9f9f9;
+    overflow: hidden;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.product-img-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain; /* Shows full product without cropping */
+    padding: 20px; /* Space around product image */
+    transition: scale 0.5s ease;
+}
+
+.product-card:hover img {
+    scale: 1.05;
+}
+
+/* Details Section */
+.product-details {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.product-cat {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #888;
+}
+
+.product-details h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin: 5px 0;
+    color: #000;
+}
+
+/* Status Text */
+.status {
+    font-size: 0.85rem;
+    margin-top: auto; /* Pushes status to the bottom if titles vary in length */
+}
