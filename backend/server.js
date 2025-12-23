@@ -158,7 +158,14 @@ app.post(
     res.json(rows[0]);
   }
 );
-
+app.get('/api/admin/conversations', authenticateAdmin, async (req, res) => {
+    // Logic: Select distinct user_ids and their emails from messages
+    // Example SQL: SELECT DISTINCT user_id, email FROM messages JOIN users ON messages.user_id = users.id
+});
+app.get('/api/admin/messages/:userId', authenticateAdmin, async (req, res) => {
+    const { userId } = req.params;
+    // Logic: SELECT * FROM messages WHERE user_id = userId ORDER BY created_at ASC
+});
 /* ---------------- PRODUCTS ---------------- */
 app.get("/api/products", async (req, res) => {
   const { rows } = await pool.query(
@@ -166,7 +173,16 @@ app.get("/api/products", async (req, res) => {
   );
   res.json(rows);
 });
-
+app.post('/api/admin/reply', authenticateAdmin, async (req, res) => {
+    const { userId, message } = req.body;
+    // Logic: INSERT INTO messages (user_id, sender, message) VALUES (userId, 'admin', message)
+    res.sendStatus(200);
+});
+app.post('/api/messages', authenticateUser, async (req, res) => {
+    const { message } = req.body;
+    const userId = req.user.id; // From your JWT token
+    // Logic: INSERT INTO messages (user_id, sender, message) VALUES (userId, 'user', message)
+});
 app.post(
   "/api/products",
   authenticateToken,
