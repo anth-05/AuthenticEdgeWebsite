@@ -78,6 +78,7 @@
       if (res.ok) {
         localStorage.setItem("token", data.token);
         localStorage.setItem("role", data.role);
+        localStorage.setItem("userId", data.userId); // <--- ADD THIS LINE
         if (data.role === "admin") {
           feedback.textContent = "Welcome, Admin!";
           window.location.href = "admin-dashboard.html";

@@ -6,63 +6,67 @@ const chatInput = document.getElementById("chatInput");
 const chatSend = document.getElementById("chatSend");
 const chatToggle = document.getElementById("chatToggle");
 
-const token = localStorage.getItem("token");
-const userId = localStorage.getItem("userId");
-
 // 1. ALWAYS SHOW THE BUBBLE
-// Remove the code that sets display to "none"
 chatWidget.style.display = "flex";
 
-// 2. TOGGLE LOGIC (Uses the .open class from your CSS)
+let socket = null;
+
 chatToggle.onclick = () => {
+    // RE-FETCH tokens every time the bubble is clicked
+    const currentToken = localStorage.getItem("token");
+    const currentUserId = localStorage.getItem("userId");
+
     chatWidget.classList.toggle("open");
     
-    // If opening and logged in, load history
-    if (chatWidget.classList.contains("open") && token && userId) {
-        loadHistory();
-    } 
-    // If opening and NOT logged in, show a notice
-    else if (chatWidget.classList.contains("open")) {
-        chatBox.innerHTML = `
-            <div style="padding: 20px; text-align: center; color: #666; font-size: 0.85rem;">
-                <p>Please <strong>Login</strong> to speak with our concierge.</p>
-                <a href="login.html" style="display: inline-block; margin-top: 10px; color: #000; text-decoration: underline;">Login here</a>
-            </div>`;
+    if (chatWidget.classList.contains("open")) {
+        if (currentToken && currentUserId) {
+            // User is logged in
+            if (!socket) {
+                initConnection(currentToken, currentUserId);
+            }
+            loadHistory(currentToken);
+        } else {
+            // User is NOT logged in
+            chatBox.innerHTML = `
+                <div style="padding: 20px; text-align: center; color: #666; font-size: 0.85rem;">
+                    <p>Please <strong>Login</strong> to speak with our concierge.</p>
+                    <a href="login.html" style="display: inline-block; margin-top: 10px; color: #000; text-decoration: underline;">Login here</a>
+                </div>`;
+        }
     }
 };
 
-// 3. SOCKET LOGIC (Only runs if logged in)
-if (token && userId) {
-    const socket = io(API_BASE_URL.replace("/api", ""));
+function initConnection(token, userId) {
+    socket = io(API_BASE_URL.replace("/api", ""));
     socket.emit("join", userId);
-
-    async function loadHistory() {
-        try {
-            const res = await fetch(`${API_BASE_URL}/api/messages`, {
-                headers: { "Authorization": `Bearer ${token}` }
-            });
-            const messages = await res.json();
-            chatBox.innerHTML = "";
-            messages.forEach(msg => appendMessage(msg)); // Removed .reverse() as DB order is usually correct
-        } catch (err) {
-            console.error("History error:", err);
-        }
-    }
-
-    function sendMessage() {
-        const text = chatInput.value.trim();
-        if (!text) return;
-        socket.emit("user_msg", { userId, message: text });
-        appendMessage({ sender: 'user', message: text });
-        chatInput.value = "";
-    }
-
-    chatSend.onclick = sendMessage;
-    chatInput.onkeypress = (e) => { if (e.key === 'Enter') sendMessage(); };
 
     socket.on("new_msg", (msg) => {
         appendMessage(msg);
     });
+
+    chatSend.onclick = () => sendMessage(userId);
+    chatInput.onkeypress = (e) => { if (e.key === 'Enter') sendMessage(userId); };
+}
+
+async function loadHistory(token) {
+    try {
+        const res = await fetch(`${API_BASE_URL}/api/messages`, {
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+        const messages = await res.json();
+        chatBox.innerHTML = "";
+        messages.forEach(msg => appendMessage(msg));
+    } catch (err) {
+        console.error("History error:", err);
+    }
+}
+
+function sendMessage(userId) {
+    const text = chatInput.value.trim();
+    if (!text || !socket) return;
+    socket.emit("user_msg", { userId, message: text });
+    appendMessage({ sender: 'user', message: text });
+    chatInput.value = "";
 }
 
 function appendMessage(msg) {
