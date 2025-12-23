@@ -15,18 +15,27 @@ let activeUser = null;
 // admin-messages.js
 
 // admin-messages.js refinement
-const socket = io(API_BASE_URL.replace("/api", ""));
+// admin-messages.js
+
+// 1. Initialize socket using the global 'io' from the CDN
+const socket = io("https://authenticedgewebsite-1.onrender.com");
 
 socket.on("connect", () => {
-    console.log("Admin connected with ID:", socket.id);
+    console.log("Admin connected to socket:", socket.id);
+    
+    // 2. Join the global admin room so you receive notifications
     socket.emit("join", "admin_global");
 });
 
 socket.on("admin_notification", (msg) => {
-    // This ensures real-time updates hit the list even if no chat is open
+    console.log("New message received:", msg);
+    // Refresh the list so the new message appears in the sidebar
     loadConversations(); 
+    
     if (activeUser && String(msg.user_id) === String(activeUser)) {
         appendMessage(msg);
+    } else {
+        showBadge();
     }
 });
 
