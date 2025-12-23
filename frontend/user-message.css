@@ -1,59 +1,81 @@
-/* user-messages.css */
-
-/* Center the chat on the page and give it space from the header */
+/* Center the chat box and prevent header overlap */
 .chat-wrapper {
-    padding-top: 160px; /* Adjust based on your header height */
+    padding-top: 140px; 
     display: flex;
     justify-content: center;
-    background-color: #f9f9f9; 
+    background-color: #fcfcfc; 
     min-height: 100vh;
-    box-sizing: border-box;
 }
 
 /* The fixed-size chat window */
 .chat-canvas {
     width: 100%;
-    max-width: 650px;
+    max-width: 600px;
     background: #fff;
     display: flex;
     flex-direction: column;
-    height: 70vh; /* Keeps it a consistent size */
+    height: 70vh; 
     border: 1px solid #eee;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.05);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.03);
 }
 
-/* The Black Top Bar */
+/* Black Top Bar Styling */
 .admin-presence-bar {
-    padding: 20px 30px;
+    padding: 15px 25px;
     background: #000;
     color: #fff;
-    flex-shrink: 0; /* Prevents it from squishing */
 }
 
-/* Ensure the message stream scrolls internally */
+.presence-info { display: flex; align-items: center; gap: 12px; }
+.avatar-circle {
+    width: 36px; height: 36px; background: #222; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; font-size: 0.7rem;
+}
+
+/* The Message Flow */
 .message-stream {
     flex: 1;
     overflow-y: auto;
-    padding: 30px;
+    padding: 25px;
     display: flex;
     flex-direction: column;
     gap: 12px;
-    background: #ffffff;
 }
 
-/* The Input Area at the bottom */
-.composer-area {
-    padding: 20px 30px;
+/* WhatsApp-style bubbles with your branding */
+.msg-bubble {
+    max-width: 75%;
+    padding: 12px 18px;
+    font-size: 0.85rem;
+    line-height: 1.5;
+}
+
+.msg-bubble.user {
+    align-self: flex-end;
+    background: #000;
+    color: #fff;
+    border-radius: 18px 18px 2px 18px; /* Classic chat shape */
+}
+
+.msg-bubble.admin {
+    align-self: flex-start;
     background: #fff;
+    border: 1px solid #eee;
+    color: #000;
+    border-radius: 18px 18px 18px 2px;
+}
+
+/* Bottom Input Area */
+.composer-area {
+    padding: 20px;
     border-top: 1px solid #eee;
-    flex-shrink: 0;
 }
 
 .composer-container {
     display: flex;
     background: #f4f4f4;
-    border-radius: 4px; /* Keeps the square editorial look */
-    padding: 5px 15px;
+    border-radius: 4px; /* Maintain square editorial look */
+    padding: 8px 15px;
     align-items: center;
 }
 
@@ -61,13 +83,80 @@
     flex: 1;
     border: none;
     background: transparent;
-    padding: 12px;
     outline: none;
-    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
 }
 
 #chatSend {
     background: transparent;
     border: none;
     cursor: pointer;
+}
+/* user-messages.css */
+
+/* 1. The Wrapper: Pushes content below the main navigation */
+.chat-full-screen {
+    height: 90vh;
+    display: flex;
+    flex-direction: column;
+    background-color: #fff;
+    box-sizing: border-box;
+}
+
+/* 2. The Canvas: Spans full width and height */
+.chat-canvas-full {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    border-top: 1px solid #eee;
+}
+
+/* 3. The Message Stream: Takes up all available vertical space */
+.message-stream {
+    flex: 1;
+    overflow-y: auto;
+    padding: 40px 10%; /* Wide horizontal padding for editorial look */
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    background-color: #fcfcfc;
+}
+
+/* 4. Editorial Speech Bubbles */
+.msg-bubble {
+    max-width: 60%; /* Narrower for full-screen to look cleaner */
+    padding: 15px 22px;
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.msg-bubble.user {
+    align-self: flex-end;
+    background: #000;
+    color: #fff;
+    border-radius: 25px 25px 2px 25px;
+}
+
+.msg-bubble.admin {
+    align-self: flex-start;
+    background: #fff;
+    border: 1px solid #eee;
+    color: #000;
+    border-radius: 25px 25px 25px 2px;
+}
+
+/* 5. Fixed Bottom Composer */
+.composer-area {
+    padding: 30px 10%;
+    background: #fff;
+    border-top: 1px solid #eee;
+}
+
+.composer-container {
+    display: flex;
+    background: #f4f4f4;
+    padding: 10px 20px;
+    align-items: center;
+    border-radius: 4px; /* Square editorial style */
 }

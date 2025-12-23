@@ -6,7 +6,7 @@
   <title>Concierge | Authentic Edge</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap">
   <link rel="stylesheet" href="theme.css">
-  <link rel="stylesheet" href="user-messages.css">
+  <link rel="stylesheet" href="user-message.css">
   <link rel="stylesheet" href="mobile-header.css">
 </head> 
 
@@ -20,34 +20,35 @@
     </div>
   </header>
 
-  <main class="chat-wrapper">
-    <div class="chat-canvas">
-      
-      <div class="admin-presence-bar">
-        <div class="presence-info">
-          <div class="avatar-circle">AE</div>
-          <div class="text-info">
-            <span class="name">Concierge Support</span>
-            <span class="status">Official Channel</span>
-          </div>
-        </div>
-      </div>
-
-      <div id="chatBox" class="message-stream">
-        </div>
-
-      <div class="composer-area">
-        <div class="composer-container">
-          <input type="text" id="chatInput" placeholder="Message Concierge..." autocomplete="off">
-          <button id="chatSend">
-            <svg viewBox="0 0 24 24" width="22" height="22">
-              <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" fill="currentColor"></path>
-            </svg>
-          </button>
+  <main class="chat-full-screen">
+  <div class="chat-canvas-full">
+    
+    <div class="admin-presence-bar">
+      <div class="presence-info">
+        <div class="avatar-circle">AE</div>
+        <div class="text-info">
+          <span class="name">Concierge Support</span>
+          <span class="status">Official Channel</span>
         </div>
       </div>
     </div>
-  </main>
+
+    <div id="chatBox" class="message-stream">
+        </div>
+
+    <div class="composer-area">
+      <div class="composer-container">
+        <input type="text" id="chatInput" placeholder="Message Concierge..." autocomplete="off">
+        <button id="chatSend">
+          <svg viewBox="0 0 24 24" width="22" height="22">
+            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" fill="currentColor"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+  </div>
+</main>
 
   <footer class="site-footer">
     <div class="footer-left"><p class="brand">the authentic edge</p></div>
