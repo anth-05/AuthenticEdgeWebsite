@@ -14,14 +14,20 @@ let activeUser = null;
 // Point to the base URL (Socket.io lives on the server root, not /api)
 // admin-messages.js
 
+// admin-messages.js refinement
 const socket = io(API_BASE_URL.replace("/api", ""));
 
-// 1. Listen for the 'connect' event FIRST
 socket.on("connect", () => {
-    console.log("Connected to server. ID:", socket.id);
-    
-    // 2. NOW tell the server we are the admin
+    console.log("Admin connected with ID:", socket.id);
     socket.emit("join", "admin_global");
+});
+
+socket.on("admin_notification", (msg) => {
+    // This ensures real-time updates hit the list even if no chat is open
+    loadConversations(); 
+    if (activeUser && String(msg.user_id) === String(activeUser)) {
+        appendMessage(msg);
+    }
 });
 
 // 3. Listen for the notification
