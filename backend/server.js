@@ -5,182 +5,304 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import pkg from "pg";
 import http from "http";
-import { Server } from "socket.io";
+import rateLimit from "express-rate-limit";
+import sanitize from "sanitize-html";
 import multer from "multer";
 import { v2 as cloudinary } from "cloudinary";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
+import { Server } from "socket.io";
 
 dotenv.config();
 const { Pool } = pkg;
+
 const app = express();
 const server = http.createServer(app);
 
-// 1. DATABASE SETUP
+/* ===========================
+   DATABASE
+=========================== */
 const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: { rejectUnauthorized: false } // Required for Render/Heroku
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
 });
 
-// 2. SOCKET.IO SETUP
-const io = new Server(server, {
-    cors: { origin: "*", methods: ["GET", "POST"] }
+/* ===========================
+   MIDDLEWARE
+=========================== */
+app.use(express.json());
+
+app.use(cors({
+  origin: [
+    "http://localhost:5500",
+    "https://authenticedgewebsite.onrender.com"
+  ],
+  credentials: true
+}));
+
+/* ===========================
+   RATE LIMITING
+=========================== */
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20
 });
 
-// 3. CLOUDINARY STORAGE (For Product Images)
+const contactLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 5
+});
+
+/* ===========================
+   AUTH HELPERS
+=========================== */
+function authenticateToken(req, res, next) {
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) return res.status(401).json({ error: "Unauthorized" });
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    if (err) return res.status(403).json({ error: "Invalid token" });
+    req.user = user;
+    next();
+  });
+}
+
+function verifyAdmin(req, res, next) {
+  if (req.user.role !== "admin") {
+    return res.status(403).json({ error: "Admin only" });
+  }
+  next();
+}
+
+/* ===========================
+   CLOUDINARY UPLOADS
+=========================== */
 cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_NAME,
-    api_key: process.env.CLOUDINARY_KEY,
-    api_secret: process.env.CLOUDINARY_SECRET
+  cloud_name: process.env.CLOUDINARY_NAME,
+  api_key: process.env.CLOUDINARY_KEY,
+  api_secret: process.env.CLOUDINARY_SECRET
 });
 
 const storage = new CloudinaryStorage({
-    cloudinary: cloudinary,
-    params: { folder: "authentic_edge_products", allowed_formats: ["jpg", "png", "webp"] }
+  cloudinary,
+  params: {
+    folder: "authentic_edge_products",
+    allowed_formats: ["jpg", "png", "webp"]
+  }
 });
-const upload = multer({ storage: storage });
+const upload = multer({ storage });
 
-// 4. MIDDLEWARE
-app.use(cors());
-app.use(express.json());
+/* ===========================
+   AUTH ROUTES
+=========================== */
+app.post("/api/register", authLimiter, async (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) return res.status(400).json({ error: "Missing fields" });
 
-const authenticateToken = (req, res, next) => {
-    const token = req.headers['authorization']?.split(' ')[1];
-    if (!token) return res.status(401).json({ error: "Access denied" });
-    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-        if (err) return res.status(403).json({ error: "Invalid token" });
-        req.user = user;
-        next();
-    });
-};
-
-const verifyAdmin = (req, res, next) => {
-    if (req.user.role !== 'admin') return res.status(403).json({ error: "Admin access required" });
-    next();
-};
-
-// 5. AUTHENTICATION ROUTES
-app.post("/api/register", async (req, res) => {
-    const { email, password } = req.body;
-    try {
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const result = await pool.query(
-            "INSERT INTO users (email, password, role) VALUES ($1, $2, 'user') RETURNING id, email, role",
-            [email, hashedPassword]
-        );
-        res.status(201).json({ success: true, user: result.rows[0] });
-    } catch (err) {
-        res.status(400).json({ error: "User already exists or database error" });
-    }
+  try {
+    const hashed = await bcrypt.hash(password, 10);
+    const result = await pool.query(
+      "INSERT INTO users (email, password, role) VALUES ($1,$2,'user') RETURNING id",
+      [email, hashed]
+    );
+    res.status(201).json({ success: true, userId: result.rows[0].id });
+  } catch {
+    res.status(400).json({ error: "User already exists" });
+  }
 });
 
-app.post("/api/login", async (req, res) => {
-    const { email, password } = req.body;
-    try {
-        const { rows } = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
-        if (rows.length === 0) return res.status(401).json({ error: "Invalid credentials" });
+app.post("/api/login", authLimiter, async (req, res) => {
+  const { email, password } = req.body;
 
-        const validPass = await bcrypt.compare(password, rows[0].password);
-        if (!validPass) return res.status(401).json({ error: "Invalid credentials" });
+  const { rows } = await pool.query("SELECT * FROM users WHERE email=$1", [email]);
+  if (!rows.length) return res.status(401).json({ error: "Invalid credentials" });
 
-        const token = jwt.sign({ id: rows[0].id, role: rows[0].role }, process.env.JWT_SECRET, { expiresIn: '24h' });
-        res.json({
-        token,
-        role: rows[0].role,
-        userId: rows[0].id
+  const user = rows[0];
+  const valid = await bcrypt.compare(password, user.password);
+  if (!valid) return res.status(401).json({ error: "Invalid credentials" });
+
+  const token = jwt.sign(
+    { id: user.id, role: user.role },
+    process.env.JWT_SECRET,
+    { expiresIn: "24h" }
+  );
+
+  res.json({ token, role: user.role, userId: user.id });
 });
 
-    } catch (err) {
-        res.status(500).json({ error: "Server error" });
-    }
+/* ===========================
+   USER ROUTES
+=========================== */
+app.get("/api/user", authenticateToken, async (req, res) => {
+  const { rows } = await pool.query(
+    "SELECT id, email, created_at FROM users WHERE id=$1",
+    [req.user.id]
+  );
+  res.json(rows[0]);
 });
 
-// 6. PRODUCT MANAGEMENT (Supports URL & Upload)
-app.get("/api/products", async (req, res) => {
-    const { rows } = await pool.query("SELECT * FROM products ORDER BY id DESC");
-    res.json(rows);
+app.put("/api/user/email", authenticateToken, async (req, res) => {
+  const email = sanitize(req.body.email);
+  await pool.query("UPDATE users SET email=$1 WHERE id=$2", [email, req.user.id]);
+  res.json({ success: true });
 });
 
-app.post("/api/products", authenticateToken, verifyAdmin, upload.single("imageFile"), async (req, res) => {
-    const { name, description, gender, quality, availability, image } = req.body;
-    const imageUrl = req.file ? req.file.path : image; // Use uploaded file path or provided URL
-
-    try {
-        await pool.query(
-            "INSERT INTO products (name, description, gender, quality, availability, image) VALUES ($1, $2, $3, $4, $5, $6)",
-            [name, description, gender, quality, availability, imageUrl]
-        );
-        res.status(201).json({ success: true });
-    } catch (err) {
-        res.status(500).json({ error: "Failed to save product" });
-    }
+app.put("/api/user/password", authenticateToken, async (req, res) => {
+  const hashed = await bcrypt.hash(req.body.password, 10);
+  await pool.query("UPDATE users SET password=$1 WHERE id=$2", [hashed, req.user.id]);
+  res.json({ success: true });
 });
 
-// 7. ADMIN DASHBOARD & USER MGMT
-app.get("/api/admin/data", authenticateToken, verifyAdmin, async (req, res) => {
-    try {
-        const users = await pool.query("SELECT id, email, role, created_at FROM users ORDER BY created_at DESC");
-        const totalUsers = users.rowCount;
-        const adminUsers = users.rows.filter(u => u.role === 'admin').length;
-        const regularUsers = totalUsers - adminUsers;
-
-        res.json({
-            stats: { totalUsers, adminUsers, regularUsers },
-            users: users.rows
-        });
-    } catch (err) {
-        res.status(500).json({ error: "Failed to fetch dashboard data" });
-    }
+app.delete("/api/user", authenticateToken, async (req, res) => {
+  await pool.query("DELETE FROM users WHERE id=$1", [req.user.id]);
+  res.json({ success: true });
 });
 
-app.delete("/api/admin/users/:id", authenticateToken, verifyAdmin, async (req, res) => {
-    try {
-        await pool.query("DELETE FROM users WHERE id = $1", [req.params.id]);
-        res.json({ success: true });
-    } catch (err) {
-        res.status(500).json({ error: "Delete failed" });
-    }
+/* ===========================
+   PRODUCTS
+=========================== */
+app.get("/api/products", async (_, res) => {
+  const { rows } = await pool.query("SELECT * FROM products ORDER BY id DESC");
+  res.json(rows);
 });
 
-// 8. SUBSCRIPTION MANAGEMENT
-app.get("/api/admin/subscriptions", authenticateToken, verifyAdmin, async (req, res) => {
+app.post(
+  "/api/products",
+  authenticateToken,
+  verifyAdmin,
+  upload.single("imageFile"),
+  async (req, res) => {
+    const data = {
+      name: sanitize(req.body.name),
+      description: sanitize(req.body.description || ""),
+      gender: sanitize(req.body.gender || ""),
+      quality: sanitize(req.body.quality || ""),
+      availability: sanitize(req.body.availability || ""),
+      image: req.file?.path || req.body.image
+    };
+
+    await pool.query(
+      `INSERT INTO products (name,description,gender,quality,availability,image)
+       VALUES ($1,$2,$3,$4,$5,$6)`,
+      Object.values(data)
+    );
+
+    res.json({ success: true });
+  }
+);
+
+// ===============================
+// ADMIN MESSAGES
+// ===============================
+
+// ADMIN: list conversations (latest message per user)
+app.get("/api/admin/conversations", authenticateToken, verifyAdmin, async (req, res) => {
+  try {
     const { rows } = await pool.query(`
-        SELECT s.*, u.email 
-        FROM subscriptions s 
-        JOIN users u ON s.user_id = u.id 
-        WHERE s.status = 'pending'
+      SELECT
+        u.id AS user_id,
+        u.email,
+        m.message,
+        m.created_at
+      FROM users u
+      LEFT JOIN LATERAL (
+        SELECT message, created_at
+        FROM messages
+        WHERE user_id = u.id
+        ORDER BY created_at DESC
+        LIMIT 1
+      ) m ON true
+      ORDER BY m.created_at DESC NULLS LAST
     `);
+
     res.json(rows);
+  } catch (err) {
+    console.error("Admin conversations error:", err);
+    res.status(500).json({ error: "Failed to load conversations" });
+  }
+});
+
+// ADMIN: fetch message history with a user
+app.get("/api/admin/messages/:userId", authenticateToken, verifyAdmin, async (req, res) => {
+  try {
+    const { rows } = await pool.query(
+      "SELECT * FROM messages WHERE user_id = $1 ORDER BY created_at ASC",
+      [req.params.userId]
+    );
+    res.json(rows);
+  } catch (err) {
+    console.error("Admin messages fetch error:", err);
+    res.status(500).json({ error: "Failed to load messages" });
+  }
+});
+
+
+/* ===========================
+   SUBSCRIPTIONS
+=========================== */
+app.get("/api/subscription", authenticateToken, async (req, res) => {
+  const { rows } = await pool.query(
+    "SELECT * FROM subscriptions WHERE user_id=$1",
+    [req.user.id]
+  );
+  res.json(rows[0] || {});
+});
+
+app.post("/api/subscription/request", authenticateToken, async (req, res) => {
+  const plan = sanitize(req.body.plan);
+
+  await pool.query(
+    `
+    INSERT INTO subscriptions (user_id, requested_plan, status)
+    VALUES ($1,$2,'pending')
+    ON CONFLICT (user_id)
+    DO UPDATE SET requested_plan=$2, status='pending'
+    `,
+    [req.user.id, plan]
+  );
+
+  res.json({ success: true });
+});
+
+app.get("/api/admin/subscriptions", authenticateToken, verifyAdmin, async (_, res) => {
+  const { rows } = await pool.query(`
+    SELECT s.*, u.email
+    FROM subscriptions s
+    JOIN users u ON u.id = s.user_id
+    WHERE s.status='pending'
+  `);
+  res.json(rows);
 });
 
 app.post("/api/admin/subscriptions/:userId", authenticateToken, verifyAdmin, async (req, res) => {
-    const { action } = req.body;
-    const status = action === 'approve' ? 'active' : 'rejected';
-    try {
-        await pool.query("UPDATE subscriptions SET status = $1 WHERE user_id = $2", [status, req.params.userId]);
-        if (action === 'approve') {
-            await pool.query("UPDATE users SET tier = 'premium' WHERE id = $1", [req.params.userId]);
-        }
-        res.json({ success: true });
-    } catch (err) {
-        res.status(500).json({ error: "Sync failed" });
-    }
+  const status = req.body.action === "approve" ? "active" : "rejected";
+  await pool.query(
+    "UPDATE subscriptions SET status=$1 WHERE user_id=$2",
+    [status, req.params.userId]
+  );
+  res.json({ success: true });
 });
 
-// 9. CONTACT FORM
-app.post("/api/contact", async (req, res) => {
-    const { name, email, phone, message } = req.body;
-    try {
-        await pool.query(
-            "INSERT INTO contact_messages (name, email, phone, message) VALUES ($1, $2, $3, $4)",
-            [name, email, phone, message]
-        );
-        res.json({ success: true });
-    } catch (err) {
-        res.status(500).json({ error: "Message failed to send" });
-    }
+/* ===========================
+   CONTACT
+=========================== */
+app.post("/api/contact", contactLimiter, async (req, res) => {
+  await pool.query(
+    "INSERT INTO contact_messages (name,email,phone,message) VALUES ($1,$2,$3,$4)",
+    [
+      sanitize(req.body.name),
+      sanitize(req.body.email),
+      sanitize(req.body.phone || ""),
+      sanitize(req.body.message)
+    ]
+  );
+  res.json({ success: true });
 });
 
-// 10. REAL-TIME CHAT (Socket.io)
+/* ===========================
+   SOCKET.IO (SECURE + PERSISTENT)
+=========================== */
+const io = new Server(server, { cors: { origin: "*" } });
+
 io.use((socket, next) => {
   const token = socket.handshake.auth?.token;
   if (!token) return next(new Error("Unauthorized"));
@@ -191,33 +313,56 @@ io.use((socket, next) => {
     next();
   });
 });
+io.on("connection", (socket) => {
 
-// USER PROFILE
-app.get("/api/user", authenticateToken, async (req, res) => {
-  const { rows } = await pool.query(
-    "SELECT id, email, created_at FROM users WHERE id = $1",
-    [req.user.id]
-  );
-  res.json(rows[0]);
+  // Admin joins global notification room
+  socket.on("join", (room) => {
+    socket.join(room);
+  });
+
+  // USER → ADMIN
+  socket.on("user_msg", async ({ userId, text }) => {
+    try {
+      await pool.query(
+        "INSERT INTO messages (user_id, sender, message) VALUES ($1,'user',$2)",
+        [userId, text]
+      );
+
+      io.to("admin_global").emit("admin_notification", {
+        user_id: userId,
+        sender: "user",
+        message: text,
+        created_at: new Date()
+      });
+    } catch (err) {
+      console.error("User message save failed:", err);
+    }
+  });
+
+  // ADMIN → USER
+  socket.on("admin_reply", async ({ userId, text }) => {
+    try {
+      await pool.query(
+        "INSERT INTO messages (user_id, sender, message) VALUES ($1,'admin',$2)",
+        [userId, text]
+      );
+
+      io.to(userId.toString()).emit("new_msg", {
+        sender: "admin",
+        message: text,
+        created_at: new Date()
+      });
+    } catch (err) {
+      console.error("Admin reply save failed:", err);
+    }
+  });
+
 });
 
-// USER SUBSCRIPTION
-app.get("/api/subscription", authenticateToken, async (req, res) => {
-  const { rows } = await pool.query(
-    "SELECT * FROM subscriptions WHERE user_id = $1",
-    [req.user.id]
-  );
-  res.json(rows[0] || {});
+    
+/* ===========================
+   START SERVER
+=========================== */
+server.listen(5000, () => {
+  console.log("✅ Authentic Edge server running on port 5000");
 });
-
-app.post("/api/subscription/request", authenticateToken, async (req, res) => {
-  const { plan } = req.body;
-  await pool.query(
-    "INSERT INTO subscriptions (user_id, requested_plan, status) VALUES ($1, $2, 'pending') ON CONFLICT (user_id) DO UPDATE SET requested_plan = $2, status = 'pending'",
-    [req.user.id, plan]
-  );
-  res.json({ success: true });
-});
-
-
-server.listen(5000, () => console.log(">>> SYSTEM OPERATIONAL ON PORT 5000"));
