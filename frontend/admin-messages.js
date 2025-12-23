@@ -10,12 +10,6 @@ const chatHeaderName = document.getElementById("chatHeader");
 
 let activeUser = null;
 
-// ---------- Socket.io Connection ----------
-// Point to the base URL (Socket.io lives on the server root, not /api)
-// admin-messages.js
-
-// admin-messages.js refinement
-// admin-messages.js
 
 // 1. Initialize socket using the global 'io' from the CDN
 // admin-messages.js

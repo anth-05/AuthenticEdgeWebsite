@@ -24,10 +24,21 @@ const __dirname = path.dirname(__filename);
 dotenv.config();
 
 const app = express();
-const server = http.createServer(app); // Create HTTP server
+const server = http.createServer(app); // Create the server from Express
+const io = new Server(server, {
+  cors: {
+    origin: "*", // Allows your frontend to connect
+    methods: ["GET", "POST"]
+  }
+});
+
+// IMPORTANT: Use server.listen, NOT app.listen
+const PORT = process.env.PORT || 5000;
+server.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
 
 // ---------- Configuration ----------
-const PORT = process.env.PORT || 5000;
 const ALLOWED_ORIGINS = (process.env.CORS_ORIGINS || "http://localhost:5500,https://authenticedgewebsite-1.onrender.com")
   .split(",")
   .map(s => s.trim());
@@ -50,13 +61,6 @@ app.use(
   })
 );
 
-// ---------- Socket.io Setup (THE CRITICAL FIX) ----------
-const io = new Server(server, {
-  cors: {
-    origin: ALLOWED_ORIGINS,
-    methods: ["GET", "POST"]
-  }
-});
 
 // ---------- Database pool ----------
 const pool = new Pool({
