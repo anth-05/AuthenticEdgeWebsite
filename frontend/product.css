@@ -1,176 +1,105 @@
-/* ========== PRODUCTS PAGE STYLING (COMING SOON) ========== */
+/* ========== REFINED PRODUCT GRID ========== */
 
-
-.full-bleed-hero {
-    height: 100vh;
-    width: 100%;
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
+.collection-grid-section {
+    padding: 80px 0;
+    background-color: #fff;
 }
 
-.product-visual {
-    position: absolute;
-    inset: 0;
-    background: url('images/Homepage-Image.jpg') no-repeat center;
-    background-size: cover;
-    filter: grayscale(100%) brightness(0.6);
-    z-index: 1;
+.product-grid {
+    display: grid;
+    /* Strict 3-column layout on desktop, scales down nicely */
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    column-gap: 30px;
+    row-gap: 60px;
 }
 
-.hero-content {
-    position: relative;
-    z-index: 2;
-    text-align: center;
-    max-width: 700px;
-    padding: 0 20px;
-}
-
-.hero-content h2 {
-    font-size: clamp(3rem, 10vw, 5.5rem);
-    font-weight: 800;
-    text-transform: uppercase;
-    line-height: 0.95;
-    letter-spacing: -0.04em;
-    margin-bottom: 2rem;
-}
-
-.hero-content p {
-    font-size: 1.1rem;
-    color: rgba(255, 255, 255, 0.7);
-    line-height: 1.5;
-    margin-bottom: 3rem;
-}
-
-/* NOTIFY FORM */
-.notify-container {
-    display: flex;
-    justify-content: center;
-    gap: 0; /* Merged look */
-}
-
-.notify-input {
-    background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    padding: 16px 24px;
-    color: #fff;
-    width: 280px;
-    font-family: inherit;
-}
-
-.btn-notify {
-    background: #fff;
-    color: #000;
-    border: none;
-    padding: 16px 32px;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    cursor: pointer;
-    transition: background 0.3s ease;
-}
-
-.btn-notify:hover {
-    background: #e0e0e0;
-}
-
-/* Mobile Tweak */
-@media (max-width: 600px) {
-    .notify-container {
-        flex-direction: column;
-        gap: 10px;
-    }
-    .notify-input { width: 100%; }
-}
-/* Ensure the link doesn't break the layout or styling */
+/* The Link Wrapper */
 .product-card-link {
     text-decoration: none;
     color: inherit;
-    display: block; /* Makes the whole area clickable */
-    transition: transform 0.3s ease;
-}
-
-.product-card-link:hover {
-    transform: translateY(-5px); /* Subtle lift on hover */
-}
-
-/* Status coloring */
-.status.in-stock {
-    color: #27ae60;
-    font-weight: 600;
-}
-
-.status.sold-out {
-    color: #e74c3c;
-    opacity: 0.8;
-}
-/* Container for the grid */
-.product-grid {
-    display: grid;
-    /* This creates 3 columns on desktop, 2 on tablet, 1 on mobile */
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 40px 20px; /* 40px between rows, 20px between columns */
-    padding: 20px 0;
+    display: block;
 }
 
 /* Individual Card */
 .product-card {
     display: flex;
     flex-direction: column;
-    height: 100%; /* Ensures all cards in a row stretch to match */
-    background: #fff;
-    transition: transform 0.3s ease;
+    height: 100%;
 }
 
-/* Image Frame - The secret to uniform sizing */
+/* Image Frame: The "Gallery" Box */
 .product-img-frame {
     width: 100%;
-    aspect-ratio: 4 / 5; /* Forces a consistent Portrait shape */
-    background-color: #f9f9f9;
+    aspect-ratio: 1 / 1; /* Square frames look more balanced in rows */
+    background-color: #f6f6f6; /* Soft off-white for the "studio" feel */
     overflow: hidden;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
+    position: relative;
+    border: 1px solid #f0f0f0;
 }
 
 .product-img-frame img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain; /* Shows full product without cropping */
-    padding: 20px; /* Space around product image */
-    transition: scale 0.5s ease;
+    max-width: 80%; /* Prevents image from touching the edges */
+    max-height: 80%;
+    width: auto;
+    height: auto;
+    object-fit: contain; /* Ensures the whole product is always visible */
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.product-card:hover img {
-    scale: 1.05;
+/* Subtle Hover Effect */
+.product-card-link:hover .product-img-frame img {
+    transform: scale(1.08);
 }
 
-/* Details Section */
+.product-card-link:hover .product-img-frame {
+    border-color: #e0e0e0;
+}
+
+/* Details Section: Strict Alignment */
 .product-details {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    padding: 0 5px;
 }
 
 .product-cat {
-    font-size: 0.7rem;
+    font-size: 0.65rem;
     text-transform: uppercase;
-    letter-spacing: 1px;
-    color: #888;
+    letter-spacing: 0.15em;
+    color: #a0a0a0;
+    margin-bottom: 8px;
+    font-weight: 600;
 }
 
 .product-details h3 {
-    font-size: 1rem;
+    font-size: 0.95rem;
     font-weight: 700;
-    margin: 5px 0;
+    margin: 0 0 10px 0;
     color: #000;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    line-height: 1.2;
 }
 
-/* Status Text */
+/* Status: The Baseline */
 .status {
-    font-size: 0.85rem;
-    margin-top: auto; /* Pushes status to the bottom if titles vary in length */
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: auto;
+    padding-top: 5px;
+}
+
+.status.in-stock {
+    color: #000; /* Black for "available" fits editorial better than green */
+    font-weight: 600;
+}
+
+.status.sold-out {
+    color: #d1d1d1;
+    font-weight: 400;
 }
