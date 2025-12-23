@@ -18,12 +18,13 @@ let activeUser = null;
 // admin-messages.js
 
 // 1. Initialize socket using the global 'io' from the CDN
-const socket = io("https://authenticedgewebsite-1.onrender.com");
+// admin-messages.js
+const socket = io("https://authenticedgewebsite-1.onrender.com", {
+    transports: ["websocket", "polling"] // Forces a cleaner connection
+});
 
 socket.on("connect", () => {
-    console.log("Admin connected to socket:", socket.id);
-    
-    // 2. Join the global admin room so you receive notifications
+    console.log("Admin connected! ID:", socket.id);
     socket.emit("join", "admin_global");
 });
 
