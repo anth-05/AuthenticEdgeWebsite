@@ -52,156 +52,93 @@ function verifyAdmin(req, res, next) {
 }
 
 /* ---------------- AUTH ---------------- */
-// Add this to your server.js
-// GET all user conversations for the admin sidebar
-app.get('/api/admin/conversations', authenticateToken, async (req, res) => {
+// User fetches their own history
+app.get("/api/messages", authenticateToken, async (req, res) => {
     try {
-        // This gets the latest message from every unique user
-        const result = await pool.query(`
-            SELECT DISTINCT ON (user_id) user_id, email, message, created_at 
-            FROM messages 
-            JOIN users ON messages.user_id = users.id 
-            ORDER BY user_id, created_at DESC
+        const { rows } = await pool.query(
+            "SELECT * FROM messages WHERE user_id=$1 ORDER BY created_at ASC",
+            [req.user.id]
+        );
+        res.json(rows);
+    } catch (err) {
+        res.status(500).json({ error: "Failed to fetch messages" });
+    }
+});
+
+// User sends a message
+app.post("/api/messages", authenticateToken, async (req, res) => {
+    try {
+        const { message } = req.body;
+        if (!message) return res.status(400).json({ error: "Message required" });
+
+        const { rows } = await pool.query(
+            `INSERT INTO messages (user_id, sender, message, status)
+             VALUES ($1, 'user', $2, 'unread') RETURNING *`,
+            [req.user.id, message]
+        );
+        res.json(rows[0]);
+    } catch (err) {
+        res.status(500).json({ error: "Failed to send message" });
+    }
+});
+
+/* ---------------- ADMIN ROUTES ---------------- */
+
+// Admin fetch all conversations for sidebar
+app.get("/api/admin/conversations", authenticateToken, verifyAdmin, async (req, res) => {
+    try {
+        const { rows } = await pool.query(`
+            SELECT DISTINCT ON (m.user_id)
+                m.user_id, u.email, m.message, m.created_at
+            FROM messages m
+            JOIN users u ON u.id = m.user_id
+            ORDER BY m.user_id, m.created_at DESC
         `);
-        res.json(result.rows);
+        res.json(rows);
     } catch (err) {
         res.status(500).json({ error: "Failed to fetch conversations" });
     }
 });
 
-// GET full history for a specific user
-app.get('/api/admin/messages/:userId', authenticateToken, async (req, res) => {
+// Admin fetch full history for a specific user
+app.get("/api/admin/messages/:userId", authenticateToken, verifyAdmin, async (req, res) => {
     try {
         const { userId } = req.params;
-        const result = await pool.query(
-            "SELECT * FROM messages WHERE user_id = $1 ORDER BY created_at ASC",
+        const { rows } = await pool.query(
+            "SELECT * FROM messages WHERE user_id=$1 ORDER BY created_at ASC",
             [userId]
         );
-        res.json(result.rows);
+
+        // Mark user messages as read when admin opens the chat
+        await pool.query(
+            "UPDATE messages SET status='read' WHERE user_id=$1 AND sender='user'",
+            [userId]
+        );
+
+        res.json(rows);
     } catch (err) {
         res.status(500).json({ error: "Failed to fetch chat history" });
     }
 });
-app.post('/api/admin/reply', authenticateToken, async (req, res) => {
+
+// Admin reply to a user (FIXED 404 ROUTE)
+app.post("/api/admin/reply", authenticateToken, verifyAdmin, async (req, res) => {
     try {
         const { userId, message } = req.body;
+        if (!userId || !message) return res.status(400).json({ error: "Missing data" });
 
-        // 1. Insert the message into your database
-        // Example using SQL (adjust for your DB):
-        await pool.query(
-            "INSERT INTO messages (user_id, sender, message, created_at) VALUES ($1, $2, $3, NOW())",
-            [userId, 'admin', message]
+        const { rows } = await pool.query(
+            `INSERT INTO messages (user_id, sender, message, status, created_at)
+             VALUES ($1, 'admin', $2, 'read', NOW()) RETURNING *`,
+            [userId, message]
         );
 
-        res.status(200).json({ success: true, message: "Reply saved." });
+        res.json(rows[0]);
     } catch (err) {
         console.error("Admin reply error:", err);
-        res.status(500).json({ error: "Server failed to save reply." });
+        res.status(500).json({ error: "Server failed to save reply" });
     }
 });
-app.post("/api/login", async (req, res) => {
-  const { email, password } = req.body;
-
-  const { rows } = await pool.query(
-    "SELECT * FROM users WHERE email=$1",
-    [email]
-  );
-
-  if (!rows.length || !(await bcrypt.compare(password, rows[0].password))) {
-    return res.status(400).json({ error: "Invalid credentials" });
-  }
-
-  const token = jwt.sign(
-    { id: rows[0].id, role: rows[0].role },
-    process.env.JWT_SECRET,
-    { expiresIn: "24h" }
-  );
-
-  res.json({ token, userId: rows[0].id, role: rows[0].role });
-});
-
-/* ---------------- MESSAGES ---------------- */
-
-// User sends message
-app.post("/api/messages", authenticateToken, async (req, res) => {
-  const { message } = req.body;
-  if (!message) return res.status(400).json({ error: "Message required" });
-
-  const { rows } = await pool.query(
-    `INSERT INTO messages (user_id, sender, message, status)
-     VALUES ($1,'user',$2,'unread') RETURNING *`,
-    [req.user.id, message]
-  );
-
-  res.json(rows[0]);
-});
-
-// User fetches messages
-app.get("/api/messages", authenticateToken, async (req, res) => {
-  const { rows } = await pool.query(
-    "SELECT * FROM messages WHERE user_id=$1 ORDER BY created_at ASC",
-    [req.user.id]
-  );
-  res.json(rows);
-});
-
-// Admin fetch conversations
-app.get(
-  "/api/admin/conversations",
-  authenticateToken,
-  verifyAdmin,
-  async (req, res) => {
-    const { rows } = await pool.query(`
-      SELECT DISTINCT ON (m.user_id)
-        m.user_id, u.email, m.message, m.created_at
-      FROM messages m
-      JOIN users u ON u.id = m.user_id
-      ORDER BY m.user_id, m.created_at DESC
-    `);
-    res.json(rows);
-  }
-);
-
-// Admin fetch messages
-app.get(
-  "/api/admin/messages/:userId",
-  authenticateToken,
-  verifyAdmin,
-  async (req, res) => {
-    const { userId } = req.params;
-
-    const { rows } = await pool.query(
-      "SELECT * FROM messages WHERE user_id=$1 ORDER BY created_at ASC",
-      [userId]
-    );
-
-    await pool.query(
-      "UPDATE messages SET status='read' WHERE user_id=$1 AND sender='user'",
-      [userId]
-    );
-
-    res.json(rows);
-  }
-);
-
-// Admin reply
-app.post(
-  "/api/admin/messages/:userId",
-  authenticateToken,
-  verifyAdmin,
-  async (req, res) => {
-    const { message } = req.body;
-
-    const { rows } = await pool.query(
-      `INSERT INTO messages (user_id, sender, message, status)
-       VALUES ($1,'admin',$2,'read') RETURNING *`,
-      [req.params.userId, message]
-    );
-
-    res.json(rows[0]);
-  }
-);
-
 /* ---------------- PRODUCTS ---------------- */
 app.get("/api/products", async (req, res) => {
   const { rows } = await pool.query(
