@@ -14,6 +14,8 @@ const { Pool } = pkg;
 const app = express();
 const server = http.createServer(app);
 
+const upload = multer({ dest: "uploads/" });
+
 /* ---------------- CONFIG ---------------- */
 const PORT = process.env.PORT || 5000;
 const ALLOWED_ORIGINS = (
