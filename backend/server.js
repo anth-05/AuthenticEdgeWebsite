@@ -4,223 +4,178 @@ import dotenv from "dotenv";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import pkg from "pg";
-import nodemailer from "nodemailer";
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
 import http from "http";
-import rateLimit from "express-rate-limit";
-import sanitize from "sanitize-html";
-import fetch from "node-fetch";
 import multer from "multer";
-import { Server } from "socket.io"; // Import Server
-import { v2 as cloudinary } from "cloudinary";
-import { CloudinaryStorage } from "multer-storage-cloudinary";
-
-const { Pool } = pkg;
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import { Server } from "socket.io";
 
 dotenv.config();
+const { Pool } = pkg;
 
 const app = express();
-const server = http.createServer(app); // Create the server from Express
-const io = new Server(server, {
-  cors: {
-    origin: "*", // Allows your frontend to connect
-    methods: ["GET", "POST"]
-  }
-});
+const server = http.createServer(app);
 
-// IMPORTANT: Use server.listen, NOT app.listen
+/* ---------------- CONFIG ---------------- */
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
-
-// ---------- Configuration ----------
-const ALLOWED_ORIGINS = (process.env.CORS_ORIGINS || "http://localhost:5500,https://authenticedgewebsite-1.onrender.com")
+const ALLOWED_ORIGINS = (
+  process.env.CORS_ORIGINS ||
+  "http://localhost:5500,https://authenticedgewebsite-1.onrender.com"
+)
   .split(",")
-  .map(s => s.trim());
+  .map(o => o.trim());
 
-// ---------- Middleware ----------
+/* ---------------- MIDDLEWARE ---------------- */
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
 app.use(
   cors({
-    origin: function (origin, callback) {
-      if (!origin) return callback(null, true);
-      if (ALLOWED_ORIGINS.indexOf(origin) !== -1) {
-        callback(null, true);
-      } else {
-        callback(new Error("CORS not allowed"));
-      }
-    },
+    origin: ALLOWED_ORIGINS,
     credentials: true,
-    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
-
-// ---------- Database pool ----------
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false,
+/* ---------------- SOCKET.IO ---------------- */
+const io = new Server(server, {
+  cors: {
+    origin: ALLOWED_ORIGINS,
+    methods: ["GET", "POST"],
+  },
 });
 
-// ---------- Cloudinary / Multer Setup ----------
-let upload;
-if (process.env.CLOUDINARY_CLOUD_NAME) {
-  cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET,
-  });
-  const cloudStorage = new CloudinaryStorage({
-    cloudinary,
-    params: { folder: "products", allowed_formats: ["jpg", "png", "webp"] },
-  });
-  upload = multer({ storage: cloudStorage });
-} else {
-    // Basic local fallback
-    const uploadDir = path.join(process.cwd(), "uploads");
-    if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
-    upload = multer({ dest: "uploads/" }); 
-}
+io.on("connection", socket => {
+  console.log("🟢 Socket connected:", socket.id);
 
-// ---------- Auth Helpers ----------
+  socket.on("join", roomId => {
+    const room =
+      roomId === "admin_global" ? "admin_global" : `user_${roomId}`;
+    socket.join(room);
+    console.log(`➡️ Joined room: ${room}`);
+  });
+
+  socket.on("user_msg", async ({ userId, message }) => {
+    try {
+      const { rows } = await pool.query(
+        "INSERT INTO messages (user_id, sender, message, status) VALUES ($1,'user',$2,'unread') RETURNING *",
+        [userId, message]
+      );
+
+      io.to("admin_global").emit("admin_notification", rows[0]);
+    } catch (err) {
+      console.error("user_msg error:", err);
+    }
+  });
+
+  socket.on("admin_reply", async ({ userId, text }) => {
+    try {
+      const { rows } = await pool.query(
+        "INSERT INTO messages (user_id, sender, message, status) VALUES ($1,'admin',$2,'read') RETURNING *",
+        [userId, text]
+      );
+
+      io.to(`user_${userId}`).emit("new_msg", rows[0]);
+    } catch (err) {
+      console.error("admin_reply error:", err);
+    }
+  });
+
+  socket.on("disconnect", () => {
+    console.log("🔴 Socket disconnected:", socket.id);
+  });
+});
+
+/* ---------------- DATABASE ---------------- */
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.NODE_ENV === "production"
+    ? { rejectUnauthorized: false }
+    : false,
+});
+
+/* ---------------- AUTH HELPERS ---------------- */
 function authenticateToken(req, res, next) {
-  const authHeader = req.headers.authorization;
-  const token = authHeader && authHeader.split(" ")[1];
-  if (!token) return res.status(401).json({ error: "Missing token" });
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) return res.sendStatus(401);
 
-  jwt.verify(token, process.env.JWT_SECRET, (err, payload) => {
-    if (err) return res.status(403).json({ error: "Invalid token" });
-    req.user = payload;
+  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    if (err) return res.sendStatus(403);
+    req.user = user;
     next();
   });
 }
 
 function verifyAdmin(req, res, next) {
-  if (req.user.role !== "admin") return res.status(403).json({ error: "Admin only" });
+  if (req.user.role !== "admin") return res.sendStatus(403);
   next();
 }
 
-// ==========================================
-// 🚀 REAL-TIME CHAT ENGINE (Matches user-chat.js)
-// ==========================================
-io.on("connection", (socket) => {
-  console.log("Socket connected:", socket.id);
-
-  // 1. Join Room
-  // user-chat.js emits "join" with userId (e.g., "5")
-  // admin-messages.js emits "join" with "admin_global"
-  socket.on("join", (roomOrId) => {
-    // If it's the admin, join the global room
-    if (roomOrId === "admin_global") {
-        socket.join("admin_global");
-        console.log("Admin joined global chat");
-    } else {
-        // If it's a user, prefix their ID to create a unique room
-        const userRoom = `user_${roomOrId}`;
-        socket.join(userRoom);
-        console.log(`User joined room: ${userRoom}`);
-    }
-  });
-
-  // 2. User Sends Message (Matches user-chat.js)
-  socket.on("user_msg", async (data) => {
-    // Client sends: { userId, message }
-    const { userId, message } = data; 
-    
-    try {
-      // Save to DB
-      const result = await pool.query(
-        "INSERT INTO messages (user_id, sender, message, status) VALUES ($1, 'user', $2, 'unread') RETURNING *",
-        [userId, message]
-      );
-      const savedMsg = result.rows[0];
-
-      // Broadcast to Admin Dashboard
-      io.to("admin_global").emit("admin_notification", savedMsg);
-      
-    } catch (err) {
-      console.error("User msg error:", err);
-    }
-  });
-
-  // 3. Admin Replies (Matches admin-messages.js)
-  socket.on("admin_reply", async (data) => {
-    // Admin sends: { userId, text }
-    const { userId, text } = data;
-
-    try {
-      // Save to DB
-      const result = await pool.query(
-        "INSERT INTO messages (user_id, sender, message, status) VALUES ($1, 'admin', $2, 'read') RETURNING *",
-        [userId, text]
-      );
-      const savedMsg = result.rows[0];
-
-      // Send to the specific User's room
-      io.to(`user_${userId}`).emit("new_msg", savedMsg);
-      
-    } catch (err) {
-      console.error("Admin reply error:", err);
-    }
-  });
-});
-
-// ==========================================
-// 📡 API ROUTES
-// ==========================================
-
-// --- AUTH ---
-app.post("/api/register", async (req, res) => {
-  try {
-    const { email, password, role } = req.body;
-    const hashed = await bcrypt.hash(password, 10);
-    await pool.query("INSERT INTO users (email, password, role) VALUES ($1,$2,$3)", [email, hashed, role || "user"]);
-    res.json({ success: true });
-  } catch (err) { res.status(400).json({ error: "Registration failed" }); }
-});
-
+/* ---------------- AUTH ROUTES ---------------- */
 app.post("/api/login", async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    const { rows } = await pool.query("SELECT * FROM users WHERE email=$1", [email]);
-    if (rows.length === 0 || !(await bcrypt.compare(password, rows[0].password))) {
-        return res.status(400).json({ error: "Invalid credentials" });
-    }
-    const token = jwt.sign({ id: rows[0].id, role: rows[0].role }, process.env.JWT_SECRET, { expiresIn: "24h" });
-    // IMPORTANT: Sending userId back so user-chat.js can use it
-    res.json({ token, role: rows[0].role, userId: rows[0].id });
-  } catch (err) { res.status(500).json({ error: "Login error" }); }
+  const { email, password } = req.body;
+
+  const { rows } = await pool.query(
+    "SELECT * FROM users WHERE email=$1",
+    [email]
+  );
+
+  if (!rows.length || !(await bcrypt.compare(password, rows[0].password))) {
+    return res.status(400).json({ error: "Invalid credentials" });
+  }
+
+  const token = jwt.sign(
+    { id: rows[0].id, role: rows[0].role },
+    process.env.JWT_SECRET,
+    { expiresIn: "24h" }
+  );
+
+  res.json({ token, userId: rows[0].id, role: rows[0].role });
 });
 
-// --- ADMIN MESSAGING (Matches admin-messages.js) ---
-app.get("/api/admin/conversations", authenticateToken, verifyAdmin, async (req, res) => {
-    try {
-        const query = `
-            SELECT DISTINCT ON (m.user_id) 
-                m.user_id, u.email, m.message, m.created_at
-            FROM messages m
-            JOIN users u ON m.user_id = u.id
-            ORDER BY m.user_id, m.created_at DESC
-        `;
-        const { rows } = await pool.query(query);
-        res.json(rows);
-    } catch (err) { res.status(500).json({ error: "Inbox error" }); }
+/* ---------------- USER MESSAGES ---------------- */
+app.get("/api/messages", authenticateToken, async (req, res) => {
+  const { rows } = await pool.query(
+    "SELECT * FROM messages WHERE user_id=$1 ORDER BY created_at ASC",
+    [req.user.id]
+  );
+  res.json(rows);
 });
 
-app.get("/api/admin/messages/:userId", authenticateToken, verifyAdmin, async (req, res) => {
-    try {
-        const { userId } = req.params;
-        const { rows } = await pool.query("SELECT * FROM messages WHERE user_id = $1 ORDER BY created_at ASC", [userId]);
-        await pool.query("UPDATE messages SET status = 'read' WHERE user_id = $1 AND sender = 'user'", [userId]);
-        res.json(rows);
-    } catch (err) { res.status(500).json({ error: "Chat history error" }); }
-});
+/* ---------------- ADMIN MESSAGES ---------------- */
+app.get(
+  "/api/admin/conversations",
+  authenticateToken,
+  verifyAdmin,
+  async (req, res) => {
+    const { rows } = await pool.query(`
+      SELECT DISTINCT ON (m.user_id)
+        m.user_id, u.email, m.message, m.created_at
+      FROM messages m
+      JOIN users u ON u.id = m.user_id
+      ORDER BY m.user_id, m.created_at DESC
+    `);
+    res.json(rows);
+  }
+);
+
+app.get(
+  "/api/admin/messages/:userId",
+  authenticateToken,
+  verifyAdmin,
+  async (req, res) => {
+    const { rows } = await pool.query(
+      "SELECT * FROM messages WHERE user_id=$1 ORDER BY created_at ASC",
+      [req.params.userId]
+    );
+
+    await pool.query(
+      "UPDATE messages SET status='read' WHERE user_id=$1 AND sender='user'",
+      [req.params.userId]
+    );
+
+    res.json(rows);
+  }
+);
+
+
 
 // --- PRODUCTS ---
 app.get("/api/products", async (req, res) => {
