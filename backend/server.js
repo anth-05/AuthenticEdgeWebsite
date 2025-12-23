@@ -33,8 +33,26 @@ const io = new Server(server, {
 
 // ---------- Configuration ----------
 const PORT = process.env.PORT || 5000;
-const ALLOWED_ORIGINS = (process.env.CORS_ORIGINS || "http://localhost:5500").split(",").map(s => s.trim());
+const ALLOWED_ORIGINS = [
+    "http://localhost:5500",
+    "https://authenticedgewebsite.onrender.com", // Your Backend
+    "https://authenticedgewebsite-1.onrender.com/" // ADD YOUR ACTUAL FRONTEND URL HERE
+];
 
+app.use(cors({
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl)
+        if (!origin) return callback(null, true);
+        if (ALLOWED_ORIGINS.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            console.log("Blocked by CORS:", origin); // Helps you debug in Render logs
+            callback(new Error("CORS not allowed"));
+        }
+    },
+    credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization"],
+}));
 // ---------- Middleware ----------
 app.use(express.json());
 app.use(cors({
