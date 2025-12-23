@@ -83,7 +83,12 @@ app.post("/api/login", async (req, res) => {
         if (!validPass) return res.status(401).json({ error: "Invalid credentials" });
 
         const token = jwt.sign({ id: rows[0].id, role: rows[0].role }, process.env.JWT_SECRET, { expiresIn: '24h' });
-        res.json({ token, role: rows[0].role });
+        res.json({
+        token,
+        role: rows[0].role,
+        userId: rows[0].id
+});
+
     } catch (err) {
         res.status(500).json({ error: "Server error" });
     }
@@ -176,18 +181,43 @@ app.post("/api/contact", async (req, res) => {
 });
 
 // 10. REAL-TIME CHAT (Socket.io)
-io.on("connection", (socket) => {
-    socket.on("join", (room) => socket.join(room));
+io.use((socket, next) => {
+  const token = socket.handshake.auth?.token;
+  if (!token) return next(new Error("Unauthorized"));
 
-    socket.on("user_msg", async (data) => {
-        // Save to DB logic here
-        io.to("admin_global").emit("admin_notification", data);
-    });
-
-    socket.on("admin_reply", async (data) => {
-        // Save to DB logic here
-        io.to(data.userId).emit("new_msg", data);
-    });
+  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    if (err) return next(new Error("Invalid token"));
+    socket.user = user;
+    next();
+  });
 });
+
+// USER PROFILE
+app.get("/api/user", authenticateToken, async (req, res) => {
+  const { rows } = await pool.query(
+    "SELECT id, email, created_at FROM users WHERE id = $1",
+    [req.user.id]
+  );
+  res.json(rows[0]);
+});
+
+// USER SUBSCRIPTION
+app.get("/api/subscription", authenticateToken, async (req, res) => {
+  const { rows } = await pool.query(
+    "SELECT * FROM subscriptions WHERE user_id = $1",
+    [req.user.id]
+  );
+  res.json(rows[0] || {});
+});
+
+app.post("/api/subscription/request", authenticateToken, async (req, res) => {
+  const { plan } = req.body;
+  await pool.query(
+    "INSERT INTO subscriptions (user_id, requested_plan, status) VALUES ($1, $2, 'pending') ON CONFLICT (user_id) DO UPDATE SET requested_plan = $2, status = 'pending'",
+    [req.user.id, plan]
+  );
+  res.json({ success: true });
+});
+
 
 server.listen(5000, () => console.log(">>> SYSTEM OPERATIONAL ON PORT 5000"));
