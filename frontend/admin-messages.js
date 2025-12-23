@@ -12,20 +12,28 @@ let activeUser = null;
 
 // ---------- Socket.io Connection ----------
 // Point to the base URL (Socket.io lives on the server root, not /api)
+// admin-messages.js
+
 const socket = io(API_BASE_URL.replace("/api", ""));
 
-// Join as admin to receive global notifications
-socket.emit("join", "admin_global");
+// 1. Listen for the 'connect' event FIRST
+socket.on("connect", () => {
+    console.log("Connected to server. ID:", socket.id);
+    
+    // 2. NOW tell the server we are the admin
+    socket.emit("join", "admin_global");
+});
 
+// 3. Listen for the notification
 socket.on("admin_notification", (msg) => {
-    if (activeUser && msg.user_id === activeUser) {
+    console.log("New message received from user:", msg);
+    if (activeUser && String(msg.user_id) === String(activeUser)) {
         appendMessage(msg);
     } else {
         showBadge();
-        loadConversations(); // Refresh the list to show newest message preview
+        loadConversations(); 
     }
 });
-
 // ---------- UI Functions ----------
 
 function showBadge() {
