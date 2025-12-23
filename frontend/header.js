@@ -26,7 +26,7 @@ function initMenu() {
         // Show Messages tab for logged-in users and admins
         // This replaces the floating chat bubble approach
         menuHTML += `
-            <a href="messages.html" class="nav-link msg-link">
+            <a href="user-messages.html" class="nav-link msg-link">
                 Concierge <span id="nav-msg-dot" class="dot hidden"></span>
             </a>
         `;
