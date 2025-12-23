@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Concierge | The Authentic Edge</title>
+    <link rel="stylesheet" href="theme.css">
+    <link rel="stylesheet" href="mobile-header.css">
+    <link rel="stylesheet" href="user-messages.css">
+</head>
+<body class="editorial-layout">
+
+    <header id="header-buttons" class="nav-menu"></header>
+
+    <main class="main-content">
+        <div class="content-wrapper">
+            <header class="page-header">
+                <span class="sub-title">Private Channel</span>
+                <h1 class="main-title">Concierge Support</h1>
+            </header>
+
+            <section class="chat-interface shadow-premium">
+                <div id="chatBox" class="chat-box">
+                    <div class="loading-state">
+                        <span class="pulse"></span>
+                        Establishing Secure Connection...
+                    </div>
+                </div>
+
+                <div class="chat-input-wrapper">
+                    <div class="input-container">
+                        <input type="text" id="chatInput" placeholder="How can we assist you?" autocomplete="off">
+                        <button id="chatSend" aria-label="Send Message">
+                            <svg viewBox="0 0 24 24" width="20" height="20">
+                                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" fill="currentColor"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script src="header.js"></script>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script type="module" src="user-messages.js"></script>
+</body>
+</html>

@@ -13,16 +13,24 @@ function initMenu() {
         <a href="index.html" class="nav-link">Home</a>
         <a href="product.html" class="nav-link">Collection</a>
         <a href="subscription.html" class="nav-link">Membership</a>
-        <a href="contact.html" class="nav-link">Inquiry</a>
     `;
 
     // 2. Conditional Auth Links
     if (!token) {
         menuHTML += `
+            <a href="contact.html" class="nav-link">Inquiry</a>
             <a href="login.html" class="nav-link">Sign In</a>
             <a href="register.html" class="nav-cta">Apply Now</a>
         `;
     } else {
+        // Show Messages tab for logged-in users and admins
+        // This replaces the floating chat bubble approach
+        menuHTML += `
+            <a href="messages.html" class="nav-link msg-link">
+                Concierge <span id="nav-msg-dot" class="dot hidden"></span>
+            </a>
+        `;
+
         // Direct to appropriate dashboard
         if (role === "admin") {
             menuHTML += `<a href="admin-dashboard.html" class="nav-link admin-link">Dashboard</a>`;
@@ -35,25 +43,22 @@ function initMenu() {
 
     nav.innerHTML = menuHTML;
 
-    // 3. Logout Execution
+    // 3. Setup Interactions
     setupLogout();
-
-    // 4. Mobile Interaction
     setupMobileMenu();
 }
 
 /**
- * Handle Logout without breaking other local data
+ * Handle Logout
  */
 function setupLogout() {
     const logoutBtn = document.getElementById("logout-btn");
     if (logoutBtn) {
         logoutBtn.addEventListener("click", (e) => {
             e.preventDefault();
-            // Best practice: remove only what we own
             localStorage.removeItem("token");
             localStorage.removeItem("role");
-            localStorage.removeItem("userId"); // Used for chat
+            localStorage.removeItem("userId"); 
             window.location.href = "index.html";
         });
     }
@@ -69,11 +74,9 @@ function setupMobileMenu() {
     if (menuToggle && navMenu) {
         menuToggle.onclick = () => {
             navMenu.classList.toggle("active");
-            // Toggle between Hamburger and X
             menuToggle.innerHTML = navMenu.classList.contains("active") ? "&times;" : "&#9776;";
         };
         
-        // Close menu if a link is clicked
         navMenu.querySelectorAll('a').forEach(link => {
             link.addEventListener('click', () => {
                 navMenu.classList.remove("active");
