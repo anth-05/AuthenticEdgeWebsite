@@ -52,6 +52,32 @@ function verifyAdmin(req, res, next) {
 }
 
 /* ---------------- AUTH ---------------- */
+
+app.post("/api/login", async (req, res) => {
+  const { email, password } = req.body;
+
+  const { rows } = await pool.query(
+    "SELECT * FROM users WHERE email=$1",
+    [email]
+  );
+
+  if (!rows.length || !(await bcrypt.compare(password, rows[0].password))) {
+    return res.status(400).json({ error: "Invalid credentials" });
+  }
+
+  const token = jwt.sign(
+    { id: rows[0].id, role: rows[0].role },
+    process.env.JWT_SECRET,
+    { expiresIn: "24h" }
+  );
+
+  res.json({ token, userId: rows[0].id, role: rows[0].role });
+});
+
+/* ---------------- MESSAGES ---------------- */
+
+/* ---------------- USER ROUTES ---------------- */
+
 // User fetches their own history
 app.get("/api/messages", authenticateToken, async (req, res) => {
     try {
