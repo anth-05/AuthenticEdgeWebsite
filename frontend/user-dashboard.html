@@ -3,101 +3,131 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>User Dashboard | AuthenticEdge</title>
-
-  <!-- Styles -->
+  <title>Account | Authentic Edge</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap">
   <link rel="stylesheet" href="theme.css" />
-  <link rel="stylesheet" href="user-dashboard.css" />
-  <link rel="stylesheet" href="user-chat.css" />
+  <link rel="stylesheet" href="admin-base.css" /> <link rel="stylesheet" href="user-dashboard.css" />
+  <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
 </head>
 
 <body class="dashboard-body">
 
-  <!-- SIDEBAR -->
-  <nav class="sidebar" aria-label="User Sidebar Navigation">
-    <h2 class="sidebar-logo">AuthenticEdge</h2>
+  <aside class="sidebar">
+    <div class="sidebar-top">
+      <h2 class="sidebar-logo">the authentic edge</h2>
+      <span class="admin-badge">Member Portal</span>
+    </div>
 
-    <ul class="sidebar-menu" role="menu">
-      <li role="menuitem"><a href="index.html">Home</a></li>
-      <li role="menuitem"><a href="coming-soon.html">Shop</a></li>
-      <li role="menuitem"><a href="#" id="logout-btn">Logout</a></li>
-
+    <ul class="sidebar-menu">
+      <li><a href="index.html"><i class="ri-home-line"></i> Home</a></li>
+      <li><a href="coming-soon.html"><i class="ri-shopping-bag-line"></i> Shop</a></li>
+      <li><a href="user-dashboard.html" class="active"><i class="ri-user-settings-line"></i> Account</a></li>
+      <li class="logout-item"><a href="#" id="logout-btn"><i class="ri-logout-circle-line"></i> Logout</a></li>
     </ul>
-  </nav>
+  </aside>
 
-  <!-- MAIN -->
-  <main class="dashboard-main" role="main" tabindex="0">
+  <main class="dashboard-main">
+    <header class="main-header">
+       <div class="header-left">
+         <span class="eyebrow">Welcome Back</span>
+         <h1>My Account</h1>
+       </div>
+    </header>
 
-    <!-- ACCOUNT SECTION -->
-    <section class="dashboard-container" aria-labelledby="account-section-label">
-      <h2 id="account-section-label">Your Account</h2>
+    <div class="dashboard-grid">
+      <section class="admin-section">
+        <div class="section-header">
+          <h2>Profile Settings</h2>
+        </div>
+        
+        <div class="editorial-form-container">
+          <div id="user-info" class="status-display">
+            <p>Loading account info...</p>
+          </div>
 
-      <div id="user-info" class="info-box" aria-live="polite" aria-atomic="true">
-        <p>Loading account info...</p>
-      </div>
+          <div class="form-group">
+            <label>Update Email</label>
+            <div class="inline-input">
+              <input type="email" id="new-email" placeholder="New email address" autocomplete="email" />
+              <button id="update-email-btn" class="text-link-btn">Update</button>
+            </div>
+          </div>
 
-      <h3>Update Email</h3>
-      <input type="email" id="new-email" placeholder="New email" autocomplete="email" />
-      <button id="update-email-btn">Update Email</button>
+          <div class="form-group">
+            <label>Security</label>
+            <div class="inline-input">
+              <input type="password" id="new-password" placeholder="New password" autocomplete="new-password" />
+              <button id="update-password-btn" class="text-link-btn">Change</button>
+            </div>
+          </div>
+        </div>
+      </section>
 
-      <h3>Change Password</h3>
-      <input type="password" id="new-password" placeholder="New password" autocomplete="new-password" />
-      <button id="update-password-btn">Change Password</button>
+      <section class="admin-section">
+        <div class="section-header">
+          <h2>My Membership</h2>
+        </div>
 
-      <h3>Danger Zone</h3>
-      <button class="delete-btn" id="delete-account-btn">Delete My Account</button>
+        <div class="membership-card">
+          <div id="sub-box">
+            <div class="sub-detail">
+              <span class="label">Current Plan</span>
+              <span id="current-plan" class="value">...</span>
+            </div>
+            <div class="sub-detail">
+              <span class="label">Status</span>
+              <span id="sub-status" class="status-tag">...</span>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-top: 2rem;">
+            <label>Modify Plan</label>
+            <select id="new-plan" class="editorial-select">
+              <option value="None">Cancel Subscription</option>
+              <option value="Comfort">Comfort — €84,99</option>
+              <option value="Edge">Edge — €104,99</option>
+              <option value="Authentic">Authentic — €119,99</option>
+              <option value="Hooper">Hooper’s Edition — €109,99</option>
+            </select>
+            <button id="request-sub-change-btn" class="btn-black" style="width: 100%; margin-top: 15px;">Request Change</button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <section class="admin-section danger-section">
+      <button class="delete-link" id="delete-account-btn">Permanently delete my account</button>
     </section>
 
-    <!-- SUBSCRIPTION SECTION -->
-    <section class="dashboard-container" aria-labelledby="subscription-section-label">
-      <h2 id="subscription-section-label">Your Subscription</h2>
-
-      <div class="info-box" id="sub-box" aria-live="polite" aria-atomic="true">
-        <p><strong>Current Plan:</strong> <span id="current-plan">Loading...</span></p>
-        <p><strong>Requested Change:</strong> <span id="requested-plan">None</span></p>
-        <p><strong>Status:</strong> <span id="sub-status">Loading...</span></p>
-      </div>
-
-      <h3>Change Subscription</h3>
-      <select id="new-plan" aria-label="Select new subscription plan">
-        <option value="None">None</option>
-        <option value="Comfort">Comfort — €84,99</option>
-        <option value="Edge">Edge — €104,99</option>
-        <option value="Authentic">Authentic — €119,99</option>
-        <option value="Hooper">Hooper’s Edition — €109,99</option>
-      </select>
-
-      <button id="request-sub-change-btn">Request Change</button>
-    </section>
-
-    <!-- CHAT WIDGET -->
-    <div class="chat-widget">
-      <div class="chat-toggle-btn">💬</div>
-      <div class="chat-window">
-        <div class="chat-header">Support</div>
-        <div class="chat-body"></div>
-        <div class="chat-input-bar">
-          <input type="text" placeholder="Type your message..." />
-          <label class="file-btn">
-            📎 <input type="file" hidden />
-          </label>
-          <button>➤</button>
+    <div class="concierge-widget" id="chat-widget">
+      <button class="concierge-toggle">
+        <i class="ri-chat-3-line"></i>
+        <span>Concierge</span>
+      </button>
+      
+      <div class="concierge-window">
+        <div class="concierge-header">
+          <div class="header-info">
+            <span class="dot"></span>
+            <strong>Authentic Support</strong>
+          </div>
+          <button class="close-chat"><i class="ri-close-line"></i></button>
+        </div>
+        <div class="chat-body" id="chatBody"></div>
+        <div class="chat-input-area">
+          <input type="text" placeholder="HOW CAN WE ASSIST?" />
+          <button class="chat-send"><i class="ri-arrow-right-line"></i></button>
         </div>
       </div>
     </div>
 
   </main>
-  
 
-  <!-- Scripts -->
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-
   <script type="module" src="config.js"></script>
   <script type="module" src="sub-dashboard.js"></script>
   <script type="module" src="user-dashboard.js"></script>
   <script src="logout.js"></script>
   <script src="user-chat.js"></script>
-
-
 </body>
 </html>
