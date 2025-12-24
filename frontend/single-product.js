@@ -12,72 +12,83 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
         const response = await fetch(`${API_BASE_URL}/api/products`);
         
-        
-        // This check prevents the "Unexpected token N" error
         if (!response.ok) {
             throw new Error(`Server responded with ${response.status}`);
         }
 
         const products = await response.json();
-        const product = products.find(p => p.id == productId);
+        
+        // Use loose equality (==) or String conversion to ensure IDs match correctly
+        const product = products.find(p => String(p.id) === String(productId));
 
         if (product) {
             renderProductDetails(product);
         } else {
-            document.getElementById('productTitle').innerText = "Product Not Found";
+            showError("Product Not Found");
         }
     } catch (err) {
         console.error("Connection Error:", err);
-        document.getElementById('productTitle').innerText = "Unable to connect to archive";
+        showError("Unable to connect to archive");
     }
 });
 
 function showError(msg) {
-    document.getElementById('productTitle').innerText = msg;
+    const titleElement = document.getElementById('productTitle');
+    if (titleElement) titleElement.innerText = msg;
 }
 
 /**
- * Injects the product data into the HTML elements
+ * Injects product data and sets up button listeners
  */
 function renderProductDetails(product) {
-    // Update Image
+    // 1. Update Image (Check for both possible property names)
     const imgElement = document.getElementById('productImage');
-    imgElement.src = product.image_url || product.image;
-    imgElement.alt = product.title;
+    if (imgElement) {
+        imgElement.src = product.image_url || product.image || '';
+        imgElement.alt = product.title || product.name || "Product Image";
+    }
 
-    // Update Text Content
-    document.getElementById('productTitle').innerText = product.title;
-    document.getElementById('productPrice').innerText = product.price;
-    document.getElementById('productDescription').innerText = product.description;
+    // 2. Update Text Content (Handle potential 'undefined' by providing fallbacks)
+    const title = product.title || product.name || "Untitled Product";
+    const price = product.price || "$--";
+    
+    document.getElementById('productTitle').innerText = title;
+    document.getElementById('productPrice').innerText = price;
+    document.getElementById('productDescription').innerText = product.description || "No description available.";
     document.getElementById('productCategory').innerText = product.category || "Archive";
     
-    // Update Status Tag
+    // 3. Update Status Tag
     const statusTag = document.getElementById('productStatus');
-    statusTag.innerText = product.status || "Premium";
+    const status = product.status || "Premium";
+    statusTag.innerText = status;
     
-    // Handle Sold Out state visually
-    if (product.status && product.status.toLowerCase() === 'sold out') {
-        const msgBtn = document.getElementById('messageBtn');
+    // 4. Handle Sold Out state
+    const msgBtn = document.getElementById('messageBtn');
+    if (status.toLowerCase() === 'sold out') {
         msgBtn.innerText = "Archive Only (Sold Out)";
         msgBtn.style.backgroundColor = "#ccc";
         msgBtn.style.cursor = "not-allowed";
         msgBtn.disabled = true;
+    } else {
+        // Set up Inquiry click listener only if item is available
+        msgBtn.onclick = () => handleInquiry(title, price, product.id);
     }
-    async function handleInquiry() {
+
+    document.title = `${title} | Authentic Edge`;
+}
+
+/**
+ * Sends inquiry message to admin
+ */
+async function handleInquiry(title, price, id) {
     const token = localStorage.getItem("token");
     
-    // 1. Check if user is logged in
     if (!token) {
         alert("Please sign in to send an inquiry.");
         window.location.href = "login.html";
         return;
     }
 
-    const title = document.getElementById('productTitle').innerText;
-    const price = document.getElementById('productPrice').innerText;
-    const productId = new URLSearchParams(window.location.search).get('id');
-
-    // 2. Construct a professional "Concierge" message
     const inquiryMessage = `INQUIRY: ${title} (${price}). I would like more information regarding this piece.`;
 
     try {
@@ -89,21 +100,18 @@ function renderProductDetails(product) {
             },
             body: JSON.stringify({ 
                 message: inquiryMessage,
-                productId: productId // Optional: send ID if your DB supports it
+                productId: id 
             })
         });
 
         if (res.ok) {
             alert("Inquiry sent to our concierge team.");
-            // Optional: Redirect them to their own messages page to see the chat
-            // window.location.href = "messages.html"; 
+        } else {
+            const errorData = await res.json();
+            alert(`Error: ${errorData.error || 'Failed to send inquiry.'}`);
         }
     } catch (err) {
         console.error("Inquiry failed", err);
+        alert("Server error. Please try again later.");
     }
-}
-
-document.getElementById('messageBtn').onclick = handleInquiry;
-    // Update Browser Tab Title
-    document.title = `${product.title} | Authentic Edge`;
 }
