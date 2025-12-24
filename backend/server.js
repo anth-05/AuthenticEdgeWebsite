@@ -211,24 +211,6 @@ app.post("/api/subscription/request", authenticateToken, async (req, res) => {
         const { plan } = req.body;
         const userId = req.user.id;
 
-        await pool.query(
-            `INSERT INTO subscriptions (user_id, requested_plan, status)
-             VALUES ($1, $2, 'pending')
-             ON CONFLICT (user_id) 
-             DO UPDATE SET requested_plan = $2, status = 'pending', updated_at = NOW()`,
-            [userId, plan]
-        );
-
-        res.json({ success: true });
-    } catch (err) {
-        res.status(500).json({ error: "Request failed" });
-    }
-});
-app.post("/api/subscription/request", authenticateToken, async (req, res) => {
-    try {
-        const { plan } = req.body;
-        const userId = req.user.id;
-
         // If the plan is "Cancellation", the admin will see it in the 'requested_plan' column
         await pool.query(
             `INSERT INTO subscriptions (user_id, requested_plan, status)
@@ -243,18 +225,6 @@ app.post("/api/subscription/request", authenticateToken, async (req, res) => {
         console.error(err);
         res.status(500).json({ error: "Failed to process subscription request" });
     }
-});
-app.get("/api/user/profile", authenticateToken, async (req, res) => {
-  try {
-    const { rows } = await pool.query(
-      "SELECT id, email, role, subscription, created_at FROM users WHERE id = $1",
-      [req.user.id]
-    );
-    if (rows.length === 0) return res.status(404).json({ error: "User not found" });
-    res.json(rows[0]);
-  } catch (err) {
-    res.status(500).json({ error: "Server error" });
-  }
 });
 // GET all pending or active subscription requests for Admin
 app.get("/api/admin/subscriptions", authenticateToken, async (req, res) => {
@@ -312,25 +282,6 @@ app.post("/api/admin/subscriptions/:userId", authenticateToken, async (req, res)
         res.status(500).json({ error: "Action failed" });
     }
 });
-// profile route
-app.get("/api/user/profile", authenticateToken, async (req, res) => {
-    try {
-        // req.user.id comes from your authenticateToken middleware
-        const result = await pool.query(
-            "SELECT email, subscription, created_at FROM users WHERE id = $1",
-            [req.user.id]
-        );
-
-        if (result.rows.length === 0) {
-            return res.status(404).json({ error: "User not found" });
-        }
-
-        res.json(result.rows[0]);
-    } catch (err) {
-        console.error("Profile Fetch Error:", err);
-        res.status(500).json({ error: "Internal Server Error" });
-    }
-});
 
 /* ---------------- ADMIN & MESSAGE ROUTES ---------------- */
 app.get("/api/users", authenticateToken, verifyAdmin, async (req, res) => {
@@ -339,8 +290,22 @@ app.get("/api/users", authenticateToken, verifyAdmin, async (req, res) => {
 });
 
 app.get("/api/stats", authenticateToken, verifyAdmin, async (req, res) => {
-  const total = await pool.query("SELECT COUNT(*) FROM users");
-  res.json({ users: parseInt(total.rows[0].count) });
+  try {
+    const stats = await pool.query(`
+      SELECT 
+        COUNT(*) as total,
+        COUNT(*) FILTER (WHERE role = 'admin') as admins,
+        COUNT(*) FILTER (WHERE role = 'user') as regular
+      FROM users
+    `);
+    res.json({ 
+      users: parseInt(stats.rows[0].total),
+      admins: parseInt(stats.rows[0].admins),
+      regularUsers: parseInt(stats.rows[0].regular)
+    });
+  } catch (err) {
+    respondServerError(res, err, "Failed to fetch stats");
+  }
 });
 
 app.post("/api/messages", authenticateToken, async (req, res) => {
