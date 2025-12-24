@@ -1,44 +1,166 @@
-/* Styling for images inside the chat stream */
-.chat-image {
-    max-width: 100%;
-    max-height: 250px;
-    border-radius: 2px;
-    display: block;
-    margin-bottom: 8px;
-    cursor: zoom-in;
+/* --- LAYOUT & CANVAS --- */
+.chat-full-screen {
+    background: #fcfcfc;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-top: 80px; /* Space for header */
 }
 
-/* Update bubbles to match admin style */
+.chat-canvas-full {
+    width: 100%;
+    max-width: 600px;
+    height: 85vh;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #eee;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.03);
+}
+
+/* --- PRESENCE BAR (Top) --- */
+.admin-presence-bar {
+    padding: 20px 25px;
+    background: #000;
+    color: #fff;
+    display: flex;
+    align-items: center;
+}
+
+.presence-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.avatar-circle {
+    width: 38px;
+    height: 38px;
+    background: #fff;
+    color: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 0.7rem;
+    border-radius: 50%;
+}
+
+.text-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.text-info .name {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.text-info .status {
+    font-size: 0.6rem;
+    opacity: 0.6;
+    letter-spacing: 0.02em;
+}
+
+/* --- MESSAGE STREAM --- */
+.message-stream {
+    flex: 1;
+    overflow-y: auto;
+    padding: 30px;
+    display: flex;
+    flex-direction: column; /* Critical for bubble alignment */
+    gap: 20px;
+    background: #fff;
+}
+
+/* --- BUBBLES --- */
 .msg-bubble {
-    max-width: 75%;
-    padding: 12px 16px;
+    max-width: 80%;
+    padding: 14px 18px;
     font-size: 0.85rem;
     line-height: 1.6;
     letter-spacing: 0.01em;
+    position: relative;
 }
 
-/* USER (Right) - Solid Black */
 .msg-bubble.user {
     background: #000;
     color: #fff;
-    border-radius: 0; /* Sharp editorial corners */
-    align-self: flex-end;
+    border-radius: 0;
+    align-self: flex-end; /* Push to right */
+    text-align: left;
 }
 
-/* ADMIN (Left) - Light Grey */
 .msg-bubble.admin {
-    background: #f1f1f1;
+    background: #f4f4f4;
     color: #000;
     border-radius: 0;
-    align-self: flex-start;
+    align-self: flex-start; /* Push to left */
 }
 
-/* Clickable Links in Chat */
+/* --- IMAGES & LINKS --- */
+.chat-image {
+    max-width: 100%;
+    max-height: 300px;
+    display: block;
+    margin-bottom: 10px;
+    cursor: zoom-in;
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
 .chat-link {
     color: inherit;
     text-decoration: underline;
     text-underline-offset: 3px;
     font-weight: 600;
+}
+
+/* --- COMPOSER AREA (Bottom) --- */
+.composer-area {
+    padding: 20px;
+    border-top: 1px solid #eee;
+    background: #fff;
+}
+
+.composer-container {
+    display: flex;
+    background: #f9f9f9;
+    padding: 5px 15px;
+    align-items: center;
+    border: 1px solid #eee;
+}
+
+#chatInput {
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: 12px;
+    outline: none;
+    font-size: 0.85rem;
+    font-family: 'Inter', sans-serif;
+}
+
+#chatSend {
+    background: transparent;
+    border: none;
+    color: #000;
+    cursor: pointer;
+    padding: 5px;
+    display: flex;
+    align-items: center;
+    transition: transform 0.2s;
+}
+
+#chatSend:hover {
+    transform: translateX(3px);
+}
+
+.icon-btn {
+    color: #999;
+    transition: color 0.2s;
 }
 
 .icon-btn:hover {
