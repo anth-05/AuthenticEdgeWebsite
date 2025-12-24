@@ -5,13 +5,23 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import pkg from "pg";
 import multer from "multer";
+import { v2 as cloudinary } from "cloudinary";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
+
 
 dotenv.config();
 const { Pool } = pkg;
-
-
 const app = express();
-const upload = multer({ dest: "uploads/" });
+const storage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: "products",
+    allowed_formats: ["jpg", "png", "jpeg", "webp"],
+    transformation: [{ width: 800, crop: "limit" }],
+  },
+});
+
+const upload = multer({ storage });
 
 /* ---------------- CONFIG ---------------- */
 const PORT = process.env.PORT || 5000;
@@ -116,28 +126,32 @@ app.put("/api/users/:id", authenticateToken, verifyAdmin, async (req, res) => {
 });
 /* ---------------- MESSAGES ---------------- */
 // In your server.js
-app.put("/api/products/:id", authenticateToken, async (req, res) => {
+app.put(
+  "/api/products/:id",
+  authenticateToken,
+  verifyAdmin,
+  upload.single("imageFile"),
+  async (req, res) => {
     try {
-        const { id } = req.params;
-        const { name, description, image, gender, quality, availability } = req.body;
+      const { id } = req.params;
+      const { name, description, gender, quality, availability, image } = req.body;
 
-        const result = await pool.query(
-            `UPDATE products 
-             SET name=$1, description=$2, image=$3, gender=$4, quality=$5, availability=$6 
-             WHERE id=$7 RETURNING *`,
-            [name, description, image, gender, quality, availability, id]
-        );
+      const finalImage = req.file ? req.file.path : image;
 
-        if (result.rows.length === 0) {
-            return res.status(404).json({ error: "Product not found" });
-        }
+      const result = await pool.query(
+        `UPDATE products 
+         SET name=$1, description=$2, image=$3, gender=$4, quality=$5, availability=$6
+         WHERE id=$7 RETURNING *`,
+        [name, description, finalImage, gender, quality, availability, id]
+      );
 
-        res.json(result.rows[0]); // Success: Sends JSON back
+      res.json(result.rows[0]);
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: "Database update failed" });
+      res.status(500).json({ error: "Update failed" });
     }
-});
+  }
+);
+
 /* ---------------- USER ROUTES ---------------- */
 
 // User fetches their own history
@@ -208,6 +222,32 @@ app.get("/api/admin/messages/:userId", authenticateToken, verifyAdmin, async (re
         res.status(500).json({ error: "Failed to fetch chat history" });
     }
 });
+app.post(
+  "/api/products",
+  authenticateToken,
+  verifyAdmin,
+  upload.single("imageFile"),
+  async (req, res) => {
+    try {
+      const { name, description, gender, quality, availability, image } = req.body;
+
+      // Cloudinary file URL OR manual URL
+      const finalImage = req.file ? req.file.path : image;
+
+      await pool.query(
+        `INSERT INTO products 
+         (name, description, image, gender, quality, availability)
+         VALUES ($1,$2,$3,$4,$5,$6)`,
+        [name, description, finalImage, gender, quality, availability]
+      );
+
+      res.json({ success: true });
+    } catch (err) {
+      console.error("Upload error:", err);
+      res.status(500).json({ error: "Failed to create product" });
+    }
+  }
+);
 
 // Admin reply to a user (FIXED 404 ROUTE)
 app.post("/api/admin/reply", authenticateToken, verifyAdmin, async (req, res) => {
