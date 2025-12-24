@@ -7,6 +7,7 @@
     grid-template-columns: 320px 1fr;
     height: 100vh;
     background: #fff;
+    overflow: hidden;
 }
 
 /* INBOX SIDEBAR */
@@ -14,18 +15,18 @@
     border-right: 1px solid #eeeeee;
     display: flex;
     flex-direction: column;
-    background: #fcfcfc;
+    background: #fff; /* Unified background */
+    width: 320px;
 }
 
 .inbox-header {
-    padding: 50px;
+    padding: 30px 25px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     border-bottom: 1px solid #eeeeee;
-    min-height: 80px; /* Ensures alignment with the sidebar logo area */
+    min-height: 80px;
 }
-
 
 .badge {
     background: #000;
@@ -33,71 +34,54 @@
     font-size: 0.7rem;
     padding: 2px 8px;
     font-weight: 800;
-    border-radius: 2px; /* Sharp corners for editorial look */
+    border-radius: 2px;
 }
-/* USER ITEMS */
+
+/* USER ITEMS (Sidebar) */
 .users-list {
     flex: 1;
     overflow-y: auto;
 }
-/* Sidebar legibility */
+
+.user-item {
+    width: 100%;
+    padding: 20px 25px;
+    border-bottom: 1px solid #f9f9f9;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.user-item:hover {
+    background-color: #fcfcfc;
+}
+
+.user-item.active {
+    background-color: #000 !important;
+}
+
 .user-item .user-email {
-    color: #000; /* Force black text on light gray/white background */
+    display: block;
     font-weight: 700;
     font-size: 0.85rem;
-    display: block;
+    color: #000;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     margin-bottom: 4px;
 }
 
-.user-item .last-msg {
-    color: #666; /* Darker gray for better contrast than #999 */
-    font-size: 0.75rem;
-}
-
 .user-item.active .user-email {
-    color: #000; /* Keep black for active state */
+    color: #fff;
 }
 
-/* Chat Bubble Visibility */
-.bubble {
-    padding: 12px 18px;
-    font-size: 0.9rem;
-    line-height: 1.5;
-    word-wrap: break-word; /* Prevents long text from disappearing off-screen */
-}
-
-.message.admin .bubble {
-    background: #000;
-    color: #fff; /* White text on black background for your replies */
-    border-radius: 2px; /* Sharp editorial corners */
-}
-
-.message.user .bubble {
-    background: #f4f4f4; /* Light gray to distinguish from the white background */
-    color: #000; /* Black text on light background for user messages */
-    border-radius: 2px;
-    border: 1px solid #eee;
-}
-
-/* Header Text */
-.chat-header h3 {
-    color: #000;
-    margin: 5px 0 0 0;
-    font-size: 1.1rem;
-    font-weight: 800;
+.user-item .last-msg {
+    font-size: 0.7rem;
+    color: #999;
     text-transform: uppercase;
 }
 
-/* Input Field Readability */
-#adminInput {
-    color: #000;
-    background: transparent;
-    width: 100%;
-    padding: 10px 0;
-}
-
-#adminInput::placeholder {
-    color: #bbb; /* Subtle placeholder that doesn't hide the cursor */
+.user-item.active .last-msg {
+    color: #888;
 }
 
 /* CHAT PANEL */
@@ -108,8 +92,8 @@
 }
 
 .chat-header {
-    padding: 0 40px; /* Vertical padding handled by height */
-    height: 80px; /* Match the inbox header height */
+    padding: 0 40px;
+    height: 80px;
     display: flex;
     align-items: center;
     border-bottom: 1px solid #eeeeee;
@@ -123,41 +107,77 @@
     font-weight: 600;
 }
 
+.chat-header h3 {
+    color: #000;
+    margin: 5px 0 0 0;
+    font-size: 1.1rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+/* CHAT BODY & BUBBLES */
 .chat-body {
     flex: 1;
     padding: 40px;
     overflow-y: auto;
     background-color: #fff;
     background-image: radial-gradient(#e0e0e0 1px, transparent 1px);
-    background-size: 30px 30px; /* Slightly larger grid for a cleaner look */
-    background-position: center;
+    background-size: 30px 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
 }
 
-/* MESSAGE STYLING (Editorial Style) */
-.message {
+/* Wrapper handles Left/Right alignment */
+.message-wrapper {
+    display: flex;
+    width: 100%;
+}
+
+.user-align { justify-content: flex-start; }
+.admin-align { justify-content: flex-end; }
+
+.bubble {
     max-width: 70%;
-    padding: 15px 20px;
+    padding: 12px 18px;
     font-size: 0.9rem;
     line-height: 1.5;
+    word-wrap: break-word;
+    border-radius: 2px;
 }
 
-.message.admin {
-    align-self: flex-end;
-    background: #000;
-    color: #fff;
-    text-align: right;
-}
-
-.message.user {
-    align-self: flex-start;
+.bubble.user {
     background: #f4f4f4;
     color: #000;
+    border: 1px solid #eee;
+}
+
+.bubble.admin {
+    background: #000;
+    color: #fff;
+}
+
+/* PRODUCT INQUIRY SPECIAL STYLING */
+.inquiry-bubble {
+    border-left: 4px solid #000 !important;
+    background: #fdfdfd !important;
+    font-style: normal;
+}
+
+.inquiry-bubble strong {
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 5px;
+    color: #666;
 }
 
 /* CHAT FOOTER */
 .chat-footer {
     padding: 30px 40px;
     border-top: 1px solid #eeeeee;
+    background: #fff;
 }
 
 .input-wrapper {
@@ -168,7 +188,7 @@
     padding-bottom: 10px;
 }
 
-.input-wrapper input {
+#adminInput {
     flex: 1;
     border: none;
     outline: none;
@@ -176,6 +196,12 @@
     font-size: 0.85rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
+    color: #000;
+    background: transparent;
+}
+
+#adminInput::placeholder {
+    color: #bbb;
 }
 
 .icon-btn {
@@ -194,44 +220,11 @@
     letter-spacing: 0.1em;
     font-size: 0.75rem;
     cursor: pointer;
+    color: #000;
 }
 
 /* RESPONSIVE */
 @media (max-width: 900px) {
     .messages-layout { grid-template-columns: 1fr; }
-    .inbox-sidebar { display: none; } /* On mobile, you'd toggle this */
-}.messages-layout {
-    display: flex;
-    height: calc(100vh - 0px); /* Full viewport height */
-}
-.inbox-sidebar {
-    width: 320px;
-    border-right: 1px solid #eeeeee;
-    background: #fff;
-    display: flex;
-    flex-direction: column;
-}
-
-.user-item {
-    width: 100%; /* Ensure it fills the sidebar width */
-    padding: 20px 25px;
-    border-bottom: 1px solid #f9f9f9;
-    transition: all 0.2s ease;
-}
-
-.user-item .user-email {
-    display: block;
-    font-weight: 700;
-    font-size: 0.85rem;
-    color: #000;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis; /* Adds "..." if email is too long */
-}
-
-.user-item .last-msg {
-    font-size: 0.7rem;
-    color: #999;
-    text-transform: uppercase;
-    margin-top: 4px;
+    .inbox-sidebar { display: none; } 
 }
