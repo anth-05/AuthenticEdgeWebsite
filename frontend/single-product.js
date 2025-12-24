@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
         const response = await fetch(`${API_BASE_URL}/api/products`);
         
+        
         // This check prevents the "Unexpected token N" error
         if (!response.ok) {
             throw new Error(`Server responded with ${response.status}`);
