@@ -174,6 +174,47 @@ app.delete("/api/products/:id", authenticateToken, verifyAdmin, async (req, res)
     res.json({ message: "Deleted" });
   } catch (err) { respondServerError(res, err, "Delete failed"); }
 });
+/* ---------------- USER MANAGEMENT ROUTES ---------------- */
+
+// UPDATE User Role
+app.put("/api/users/:id", authenticateToken, verifyAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { role } = req.body;
+
+        const result = await pool.query(
+            "UPDATE users SET role = $1 WHERE id = $2 RETURNING id, email, role",
+            [role, id]
+        );
+
+        if (result.rowCount === 0) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        res.json({ message: "Role updated successfully", user: result.rows[0] });
+    } catch (err) {
+        respondServerError(res, err, "Failed to update user role");
+    }
+});
+
+// DELETE User
+app.delete("/api/users/:id", authenticateToken, verifyAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // The database schema uses ON DELETE CASCADE, 
+        // so deleting the user will automatically remove their subscriptions and messages.
+        const result = await pool.query("DELETE FROM users WHERE id = $1 RETURNING id", [id]);
+
+        if (result.rowCount === 0) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        res.json({ message: "User permanently removed" });
+    } catch (err) {
+        respondServerError(res, err, "Failed to delete user");
+    }
+});
 // subscription route
 // 1. Get User Profile (to check current sub status)
 app.get("/api/user/profile", authenticateToken, async (req, res) => {
