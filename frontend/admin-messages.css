@@ -236,3 +236,72 @@
     .inbox-sidebar { display: none; } 
     .dashboard-body { flex-direction: column; }
 }
+/* Bulk Select Bar */
+#selectAllContainer {
+    padding: 10px 25px;
+    background: #f9f9f9;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.select-all-label {
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+}
+
+.bulk-delete-btn {
+    background: transparent;
+    border: none;
+    color: #ff0000;
+    font-size: 0.6rem;
+    font-weight: 800;
+    cursor: pointer;
+    text-transform: uppercase;
+}
+
+/* User Item Layout with X */
+.user-item-content {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    position: relative;
+}
+
+.user-info {
+    flex: 1;
+    cursor: pointer;
+}
+
+.convo-checkbox {
+    accent-color: #000;
+    cursor: pointer;
+}
+
+/* The Red X - No background, no border */
+.delete-x {
+    background: transparent;
+    border: none;
+    color: #ff0000;
+    font-size: 1.5rem;
+    font-weight: 300;
+    line-height: 1;
+    cursor: pointer;
+    padding: 5px;
+    transition: transform 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.delete-x:hover {
+    transform: scale(1.2);
+}
+
+/* Ensure X is visible against active (black) background */
+.user-item.active .delete-x {
+    color: #ff4d4d; /* Brighter red on black background */
+}

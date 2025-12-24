@@ -394,4 +394,14 @@ app.get('/api/admin/messages/:userId', authenticateToken, async (req, res) => {
         res.status(500).json({ error: "Failed to fetch history" });
     }
 });
+app.delete('/api/admin/conversations/:userId', authenticateToken, async (req, res) => {
+    const { userId } = req.params;
+    try {
+        // This will delete all messages associated with that user
+        await db.query("DELETE FROM messages WHERE user_id = $1", [userId]);
+        res.sendStatus(200);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
