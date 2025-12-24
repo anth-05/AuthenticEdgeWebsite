@@ -109,10 +109,6 @@ async function handleInquiry(title, price, id) {
     // Redirect to the chat page so they can see the message in the stream
     window.location.href = "user-messages.html"; 
     }
-    else {
-        const result = await res.json();
-        throw new Error(result.error || "Server error");
-    }
     } catch (err) {
         console.error("Inquiry failed", err);
         alert("Server error. Please try again later.");
