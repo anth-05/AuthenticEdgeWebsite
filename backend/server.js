@@ -202,10 +202,23 @@ app.delete("/api/products/:id", authenticateToken, verifyAdmin, async (req, res)
 });
 /* ---------------- USER MANAGEMENT ROUTES ---------------- */
 // Add this to your backend server.js
+
 app.post('/api/messages/send', authenticateToken, async (req, res) => {
-    const { message, productId } = req.body;
-    // Logic to save message to your database goes here
-    res.status(200).json({ success: true });
+    try {
+        const userId = req.user.id; // From the JWT token
+        const { message, productId } = req.body;
+
+        // Insert into the same messages table we used before
+        const result = await pool.query(
+            "INSERT INTO messages (user_id, sender, message, status) VALUES ($1, $2, $3, $4) RETURNING *",
+            [userId, 'user', message, 'unread'] // Admin sees 'unread'
+        );
+
+        res.json({ success: true, message: result.rows[0] });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Failed to process inquiry" });
+    }
 });
 app.post('/api/messages', authenticateToken, upload.single('imageFile'), async (req, res) => {
     try {

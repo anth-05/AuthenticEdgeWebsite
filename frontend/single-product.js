@@ -105,11 +105,14 @@ async function handleInquiry(title, price, id) {
         });
 
         if (res.ok) {
-            alert("Inquiry sent to our concierge team.");
-        } else {
-            const errorData = await res.json();
-            alert(`Error: ${errorData.error || 'Failed to send inquiry.'}`);
-        }
+    alert("Inquiry sent to our concierge team.");
+    // Redirect to the chat page so they can see the message in the stream
+    window.location.href = "user-messages.html"; 
+    }
+    else {
+        const result = await res.json();
+        throw new Error(result.error || "Server error");
+    }
     } catch (err) {
         console.error("Inquiry failed", err);
         alert("Server error. Please try again later.");
