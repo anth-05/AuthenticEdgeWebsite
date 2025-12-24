@@ -33,6 +33,10 @@ const ALLOWED_ORIGINS = (
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors({ origin: ALLOWED_ORIGINS, credentials: true }));
+// In server.js - ensure this is near the top
+app.use(express.static(path.join(__dirname, 'public'))); 
+// OR if your files are in the root:
+app.use(express.static(__dirname));
 
 /* ---------------- DATABASE ---------------- */
 const pool = new Pool({
@@ -247,7 +251,62 @@ app.get("/api/user/profile", authenticateToken, async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
+// GET all pending or active subscription requests for Admin
+app.get("/api/admin/subscriptions", authenticateToken, async (req, res) => {
+    // Basic security check
+    if (req.user.role !== 'admin') return res.status(403).json({ error: "Access denied" });
 
+    try {
+        const result = await pool.query(`
+            SELECT 
+                u.id as user_id, 
+                u.email, 
+                s.current_plan, 
+                s.requested_plan, 
+                s.status
+            FROM users u
+            JOIN subscriptions s ON u.id = s.user_id
+            WHERE s.status = 'pending'
+            ORDER BY s.updated_at DESC
+        `);
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Database error" });
+    }
+});
+
+// POST to Approve or Reject
+app.post("/api/admin/subscriptions/:userId", authenticateToken, async (req, res) => {
+    if (req.user.role !== 'admin') return res.status(403).json({ error: "Access denied" });
+    
+    const { userId } = req.params;
+    const { action } = req.body; // 'approve' or 'reject'
+
+    try {
+        if (action === 'approve') {
+            // Move requested_plan to current_plan and set status to active
+            await pool.query(`
+                UPDATE subscriptions 
+                SET current_plan = requested_plan, 
+                    requested_plan = NULL, 
+                    status = 'active', 
+                    updated_at = NOW() 
+                WHERE user_id = $1`, [userId]);
+        } else {
+            // Reset request but keep current plan as is
+            await pool.query(`
+                UPDATE subscriptions 
+                SET requested_plan = NULL, 
+                    status = CASE WHEN current_plan IS NOT NULL THEN 'active' ELSE 'none' END, 
+                    updated_at = NOW() 
+                WHERE user_id = $1`, [userId]);
+        }
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: "Action failed" });
+    }
+});
 // profile route
 app.get("/api/user/profile", authenticateToken, async (req, res) => {
     try {
