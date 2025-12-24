@@ -149,7 +149,10 @@ document.getElementById("add-product-form")?.addEventListener("submit", async (e
     e.preventDefault();
     const token = localStorage.getItem("token");
     const form = e.target;
-    
+    // Safely get availability, or default to "In Stock" if empty
+    const availabilityValue = form.elements["availability"] ? form.elements["availability"].value.trim() : "In Stock";
+    fd.append("availability", availabilityValue || "In Stock");
+        
     // Safer way to find checked radio
     const imageType = form.querySelector('input[name="imageType"]:checked').value;
 
