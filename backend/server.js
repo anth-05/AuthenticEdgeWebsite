@@ -74,7 +74,46 @@ app.post("/api/login", async (req, res) => {
 
   res.json({ token, userId: rows[0].id, role: rows[0].role });
 });
+// GET ALL USERS
+app.get("/api/users", authenticateToken, verifyAdmin, async (req, res) => {
+    try {
+        const result = await pool.query(
+            "SELECT id, email, role, created_at FROM users ORDER BY created_at DESC"
+        );
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: "Failed to fetch users" });
+    }
+});
 
+// GET DASHBOARD STATS
+app.get("/api/stats", authenticateToken, verifyAdmin, async (req, res) => {
+    try {
+        const totalUsers = await pool.query("SELECT COUNT(*) FROM users");
+        const adminUsers = await pool.query("SELECT COUNT(*) FROM users WHERE role = 'admin'");
+        const regularUsers = await pool.query("SELECT COUNT(*) FROM users WHERE role = 'user'");
+
+        res.json({
+            users: parseInt(totalUsers.rows[0].count),
+            admins: parseInt(adminUsers.rows[0].count),
+            regularUsers: parseInt(regularUsers.rows[0].count)
+        });
+    } catch (err) {
+        res.status(500).json({ error: "Failed to fetch stats" });
+    }
+});
+
+// UPDATE USER ROLE
+app.put("/api/users/:id", authenticateToken, verifyAdmin, async (req, res) => {
+    const { id } = req.params;
+    const { role } = req.body;
+    try {
+        await pool.query("UPDATE users SET role = $1 WHERE id = $2", [role, id]);
+        res.json({ message: "Role updated" });
+    } catch (err) {
+        res.status(500).json({ error: "Update failed" });
+    }
+});
 /* ---------------- MESSAGES ---------------- */
 // In your server.js
 app.put("/api/products/:id", authenticateToken, async (req, res) => {
