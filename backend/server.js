@@ -183,7 +183,8 @@ app.get("/api/user/profile", authenticateToken, async (req, res) => {
 app.post("/api/subscription/request", authenticateToken, async (req, res) => {
   try {
     const { plan } = req.body;
-    
+    // sconst statusString = `Pending: ${plan}`;
+
     // Option A: Update the user's subscription directly (Pending status)
     // We'll update the user record to reflect the request
     await pool.query(
@@ -216,6 +217,26 @@ app.get("/api/user/profile", authenticateToken, async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: "Server error" });
   }
+});
+
+// profile route
+app.get("/api/user/profile", authenticateToken, async (req, res) => {
+    try {
+        // req.user.id comes from your authenticateToken middleware
+        const result = await pool.query(
+            "SELECT email, subscription, created_at FROM users WHERE id = $1",
+            [req.user.id]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error("Profile Fetch Error:", err);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
 });
 
 /* ---------------- ADMIN & MESSAGE ROUTES ---------------- */
