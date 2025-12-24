@@ -4,19 +4,34 @@ import { openModal } from "./modal.js"; // Ensure this path is correct
 const cards = document.querySelectorAll(".sub-card");
 
 cards.forEach(card => {
-  const btn = card.querySelector(".btn-select");
-  
-  btn.addEventListener("click", async (e) => {
-    e.preventDefault();
-    const planName = card.querySelector("h3").innerText;
-    const token = localStorage.getItem("token");
+    const btn = card.querySelector(".btn-select");
 
-    // STATE 1: Logged Out
-    if (!token) {
-      const modal = document.getElementById("auth-modal");
-      modal.style.display = "flex";
-      return;
-    }
+    btn.addEventListener("click", async (e) => {
+        e.preventDefault();
+        const planName = card.querySelector("h3").innerText;
+        const token = localStorage.getItem("token");
+
+        // FIX: Match the IDs in your HTML
+        const modal = document.getElementById("custom-modal"); // Changed from auth-modal
+        const authLinks = document.getElementById("auth-links");
+        const confirmBtn = document.getElementById("modal-confirm");
+        const cancelBtn = document.getElementById("modal-cancel");
+
+        // STATE 1: Logged Out
+        if (!token) {
+            if (modal) {
+                document.getElementById("modal-title").textContent = "Membership Required";
+                document.getElementById("modal-message").textContent = "Please log in or create an account to choose your membership plan.";
+                
+                // Toggle visibility
+                if (confirmBtn) confirmBtn.style.display = "none";
+                if (cancelBtn) cancelBtn.style.display = "none";
+                if (authLinks) authLinks.style.display = "flex";
+                
+                modal.style.display = "flex";
+            }
+            return;
+        }
 
     try {
       const userRes = await fetch(`${API_BASE_URL}/api/user/profile`, {
