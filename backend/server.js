@@ -296,6 +296,24 @@ app.get("/api/admin/subscriptions", authenticateToken, async (req, res) => {
         res.status(500).json({ error: "Database error" });
     }
 });
+// Your route MUST match the path the frontend is calling
+app.get('/api/admin/conversations', authenticateToken, async (req, res) => {
+    try {
+        // Example query: Adjust based on your database structure
+        // This should return an array of users who have sent messages
+        const conversations = await db.query(`
+            SELECT DISTINCT users.id as user_id, users.email 
+            FROM users 
+            JOIN messages ON users.id = messages.sender_id 
+            ORDER BY users.email ASC
+        `);
+        
+        res.json(conversations); 
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
 
 // POST to Approve or Reject
 app.post("/api/admin/subscriptions/:userId", authenticateToken, async (req, res) => {
