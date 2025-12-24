@@ -498,8 +498,8 @@ const name = validator.escape(req.body.name);
     // 4. Configure and send the email
     const mailOptions = {
       from: `"${name}" <${process.env.CONTACT_EMAIL}>`,
-      to: process.env.CONTACT_EMAIL, // Send the message to yourself
-      replyTo: email,                // Clicking 'Reply' goes to the customer
+      to: "anthilori25@gmail.com", // Change email
+      replyTo: email,                //
       subject: `New Inquiry from ${name}`,
       html: htmlContent
     };
