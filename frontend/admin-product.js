@@ -100,9 +100,15 @@ async function deleteProduct(id) {
 /* -------------------------------------------------------
    EDIT MODAL LOGIC
 ------------------------------------------------------- */
+/* -------------------------------------------------------
+   EDIT MODAL LOGIC
+------------------------------------------------------- */
 function openEditModal(p) {
+    // Populate the hidden ID field
     document.getElementById("edit-product-id").value = p.id;
-    document.getElementById("edit-name").value = p.name;
+    
+    // Populate text fields
+    document.getElementById("edit-name").value = p.name || "";
     document.getElementById("edit-description").value = p.description || "";
     document.getElementById("edit-image").value = p.image || "";
     document.getElementById("edit-gender").value = p.gender || "";
@@ -110,13 +116,57 @@ function openEditModal(p) {
     document.getElementById("edit-availability").value = p.availability || "";
 
     const modal = document.getElementById("edit-modal");
-    if (modal) modal.style.display = "flex";
+    if (modal) {
+        modal.style.display = "flex";
+    }
 }
 
+// Global scope for the cancel button
 window.closeEditModal = () => {
-    document.getElementById("edit-modal").style.display = "none";
+    const modal = document.getElementById("edit-modal");
+    if (modal) modal.style.display = "none";
 };
 
+/* -------------------------------------------------------
+   SUBMIT UPDATE
+------------------------------------------------------- */
+document.getElementById("edit-product-form")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const token = localStorage.getItem("token");
+    const id = document.getElementById("edit-product-id").value;
+
+    const updatedProduct = {
+        name: document.getElementById("edit-name").value.trim(),
+        description: document.getElementById("edit-description").value.trim(),
+        image: document.getElementById("edit-image").value.trim(),
+        gender: document.getElementById("edit-gender").value.trim(),
+        quality: document.getElementById("edit-quality").value.trim(),
+        availability: document.getElementById("edit-availability").value.trim(),
+    };
+
+    try {
+        const res = await fetch(`${API_BASE_URL}/api/products/${id}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify(updatedProduct)
+        });
+
+        if (res.ok) {
+            window.closeEditModal();
+            loadProducts(); // Refresh the table
+            alert("Inventory updated.");
+        } else {
+            const errData = await res.json();
+            alert(`Error: ${errData.error || "Update failed"}`);
+        }
+    } catch (error) {
+        console.error("Update failed:", error);
+        alert("Server connection failed.");
+    }
+});
 /* -------------------------------------------------------
    SUBMIT PRODUCT (ADD & UPDATE)
 ------------------------------------------------------- */
