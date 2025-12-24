@@ -223,5 +223,9 @@ function scrollToBottom() {
 adminSend.onclick = handleReply;
 adminInput.onkeypress = (e) => { if (e.key === "Enter") handleReply(); };
 
+/* --- EXPOSE TO GLOBAL SCOPE --- */
+window.selectConversation = selectConversation;
+window.deleteConversation = deleteConversation;
+window.bulkDelete = bulkDelete;
 loadInbox();
 setInterval(loadInbox, 15000); // 15s refresh
