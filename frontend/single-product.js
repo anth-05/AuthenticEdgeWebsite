@@ -1,6 +1,6 @@
 import { API_BASE_URL } from "./config.js";
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     const urlParams = new URLSearchParams(window.location.search);
     const productId = urlParams.get('id');
 
@@ -9,24 +9,26 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    // Use the full URL from your config
-    fetch(`${API_BASE_URL}/api/products`) 
-        .then(response => {
-            if (!response.ok) throw new Error("API Route not found");
-            return response.json();
-        })
-        .then(products => {
-            const product = products.find(p => p.id == productId);
-            if (product) {
-                renderProductDetails(product);
-            } else {
-                showError("Product not found in archive.");
-            }
-        })
-        .catch(err => {
-            console.error("Error loading product:", err);
-            showError("Unable to load product details.");
-        });
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/products`);
+        
+        // This check prevents the "Unexpected token N" error
+        if (!response.ok) {
+            throw new Error(`Server responded with ${response.status}`);
+        }
+
+        const products = await response.json();
+        const product = products.find(p => p.id == productId);
+
+        if (product) {
+            renderProductDetails(product);
+        } else {
+            document.getElementById('productTitle').innerText = "Product Not Found";
+        }
+    } catch (err) {
+        console.error("Connection Error:", err);
+        document.getElementById('productTitle').innerText = "Unable to connect to archive";
+    }
 });
 
 function showError(msg) {

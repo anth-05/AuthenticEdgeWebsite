@@ -175,7 +175,12 @@ app.delete("/api/products/:id", authenticateToken, verifyAdmin, async (req, res)
   } catch (err) { respondServerError(res, err, "Delete failed"); }
 });
 /* ---------------- USER MANAGEMENT ROUTES ---------------- */
-
+// Add this to your backend server.js
+app.post('/api/messages/send', authenticateToken, async (req, res) => {
+    const { message, productId } = req.body;
+    // Logic to save message to your database goes here
+    res.status(200).json({ success: true });
+});
 // UPDATE User Role
 app.put("/api/users/:id", authenticateToken, verifyAdmin, async (req, res) => {
     try {
