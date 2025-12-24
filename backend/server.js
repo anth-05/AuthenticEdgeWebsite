@@ -434,25 +434,25 @@ app.get('/api/messages', authenticateToken, async (req, res) => {
         res.status(500).json({ error: "Could not retrieve messages" });
     }
 });
-app.post("/api/messages", authenticateToken, async (req, res) => {
-  const { rows } = await pool.query("INSERT INTO messages (user_id, sender, message) VALUES ($1, 'user', $2) RETURNING *", [req.user.id, req.body.message]);
-  res.json(rows[0]);
-});
-app.get('/api/admin/messages/:userId', authenticateToken, async (req, res) => {
-    const { userId } = req.params;
+app.get('/api/admin/messages/:userId', authenticateToken, verifyAdmin, async (req, res) => {
     try {
+        const { userId } = req.params;
+
         const result = await pool.query(
-            "SELECT sender, message, created_at FROM messages WHERE user_id = $1 ORDER BY created_at ASC",
+            `SELECT sender, message, file_url, created_at
+             FROM messages
+             WHERE user_id = $1
+             ORDER BY created_at ASC`,
             [userId]
         );
-        
-        // IMPORTANT: You must send back result.rows
-        res.json(result.rows); 
+
+        res.json(result.rows);
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: "Failed to fetch history" });
     }
 });
+
 app.delete('/api/admin/conversations/:userId', authenticateToken, async (req, res) => {
     const { userId } = req.params;
     try {
