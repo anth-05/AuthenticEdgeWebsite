@@ -105,7 +105,7 @@ async function loadMessages() {
             chatBox.innerHTML = ""; // Clear "Loading..." text
             
             if (messages.length === 0) {
-                chatBox.innerHTML = `<p style="text-align:center; font-size:0.7rem; color:#999; margin-top:20px;">START A CONVERSATION WITH OUR CONCIERGE.</p>`;
+                chatBox.innerHTML = `<p style="text-align:center; font-size:0.7rem; color:#999; margin-top:20px;">Start a conversation with our customer support.</p>`;
                 return;
             }
 

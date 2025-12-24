@@ -94,6 +94,10 @@
     text-transform: capitalize;
     line-height: 1.4;
 }
+.product-details h3 a {
+    text-decoration: none;
+    color: inherit;
+}
 
 .status {
     font-size: 11px;
@@ -179,4 +183,12 @@
     letter-spacing: 0.15em;
     text-align: center;
     outline: none;
+}
+.nav-link {
+    text-decoration: none;
+    color: inherit;
+}
+.nav-cta{
+    text-decoration: none;
+    color: inherit;
 }

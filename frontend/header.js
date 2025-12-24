@@ -27,7 +27,7 @@ function initMenu() {
         // This replaces the floating chat bubble approach
         menuHTML += `
             <a href="user-messages.html" class="nav-link msg-link">
-                Concierge <span id="nav-msg-dot" class="dot hidden"></span>
+                Contact <span id="nav-msg-dot" class="dot hidden"></span>
             </a>
         `;
 
