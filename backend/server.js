@@ -300,21 +300,24 @@ app.get("/api/admin/subscriptions", authenticateToken, async (req, res) => {
 // Example Node.js Backend Fix
 app.get('/api/admin/conversations', authenticateToken, async (req, res) => {
     try {
-        // Log to Render console to see if the route is reached
-        console.log("Fetching conversations for admin...");
-
-        // Ensure your table and column names match your DB exactly
-        const result = await db.query("SELECT DISTINCT user_id, email FROM messages");
-        const rows = result.rows; // This is where your data lives
+        // 1. Perform the query
+        const result = await pool.query(`
+            SELECT DISTINCT u.id as user_id, u.email 
+            FROM users u
+            JOIN messages m ON u.id = m.user_id 
+            ORDER BY u.email ASC
+        `);
         
-        res.json(rows);
+        // 2. Access the .rows property (Postgres returns an object, not an array)
+        const conversations = result.rows;
+        
+        // 3. Send the array back to the frontend
+        res.json(conversations);
     } catch (err) {
-        // This will show up in your Render Logs
-        console.error("DATABASE ERROR:", err.message); 
+        console.error("DATABASE ERROR:", err.message);
         res.status(500).json({ error: "Database query failed", details: err.message });
     }
 });
-
 // POST to Approve or Reject
 app.post("/api/admin/subscriptions/:userId", authenticateToken, async (req, res) => {
     if (req.user.role !== 'admin') return res.status(403).json({ error: "Access denied" });
@@ -376,5 +379,16 @@ app.post("/api/messages", authenticateToken, async (req, res) => {
   const { rows } = await pool.query("INSERT INTO messages (user_id, sender, message) VALUES ($1, 'user', $2) RETURNING *", [req.user.id, req.body.message]);
   res.json(rows[0]);
 });
-
+app.get('/api/admin/messages/:userId', authenticateToken, async (req, res) => {
+    const { userId } = req.params;
+    try {
+        const result = await db.query(
+            "SELECT sender, message, file_url, created_at FROM messages WHERE user_id = $1 ORDER BY created_at ASC",
+            [userId]
+        );
+        res.json(result.rows); // Use .rows here too!
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
