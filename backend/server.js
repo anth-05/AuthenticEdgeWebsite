@@ -176,7 +176,7 @@ app.post('/api/admin/reply', authenticateToken, upload.single('imageFile'), asyn
         // If your product logic saves to 'req.file.path' or 'req.file.location', do the same here
         const file_url = req.file ? req.file.path || req.file.location : null;
 
-        const result = await db.query(
+        const result = await pool.query(
             "INSERT INTO messages (user_id, sender, message, file_url) VALUES ($1, $2, $3, $4) RETURNING *",
             [userId, 'admin', message, file_url]
         );
