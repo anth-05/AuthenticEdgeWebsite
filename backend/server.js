@@ -9,6 +9,7 @@ import fs from "fs";
 import multer from "multer";
 import { v2 as cloudinary } from "cloudinary";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
+
 import { fileURLToPath } from 'url';
 
 // Recreate __dirname for ES modules
@@ -166,6 +167,20 @@ app.put("/api/products/:id", authenticateToken, verifyAdmin, upload.single("imag
   } catch (err) { respondServerError(res, err, "Failed to update product"); }
 });
 
+app.post('/api/admin/reply', authenticateToken, upload.single('image'), async (req, res) => {
+    const { userId, message } = req.body;
+    const file_url = req.file ? `/uploads/${req.file.filename}` : null;
+
+    try {
+        const result = await pool.query(
+            "INSERT INTO messages (user_id, sender, message, file_url) VALUES ($1, $2, $3, $4) RETURNING file_url",
+            [userId, 'admin', message, file_url]
+        );
+        res.json({ file_url: result.rows[0].file_url });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
 app.delete("/api/products/:id", authenticateToken, verifyAdmin, async (req, res) => {
   try {
     const { id } = req.params;

@@ -305,3 +305,43 @@
 .user-item.active .delete-x {
     color: #ff4d4d; /* Brighter red on black background */
 }
+/* Styling for clickable links in chat */
+.chat-link {
+    color: inherit; /* Takes white on admin bubbles, black on user bubbles */
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    font-weight: 600;
+    transition: opacity 0.2s;
+}
+
+.chat-link:hover {
+    opacity: 0.7;
+}
+
+/* Specific color for links in light user bubbles if needed */
+.bubble.user .chat-link {
+    color: #000;
+}
+
+/* Specific color for links in dark admin bubbles */
+.bubble.admin .chat-link {
+    color: #fff;
+}
+.chat-image {
+    max-width: 100%;
+    max-height: 300px;
+    border-radius: 2px;
+    margin-bottom: 8px;
+    display: block;
+    cursor: zoom-in;
+    transition: opacity 0.2s;
+}
+
+.chat-image:hover {
+    opacity: 0.9;
+}
+
+/* Ensure admin bubble doesn't get too wide for small images */
+.bubble.admin {
+    min-width: 50px;
+}

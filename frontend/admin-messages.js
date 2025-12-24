@@ -7,7 +7,7 @@ const chatHeader = document.getElementById("chatHeader");
 const adminInput = document.getElementById("adminInput");
 const adminSend = document.getElementById("adminSend");
 const messageBadge = document.getElementById("message-badge");
-
+const fileInput = document.getElementById("fileInput");
 /**
  * 1. LOAD INBOX SIDEBAR
  */
@@ -172,22 +172,39 @@ function setupInboxHeader() {
 
 async function handleReply() {
     const text = adminInput.value.trim();
-    if (!text || !activeUser) return;
+    const file = fileInput.files[0];
+    
+    // Only proceed if there is text OR a file
+    if ((!text && !file) || !activeUser) return;
 
     const token = localStorage.getItem("token");
+    const formData = new FormData();
+    formData.append("userId", activeUser);
+    if (text) formData.append("message", text);
+    if (file) formData.append("image", file); // Must match backend field name
+
     try {
         const res = await fetch(`${API_BASE_URL}/api/admin/reply`, {
             method: "POST",
             headers: { 
-                "Content-Type": "application/json",
                 "Authorization": `Bearer ${token}` 
+                // Note: Do NOT set Content-Type header when sending FormData
             },
-            body: JSON.stringify({ userId: activeUser, message: text })
+            body: formData
         });
 
         if (res.ok) {
-            renderBubble({ sender: 'admin', message: text });
+            const data = await res.json();
+            // Render the message with the returned file_url
+            renderBubble({ 
+                sender: 'admin', 
+                message: text, 
+                file_url: data.file_url 
+            });
+            
+            // Clear inputs
             adminInput.value = "";
+            fileInput.value = ""; 
             scrollToBottom();
         }
     } catch (err) {
@@ -195,26 +212,37 @@ async function handleReply() {
     }
 }
 
+/**
+ * Update Render Bubble to show images
+ */
 function renderBubble(msg) {
     const wrapper = document.createElement("div");
     wrapper.className = `message-wrapper ${msg.sender === 'admin' ? 'admin-align' : 'user-align'}`;
     
-    let content = msg.message;
+    let content = msg.message || "";
     let extraClass = "";
     
-    if (content.startsWith("INQUIRY:")) {
-        extraClass = "inquiry-bubble";
-        content = content.replace("INQUIRY:", "<strong>PRODUCT INQUIRY</strong><br>");
+    // Convert links to clickable <a> tags
+    const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+)/g;
+    content = content.replace(urlRegex, (url) => {
+        let href = url.startsWith('http') ? url : `https://${url}`;
+        return `<a href="${href}" target="_blank" class="chat-link">${url}</a>`;
+    });
+
+    // Handle Images
+    let imageHtml = "";
+    if (msg.file_url) {
+        imageHtml = `<img src="${msg.file_url}" class="chat-image" onclick="window.open(this.src)">`;
     }
 
     wrapper.innerHTML = `
         <div class="bubble ${msg.sender} ${extraClass}">
-            ${content}
+            ${imageHtml}
+            ${content ? `<div>${content}</div>` : ""}
         </div>
     `;
     chatBody.appendChild(wrapper);
 }
-
 function scrollToBottom() {
     chatBody.scrollTop = chatBody.scrollHeight;
 }
