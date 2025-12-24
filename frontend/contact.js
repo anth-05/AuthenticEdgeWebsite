@@ -5,7 +5,20 @@ document.getElementById("contactForm").addEventListener("submit", async (e) => {
 
   const submitBtn = e.target.querySelector('button[type="submit"]');
   const originalBtnText = submitBtn ? submitBtn.innerText : "Send";
+  // Inside your submit listener
+    grecaptcha.ready(function() {
+        grecaptcha.execute('YOUR_SITE_KEY', {action: 'submit'}).then(async function(token) {
+            // Add the token to your data object
+            data.recaptchaToken = token;
 
+            // Now perform your fetch to /api/contact
+            const res = await fetch(`${API_BASE_URL}/api/contact`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            });
+        });
+    });
   // 1. Collect Data
   const countryCode = document.querySelector(".country-code")?.value || "";
   const phoneNumber = document.querySelector(".phone-input")?.value || "";

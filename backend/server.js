@@ -9,8 +9,10 @@ import fs from "fs";
 import multer from "multer";
 import { v2 as cloudinary } from "cloudinary";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
-
+import nodemailer from 'nodemailer';
 import { fileURLToPath } from 'url';
+import rateLimit from 'express-rate-limit';
+import validator from 'validator';
 
 // Recreate __dirname for ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -463,4 +465,65 @@ app.delete('/api/admin/conversations/:userId', authenticateToken, async (req, re
         res.status(500).json({ error: err.message });
     }
 });
+
+// 1. Setup Nodemailer Transporter
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.CONTACT_EMAIL,        // From your .env screenshot
+    pass: process.env.CONTACT_EMAIL_PASSWORD // From your .env screenshot
+  }
+});
+
+app.post("/api/contact", async (req, res) => {
+const name = validator.escape(req.body.name);
+  const email = validator.normalizeEmail(req.body.email);
+  const message = validator.escape(req.body.message);
+
+  if (!validator.isEmail(email)) {
+    return res.status(400).json({ error: "Invalid email address" });
+  }
+  try {
+    // 2. Resolve path to your template
+    const templatePath = path.join(__dirname, 'emailTemplates', 'contact.html');
+    let htmlContent = fs.readFileSync(templatePath, 'utf8');
+
+    // 3. Inject data into the template placeholders
+    htmlContent = htmlContent
+      .replace('{{name}}', name)
+      .replace('{{email}}', email)
+      .replace('{{phone}}', phone)
+      .replace('{{message}}', message);
+
+    // 4. Configure and send the email
+    const mailOptions = {
+      from: `"${name}" <${process.env.CONTACT_EMAIL}>`,
+      to: process.env.CONTACT_EMAIL, // Send the message to yourself
+      replyTo: email,                // Clicking 'Reply' goes to the customer
+      subject: `New Inquiry from ${name}`,
+      html: htmlContent
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    res.json({ success: true, message: "Email sent successfully" });
+  } catch (error) {
+    console.error("Email Sending Error:", error);
+    res.status(500).json({ success: false, error: "Internal server error" });
+  }
+});
+
+const verifyUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.RECAPTCHA_SECRET}&response=${req.body.recaptchaToken}`;
+const recaptchaRes = await fetch(verifyUrl, { method: 'POST' });
+const recaptchaData = await recaptchaRes.json();
+
+if (!recaptchaData.success || recaptchaData.score < 0.5) {
+  return res.status(403).json({ success: false, error: "Bot activity detected." });
+}
+const contactLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // Limit each IP to 5 contact requests per window
+  message: { success: false, error: "Too many requests. Please try again later." }
+});
+
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
