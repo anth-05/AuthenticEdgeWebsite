@@ -47,38 +47,31 @@
       </div>
     </section>
 
-    <section class="admin-section">
-  <div class="section-header"><h2>Membership Status</h2></div>
-  <div class="table-container" style="padding: 30px; background: #f9f9f9;">
-    <div style="display: flex; gap: 40px; align-items: center;">
-      <div>
-        <label class="admin-badge">Current Tier</label>
-        <h3 id="current-plan" style="margin-top:10px;">-</h3> 
-      </div>
-      <div>
-        <label class="admin-badge">Request Status</label>
-        <div style="margin-top:10px;">
-          <span id="sub-status" class="status-pill">-</span>
-        </div>
-      </div>
-      <div>
-        <label class="admin-badge">Next Tier</label>
-        <p id="requested-plan" style="margin-top:10px; font-weight: 600;">-</p>
-      </div>
+   <section class="membership-card">
+  <div class="sub-header-row">
+    <div class="sub-column">
+      <span class="label">Current Tier</span>
+      <span class="value" id="current-plan">Hooper</span>
     </div>
 
-    <div style="margin-top: 30px; display: flex; gap: 15px; align-items: flex-end;">
-      <div class="form-group">
-        <label>Apply for Tier Change</label>
-        <select id="new-plan" style="padding: 10px; border: 1px solid #ddd; outline: none;">
-          <option value="Comfort">Comfort Tier</option>
-          <option value="Edge">Edge Tier</option>
-          <option value="Authentic">Authentic Tier</option>
-          <option value="Hoopers Edition">Hooper's Edition</option>
-        </select>
-      </div>
-      <button id="request-sub-change-btn" class="action-btn" style="background:#000; color:#fff; border:none; padding:12px 20px; cursor: pointer;">Submit Request</button>
+    <div class="sub-column">
+      <span class="label">Request Status</span>
+      <div><span id="sub-status" class="status-pill pending">Pending</span></div>
     </div>
+
+    <div class="sub-column">
+      <span class="label">Next Tier</span>
+      <span class="value" id="requested-plan">Edge</span>
+    </div>
+  </div>
+
+  <div class="tier-change-row">
+    <span class="tier-change-label">Apply for Tier Change</span>
+    <select id="new-plan" class="editorial-select">
+      <option value="Comfort">Comfort Tier</option>
+      <option value="Edge">Edge Tier</option>
+    </select>
+    <button id="request-sub-change-btn" class="action-btn-black">Submit Request</button>
   </div>
 </section>
 
