@@ -48,36 +48,39 @@
     </section>
 
     <section class="admin-section">
-      <div class="section-header"><h2>Membership Status</h2></div>
-      <div class="table-container" style="padding: 30px; background: #f9f9f9;">
-        <div style="display: flex; gap: 40px; align-items: center;">
-          <div>
-            <label class="admin-badge">Current Tier</label>
-            <h3 id="current-plan" style="margin-top:10px;">-</h3>
-          </div>
-          <div>
-            <label class="admin-badge">Request Status</label>
-            <div style="margin-top:10px;"><span id="sub-status" class="status-pill">-</span></div>
-          </div>
-          <div>
-            <label class="admin-badge">Next Tier</label>
-            <p id="requested-plan" style="margin-top:10px; font-weight: 600;">-</p>
-          </div>
-        </div>
-
-        <div style="margin-top: 30px; display: flex; gap: 15px; align-items: flex-end;">
-          <div class="form-group">
-            <label>Apply for Tier Change</label>
-            <select id="new-plan" style="padding: 10px; border: 1px solid #ddd; outline: none;">
-              <option value="Premium">Premium Access</option>
-              <option value="Elite">Elite Collection</option>
-              <option value="Archive">Archive Access</option>
-            </select>
-          </div>
-          <button id="request-sub-change-btn" class="action-btn" style="background:#000; color:#fff; border:none; padding:12px 20px;">Submit Request</button>
+  <div class="section-header"><h2>Membership Status</h2></div>
+  <div class="table-container" style="padding: 30px; background: #f9f9f9;">
+    <div style="display: flex; gap: 40px; align-items: center;">
+      <div>
+        <label class="admin-badge">Current Tier</label>
+        <h3 id="current-plan" style="margin-top:10px;">-</h3> 
+      </div>
+      <div>
+        <label class="admin-badge">Request Status</label>
+        <div style="margin-top:10px;">
+          <span id="sub-status" class="status-pill">-</span>
         </div>
       </div>
-    </section>
+      <div>
+        <label class="admin-badge">Next Tier</label>
+        <p id="requested-plan" style="margin-top:10px; font-weight: 600;">-</p>
+      </div>
+    </div>
+
+    <div style="margin-top: 30px; display: flex; gap: 15px; align-items: flex-end;">
+      <div class="form-group">
+        <label>Apply for Tier Change</label>
+        <select id="new-plan" style="padding: 10px; border: 1px solid #ddd; outline: none;">
+          <option value="Comfort">Comfort Tier</option>
+          <option value="Edge">Edge Tier</option>
+          <option value="Authentic">Authentic Tier</option>
+          <option value="Hoopers Edition">Hooper's Edition</option>
+        </select>
+      </div>
+      <button id="request-sub-change-btn" class="action-btn" style="background:#000; color:#fff; border:none; padding:12px 20px; cursor: pointer;">Submit Request</button>
+    </div>
+  </div>
+</section>
 
     <div class="settings-grid">
       <section class="admin-section">
