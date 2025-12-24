@@ -171,6 +171,22 @@
     display: block;
     box-sizing: border-box;
 }
+.btn-link-cancel {
+    background: none;
+    border: none;
+    color: #999;
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    font-weight: 800;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: color 0.2s;
+}
+
+.btn-link-cancel:hover {
+    color: #000;
+}
 
 /* RESPONSIVE BREAKPOINTS */
 @media (max-width: 1100px) {

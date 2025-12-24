@@ -11,27 +11,29 @@ cards.forEach(card => {
         const planName = card.querySelector("h3").innerText;
         const token = localStorage.getItem("token");
 
-        // FIX: Match the IDs in your HTML
-        const modal = document.getElementById("custom-modal"); // Changed from auth-modal
+        // Inside your btn.addEventListener("click", ...)
+        const modal = document.getElementById("custom-modal");
         const authLinks = document.getElementById("auth-links");
         const confirmBtn = document.getElementById("modal-confirm");
         const cancelBtn = document.getElementById("modal-cancel");
 
-        // STATE 1: Logged Out
         if (!token) {
             if (modal) {
-                document.getElementById("modal-title").textContent = "Membership Required";
-                document.getElementById("modal-message").textContent = "Please log in or create an account to choose your membership plan.";
+                document.getElementById("modal-title").textContent = "Account Required";
+                document.getElementById("modal-message").textContent = "Log in or create an account to select a membership tier.";
                 
-                // Toggle visibility
+                // Hide standard subscription buttons
                 if (confirmBtn) confirmBtn.style.display = "none";
                 if (cancelBtn) cancelBtn.style.display = "none";
+                
+                // Show Auth links + the new Close/Cancel button
                 if (authLinks) authLinks.style.display = "flex";
                 
                 modal.style.display = "flex";
             }
             return;
         }
+        // STATE 1: Logged Out
 
     try {
       const userRes = await fetch(`${API_BASE_URL}/api/user/profile`, {
