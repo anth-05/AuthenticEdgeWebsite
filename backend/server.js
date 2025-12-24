@@ -192,7 +192,7 @@ app.post('/api/admin/reply', authenticateToken, upload.single('imageFile'), asyn
 async function migrateDatabase() {
     try {
         // This command checks if the column exists, and adds it if it doesn't
-        await db.query(`
+        await Pool.query(`
             DO $$ 
             BEGIN 
                 IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
