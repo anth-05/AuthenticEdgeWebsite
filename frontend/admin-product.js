@@ -152,7 +152,38 @@ document.getElementById("add-product-form")?.addEventListener("submit", async (e
     // Safely get availability, or default to "In Stock" if empty
     const availabilityValue = form.elements["availability"] ? form.elements["availability"].value.trim() : "In Stock";
     fd.append("availability", availabilityValue || "In Stock");
-        
+    
+    /* -------------------------------------------------------
+   IMAGE TYPE SWITCHER (FIXED VALIDATION)
+------------------------------------------------------- */
+const radioGroup = document.querySelectorAll('input[name="imageType"]');
+const urlRow = document.getElementById('image-url-row');
+const uploadRow = document.getElementById('image-upload-row');
+
+// Select the actual input elements inside those rows
+const urlInput = document.querySelector('input[name="image"]');
+const fileInput = document.querySelector('input[name="imageUpload"]');
+
+radioGroup.forEach(radio => {
+    radio.addEventListener('change', () => {
+        const isUrl = radio.value === "url";
+
+        // Toggle visibility
+        if (urlRow) urlRow.style.display = isUrl ? 'block' : 'none';
+        if (uploadRow) uploadRow.style.display = isUrl ? 'none' : 'block';
+
+        // THE FIX: Toggle 'required' and reset values
+        if (isUrl) {
+            urlInput.required = true;
+            fileInput.required = false;
+            fileInput.value = ""; // Clear file selection if switching back
+        } else {
+            urlInput.required = false;
+            urlInput.value = "";    // Clear URL if switching to upload
+            fileInput.required = true;
+        }
+    });
+});
     // Safer way to find checked radio
     const imageType = form.querySelector('input[name="imageType"]:checked').value;
 
