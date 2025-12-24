@@ -32,46 +32,35 @@ async function api(path, method = "GET", body) {
 ========================= */
 async function loadUserData() {
   try {
-    // We use the profile endpoint we created in the previous step
-    const user = await api("/api/user/profile");
+    const data = await api("/api/user/profile");
 
-    // Update User Info
+    // Update Identity Info
     document.getElementById("user-info").innerHTML = `
-      <p><strong>Email:</strong> ${user.email}</p>
-      <p><strong>Joined:</strong> ${new Date(user.created_at).toDateString()}</p>
+      <p><strong>Email:</strong> ${data.email}</p>
+      <p><strong>Joined:</strong> ${new Date(data.created_at).toDateString()}</p>
     `;
 
-    // Handle Subscription Logic
-    const subData = user.subscription || "none";
+    // Update Subscription UI elements
     const currentPlanEl = document.getElementById("current-plan");
     const statusEl = document.getElementById("sub-status");
     const requestedPlanEl = document.getElementById("requested-plan");
 
-    if (subData.startsWith("Pending:")) {
-      // If status is "Pending: Edge"
-      currentPlanEl.textContent = "None (Inactive)";
-      requestedPlanEl.textContent = subData.replace("Pending: ", "");
-      statusEl.textContent = "Pending Review";
-      statusEl.className = "status-pill pending";
-    } else if (subData === "none") {
-      currentPlanEl.textContent = "No Active Plan";
-      requestedPlanEl.textContent = "None";
-      statusEl.textContent = "Inactive";
-      statusEl.className = "status-pill none";
-    } else {
-      // Active Plan (e.g., "Edge")
-      currentPlanEl.textContent = subData;
-      requestedPlanEl.textContent = "None";
-      statusEl.textContent = "Active";
-      statusEl.className = "status-pill active";
-    }
+    // Map the new table columns to the UI
+    currentPlanEl.textContent = data.current_plan || "No Active Tier";
+    requestedPlanEl.textContent = data.requested_plan || "None";
+    
+    // Set Status Pill
+    const currentStatus = data.status || "none";
+    statusEl.textContent = currentStatus.toUpperCase();
+    
+    // Apply the correct CSS class (pending, active, none)
+    statusEl.className = `status-pill ${currentStatus}`;
 
   } catch (err) {
-    console.error(err);
-    document.getElementById("user-info").textContent = "Failed to load profile.";
+    console.error("Dashboard Load Error:", err);
+    document.getElementById("user-info").textContent = "Error loading secure data.";
   }
 }
-
 // Run loader
 loadUserData();
 

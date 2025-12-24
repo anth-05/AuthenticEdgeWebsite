@@ -168,43 +168,52 @@ app.delete("/api/products/:id", authenticateToken, verifyAdmin, async (req, res)
 // subscription route
 // 1. Get User Profile (to check current sub status)
 app.get("/api/user/profile", authenticateToken, async (req, res) => {
-  try {
-    const { rows } = await pool.query(
-      "SELECT email, role, subscription FROM users WHERE id = $1",
-      [req.user.id]
-    );
-    res.json(rows[0]);
-  } catch (err) {
-    res.status(500).json({ error: "Failed to fetch profile" });
-  }
+    try {
+        const userId = req.user.id; 
+
+        // We JOIN the users table with the subscriptions table
+        const result = await pool.query(
+            `SELECT 
+                u.email, 
+                u.created_at, 
+                s.current_plan, 
+                s.requested_plan, 
+                s.status
+             FROM users u
+             LEFT JOIN subscriptions s ON u.id = s.user_id
+             WHERE u.id = $1`,
+            [userId]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error("DATABASE ERROR ON PROFILE JOIN:", err.message);
+        res.status(500).json({ error: "Failed to fetch profile", details: err.message });
+    }
 });
 
 // 2. Handle Subscription Request
 app.post("/api/subscription/request", authenticateToken, async (req, res) => {
-  try {
-    const { plan } = req.body;
-    // sconst statusString = `Pending: ${plan}`;
+    try {
+        const { plan } = req.body;
+        const userId = req.user.id;
 
-    // Option A: Update the user's subscription directly (Pending status)
-    // We'll update the user record to reflect the request
-    await pool.query(
-      "UPDATE users SET subscription = $1 WHERE id = $2",
-      [`Pending: ${plan}`, req.user.id]
-    );
+        await pool.query(
+            `INSERT INTO subscriptions (user_id, requested_plan, status)
+             VALUES ($1, $2, 'pending')
+             ON CONFLICT (user_id) 
+             DO UPDATE SET requested_plan = $2, status = 'pending', updated_at = NOW()`,
+            [userId, plan]
+        );
 
-    // Option B: (Recommended) Log it in a separate 'requests' table
-    /*
-    await pool.query(
-      "INSERT INTO membership_requests (user_id, plan, status) VALUES ($1, $2, 'pending')",
-      [req.user.id, plan]
-    );
-    */
-
-    res.json({ success: true, message: "Subscription request received" });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to process request" });
-  }
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: "Request failed" });
+    }
 });
 app.get("/api/user/profile", authenticateToken, async (req, res) => {
   try {
