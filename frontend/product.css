@@ -105,11 +105,11 @@
 .status.in-stock { color: #111; }
 .status.sold-out { color: #ccc; }
 
-/* 4. Filter & Search UI (Centered) */
+/* 4. Filter & Search UI (Minimalist) */
 .filter-nav {
     padding: 30px 0;
     background: #fff;
-    width: 100%;
+    z-index: 10;
 }
 
 .filter-list {
@@ -121,10 +121,25 @@
     margin: 0;
 }
 
+.filter-btn {
+    background: none;
+    border: none;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #aaa;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.filter-btn:hover, .filter-btn.active { 
+    color: #000; 
+}
+
 .search-container {
     max-width: 400px;
     margin: 0 auto 40px;
-    padding: 0 20px;
 }
 
 #archiveSearch {
@@ -137,5 +152,4 @@
     letter-spacing: 0.15em;
     text-align: center;
     outline: none;
-    background: transparent;
 }
