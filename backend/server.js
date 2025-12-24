@@ -304,7 +304,7 @@ app.get('/api/admin/conversations', authenticateToken, async (req, res) => {
         console.log("Fetching conversations for admin...");
 
         // Ensure your table and column names match your DB exactly
-        const [rows] = await db.query(`
+        const [rows] = await pool.query(`
             SELECT DISTINCT u.id as user_id, u.email 
             FROM users u
             INNER JOIN messages m ON u.id = m.user_id 
