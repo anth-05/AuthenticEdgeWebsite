@@ -31,7 +31,6 @@ async function loadProducts() {
         });
 
         if (!res.ok) throw new Error("Unauthorized access");
-
         const products = await res.json();
         
         if (!products.length) {
@@ -67,7 +66,6 @@ async function loadProducts() {
                 openEditModal(product);
             })
         );
-
     } catch (err) {
         tbody.innerHTML = `<tr><td colspan='7'>Sync Error: ${err.message}</td></tr>`;
     }
@@ -79,19 +77,12 @@ async function loadProducts() {
 async function deleteProduct(id) {
     if (!confirm("Remove this item from the collection?")) return;
     const token = localStorage.getItem("token");
-
     try {
         const res = await fetch(`${API_BASE_URL}/api/products/${id}`, {
             method: "DELETE",
             headers: { Authorization: `Bearer ${token}` }
         });
-
-        if (res.ok) {
-            loadProducts();
-        } else {
-            const err = await res.json();
-            alert(err.error || "Action failed");
-        }
+        if (res.ok) loadProducts();
     } catch (e) {
         console.error("Deletion error:", e);
     }
@@ -100,14 +91,8 @@ async function deleteProduct(id) {
 /* -------------------------------------------------------
    EDIT MODAL LOGIC
 ------------------------------------------------------- */
-/* -------------------------------------------------------
-   EDIT MODAL LOGIC
-------------------------------------------------------- */
 function openEditModal(p) {
-    // Populate the hidden ID field
     document.getElementById("edit-product-id").value = p.id;
-    
-    // Populate text fields
     document.getElementById("edit-name").value = p.name || "";
     document.getElementById("edit-description").value = p.description || "";
     document.getElementById("edit-image").value = p.image || "";
@@ -116,61 +101,15 @@ function openEditModal(p) {
     document.getElementById("edit-availability").value = p.availability || "";
 
     const modal = document.getElementById("edit-modal");
-    if (modal) {
-        modal.style.display = "flex";
-    }
+    if (modal) modal.style.display = "flex";
 }
 
-// Global scope for the cancel button
 window.closeEditModal = () => {
     const modal = document.getElementById("edit-modal");
     if (modal) modal.style.display = "none";
 };
 
-/* -------------------------------------------------------
-   SUBMIT UPDATE
-------------------------------------------------------- */
-document.getElementById("edit-product-form")?.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const token = localStorage.getItem("token");
-    const id = document.getElementById("edit-product-id").value;
-
-    const updatedProduct = {
-        name: document.getElementById("edit-name").value.trim(),
-        description: document.getElementById("edit-description").value.trim(),
-        image: document.getElementById("edit-image").value.trim(),
-        gender: document.getElementById("edit-gender").value.trim(),
-        quality: document.getElementById("edit-quality").value.trim(),
-        availability: document.getElementById("edit-availability").value.trim(),
-    };
-
-    try {
-        const res = await fetch(`${API_BASE_URL}/api/products/${id}`, {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`
-            },
-            body: JSON.stringify(updatedProduct)
-        });
-
-        if (res.ok) {
-            window.closeEditModal();
-            loadProducts(); // Refresh the table
-            alert("Inventory updated.");
-        } else {
-            const errData = await res.json();
-            alert(`Error: ${errData.error || "Update failed"}`);
-        }
-    } catch (error) {
-        console.error("Update failed:", error);
-        alert("Server connection failed.");
-    }
-});
-/* -------------------------------------------------------
-   SUBMIT PRODUCT (ADD & UPDATE)
-------------------------------------------------------- */
-// Update Product
+// Update Logic
 document.getElementById("edit-product-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const token = localStorage.getItem("token");
@@ -194,7 +133,6 @@ document.getElementById("edit-product-form")?.addEventListener("submit", async (
             },
             body: JSON.stringify(updated)
         });
-
         if (res.ok) {
             window.closeEditModal();
             loadProducts();
@@ -204,57 +142,49 @@ document.getElementById("edit-product-form")?.addEventListener("submit", async (
     }
 });
 
-// Add Product
 /* -------------------------------------------------------
-   ADD PRODUCT FUNCTION
+   ADD PRODUCT FUNCTION (FIXED ACCESSORS)
 ------------------------------------------------------- */
 document.getElementById("add-product-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const token = localStorage.getItem("token");
     const form = e.target;
     
-    // Determine if we are using a URL or a File Upload
-    const imageType = form.querySelector("input[name='imageType']:checked").value;
+    // Safer way to find checked radio
+    const imageType = form.querySelector('input[name="imageType"]:checked').value;
 
-    // Use FormData to handle potential file uploads
     const fd = new FormData();
-    fd.append("name", form.name.value.trim());
-    fd.append("description", form.description.value.trim());
-    fd.append("gender", form.gender.value.trim());
-    fd.append("quality", form.quality.value.trim());
-    fd.append("availability", form.availability.value.trim() || "In Stock");
+    // Use .elements to avoid "undefined" errors
+    fd.append("name", form.elements["name"].value.trim());
+    fd.append("description", form.elements["description"].value.trim());
+    fd.append("gender", form.elements["gender"].value.trim());
+    fd.append("quality", form.elements["quality"].value.trim());
+    fd.append("availability", form.elements["availability"].value.trim() || "In Stock");
 
     if (imageType === "upload") {
         const fileInput = form.querySelector('input[name="imageUpload"]');
-        if (!fileInput.files[0]) return alert("Please select a file to upload.");
+        if (!fileInput.files[0]) return alert("Please select a file.");
         fd.append("imageFile", fileInput.files[0]); 
     } else {
-        const imageUrl = form.querySelector('input[name="image"]').value.trim();
-        if (!imageUrl) return alert("Please enter an image URL.");
+        const imageUrl = form.elements["image"].value.trim();
+        if (!imageUrl) return alert("Please enter a URL.");
         fd.append("image", imageUrl); 
     }
 
     try {
         const res = await fetch(`${API_BASE_URL}/api/products`, {
             method: "POST",
-            headers: { 
-                // Do NOT set Content-Type header when using FormData; 
-                // the browser will set it automatically with the boundary.
-                Authorization: `Bearer ${token}` 
-            },
+            headers: { Authorization: `Bearer ${token}` },
             body: fd
         });
 
-        // This is where your SyntaxError likely happened. 
-        // We check if res.ok before trying to parse .json()
         if (res.ok) {
-            alert("Product added successfully.");
+            alert("Product published.");
             form.reset();
-            loadProducts(); // Refresh the table
+            loadProducts();
         } else {
-            const errorText = await res.text(); // Get raw text to debug if it's HTML
-            console.error("Server Error Response:", errorText);
-            alert("Failed to add product. Check console for details.");
+            const errorText = await res.text();
+            console.error("Server says:", errorText);
         }
     } catch (error) {
         console.error("Add failed:", error);
