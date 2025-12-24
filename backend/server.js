@@ -11,7 +11,6 @@ const { Pool } = pkg;
 
 
 const app = express();
-const multer = require('multer');
 const upload = multer({ dest: "uploads/" });
 
 /* ---------------- CONFIG ---------------- */
@@ -101,26 +100,6 @@ app.put("/api/products/:id", authenticateToken, async (req, res) => {
     }
 });
 /* ---------------- USER ROUTES ---------------- */
-// Add this to your server.js (requires multer for file uploads)
-app.post("/api/products", authenticateToken, upload.single('imageFile'), async (req, res) => {
-    try {
-        const { name, description, gender, quality, availability, image } = req.body;
-        
-        // If a file was uploaded, use its path, otherwise use the provided URL
-        const finalImage = req.file ? `/uploads/${req.file.filename}` : image;
-
-        const result = await pool.query(
-            `INSERT INTO products (name, description, image, gender, quality, availability)
-             VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-            [name, description, finalImage, gender, quality, availability]
-        );
-
-        res.status(201).json(result.rows[0]);
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: "Database insertion failed" });
-    }
-});
 
 // User fetches their own history
 app.get("/api/messages", authenticateToken, async (req, res) => {
