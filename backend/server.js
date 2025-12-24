@@ -398,7 +398,7 @@ app.delete('/api/admin/conversations/:userId', authenticateToken, async (req, re
     const { userId } = req.params;
     try {
         // This will delete all messages associated with that user
-        await db.query("DELETE FROM messages WHERE user_id = $1", [userId]);
+        await pool.query("DELETE FROM messages WHERE user_id = $1", [userId]);
         res.sendStatus(200);
     } catch (err) {
         res.status(500).json({ error: err.message });
