@@ -1,5 +1,20 @@
 /* ========== EDITORIAL ADMIN MESSAGES ========== */
 
+/* 1. Global Layout Fix */
+.dashboard-body {
+    display: flex;
+    overflow: hidden; /* Prevents double scrollbars */
+    height: 100vh;
+}
+
+/* Ensure the main container grows to fill remaining space without sliding under */
+.dashboard-main.no-padding {
+    flex: 1;
+    height: 100vh;
+    position: relative;
+    overflow: hidden;
+}
+
 .no-padding { padding: 0 !important; }
 
 .messages-layout {
@@ -15,8 +30,9 @@
     border-right: 1px solid #eeeeee;
     display: flex;
     flex-direction: column;
-    background: #fff; /* Unified background */
+    background: #fff;
     width: 320px;
+    height: 100vh;
 }
 
 .inbox-header {
@@ -89,6 +105,7 @@
     display: flex;
     flex-direction: column;
     height: 100vh;
+    min-width: 0; /* Important to prevent flex overflow */
 }
 
 .chat-header {
@@ -128,7 +145,6 @@
     gap: 20px;
 }
 
-/* Wrapper handles Left/Right alignment */
 .message-wrapper {
     display: flex;
     width: 100%;
@@ -157,11 +173,10 @@
     color: #fff;
 }
 
-/* PRODUCT INQUIRY SPECIAL STYLING */
+/* INQUIRY BUBBLE */
 .inquiry-bubble {
     border-left: 4px solid #000 !important;
     background: #fdfdfd !important;
-    font-style: normal;
 }
 
 .inquiry-bubble strong {
@@ -204,14 +219,6 @@
     color: #bbb;
 }
 
-.icon-btn {
-    background: none;
-    border: none;
-    font-size: 1.2rem;
-    cursor: pointer;
-    color: #999;
-}
-
 .send-btn {
     background: none;
     border: none;
@@ -227,4 +234,5 @@
 @media (max-width: 900px) {
     .messages-layout { grid-template-columns: 1fr; }
     .inbox-sidebar { display: none; } 
+    .dashboard-body { flex-direction: column; }
 }
