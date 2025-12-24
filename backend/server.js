@@ -297,21 +297,25 @@ app.get("/api/admin/subscriptions", authenticateToken, async (req, res) => {
     }
 });
 // Your route MUST match the path the frontend is calling
+// Example Node.js Backend Fix
 app.get('/api/admin/conversations', authenticateToken, async (req, res) => {
     try {
-        // Example query: Adjust based on your database structure
-        // This should return an array of users who have sent messages
-        const conversations = await db.query(`
-            SELECT DISTINCT users.id as user_id, users.email 
-            FROM users 
-            JOIN messages ON users.id = messages.sender_id 
-            ORDER BY users.email ASC
+        // Log to Render console to see if the route is reached
+        console.log("Fetching conversations for admin...");
+
+        // Ensure your table and column names match your DB exactly
+        const [rows] = await db.query(`
+            SELECT DISTINCT u.id as user_id, u.email 
+            FROM users u
+            INNER JOIN messages m ON u.id = m.user_id 
+            ORDER BY u.email ASC
         `);
         
-        res.json(conversations); 
+        res.json(rows);
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: "Internal Server Error" });
+        // This will show up in your Render Logs
+        console.error("DATABASE ERROR:", err.message); 
+        res.status(500).json({ error: "Database query failed", details: err.message });
     }
 });
 
