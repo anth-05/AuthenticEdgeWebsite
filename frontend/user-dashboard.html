@@ -6,18 +6,48 @@
   <title>Account | Authentic Edge</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap">
   <link rel="stylesheet" href="theme.css">
-  <link rel="stylesheet" href="admin-base.css"> <link rel="stylesheet" href="mobile-header.css">
+  <link rel="stylesheet" href="admin-base.css"> 
+  <link rel="stylesheet" href="mobile-header.css">
   <style>
-    /* Specific styles for the User Dashboard */
-    .profile-detail { margin-bottom: 25px; border-bottom: 1px solid #eee; padding-bottom: 15px; }
-    .profile-detail label { display: block; font-size: 0.65rem; text-transform: uppercase; color: #999; font-weight: 700; margin-bottom: 5px; }
-    .profile-detail p { font-size: 1.1rem; font-weight: 500; margin: 0; }
-    .status-pill { padding: 4px 12px; font-size: 0.7rem; font-weight: 800; border-radius: 2px; }
-    .status-pill.pending { background: #fff3cd; color: #856404; }
-    .status-pill.approved { background: #d4edda; color: #155724; }
+    /* ========== LAYOUT & THEME ========== */
+    .dashboard-main { padding: 120px 10% 100px; }
     .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 40px; }
+    
+    /* ========== MEMBERSHIP CARD (Matched to Image) ========== */
+    .membership-card { border: 1px solid #eee; padding: 30px; background: #fff; margin-bottom: 40px; }
+    .sub-header-row { display: flex; align-items: flex-start; gap: 60px; margin-bottom: 40px; }
+    .sub-column { display: flex; flex-direction: column; gap: 8px; }
+    .sub-column .label { font-size: 0.65rem; text-transform: uppercase; color: #999; font-weight: 700; letter-spacing: 0.05em; }
+    .sub-column .value { font-weight: 700; font-size: 1.4rem; color: #000; }
+
+    /* STATUS PILLS */
+    .status-pill { font-size: 0.7rem; text-transform: uppercase; font-weight: 800; padding: 6px 14px; letter-spacing: 0.05em; border-radius: 4px; display: inline-block; }
+    .status-pill.pending { background: #fdf5d7; color: #9c7b11; }
+    .status-pill.active { background: #000; color: #fff; }
+    .status-pill.none { background: #eee; color: #666; }
+
+    /* TIER CHANGE ROW */
+    .tier-change-row { display: flex; align-items: center; gap: 15px; padding-top: 20px; border-top: 1px solid #f0f0f0; }
+    .tier-change-label { font-size: 1rem; font-weight: 400; color: #333; }
+    .editorial-select { padding: 10px 15px; border: 1px solid #ddd; background: #fff; font-family: inherit; outline: none; min-width: 180px; }
+    .action-btn-black { background: #000; color: #fff; border: none; padding: 12px 24px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; cursor: pointer; }
+
+    /* ========== IDENTITY & SECURITY ========== */
+    .info-display p { font-size: 1.1rem; font-weight: 500; margin: 5px 0 20px; color: #000; }
+    .input-field { width: 100%; padding: 15px 0; border: none; border-bottom: 1px solid #ddd; outline: none; font-family: inherit; font-size: 0.95rem; }
+    .update-btn { margin-top: 20px; width: 100%; padding: 12px; background: #fff; border: 1px solid #000; font-weight: 700; text-transform: uppercase; font-size: 0.7rem; cursor: pointer; transition: 0.2s; }
+    .update-btn:hover { background: #000; color: #fff; }
+
+    /* ========== DANGER ZONE ========== */
     .danger-zone { margin-top: 60px; padding-top: 40px; border-top: 2px solid #000; }
-    @media (max-width: 768px) { .settings-grid { grid-template-columns: 1fr; } }
+    .delete-btn { background: transparent; color: #d9534f; border: 1px solid #d9534f; padding: 10px 20px; cursor: pointer; font-weight: 700; text-transform: uppercase; font-size: 0.7rem; }
+    .delete-btn:hover { background: #d9534f; color: #fff; }
+
+    @media (max-width: 900px) {
+      .settings-grid { grid-template-columns: 1fr; }
+      .sub-header-row { gap: 20px; flex-wrap: wrap; }
+      .tier-change-row { flex-direction: column; align-items: flex-start; }
+    }
   </style>
 </head>
 <body class="dashboard-body">
@@ -32,7 +62,7 @@
     </div>
   </header>
 
-  <main class="dashboard-main" style="padding: 120px 10% 100px;">
+  <main class="dashboard-main">
     <header class="main-header">
       <div class="header-left">
         <span class="eyebrow">Member Portal</span>
@@ -42,53 +72,55 @@
 
     <section class="admin-section">
       <div class="section-header"><h2>Identity Info</h2></div>
-      <div id="user-info">
+      <div id="user-info" class="info-display">
         <p>Syncing identity...</p>
       </div>
     </section>
 
-   <section class="membership-card">
-  <div class="sub-header-row">
-    <div class="sub-column">
-      <span class="label">Current Tier</span>
-      <span class="value" id="current-plan">Hooper</span>
-    </div>
+    <section class="membership-card">
+      <div class="sub-header-row">
+        <div class="sub-column">
+          <span class="label">Current Tier</span>
+          <span class="value" id="current-plan">-</span>
+        </div>
 
-    <div class="sub-column">
-      <span class="label">Request Status</span>
-      <div><span id="sub-status" class="status-pill pending">Pending</span></div>
-    </div>
+        <div class="sub-column">
+          <span class="label">Request Status</span>
+          <div><span id="sub-status" class="status-pill none">-</span></div>
+        </div>
 
-    <div class="sub-column">
-      <span class="label">Next Tier</span>
-      <span class="value" id="requested-plan">Edge</span>
-    </div>
-  </div>
+        <div class="sub-column">
+          <span class="label">Next Tier</span>
+          <span class="value" id="requested-plan">-</span>
+        </div>
+      </div>
 
-  <div class="tier-change-row">
-    <span class="tier-change-label">Apply for Tier Change</span>
-    <select id="new-plan" class="editorial-select">
-      <option value="Comfort">Comfort Tier</option>
-      <option value="Edge">Edge Tier</option>
-    </select>
-    <button id="request-sub-change-btn" class="action-btn-black">Submit Request</button>
-  </div>
-</section>
+      <div class="tier-change-row">
+        <span class="tier-change-label">Apply for Tier Change</span>
+        <select id="new-plan" class="editorial-select">
+          <option value="Comfort">Comfort Tier</option>
+          <option value="Edge">Edge Tier</option>
+          <option value="Authentic">Authentic Tier</option>
+          <option value="Hoopers Edition">Hooper's Edition</option>
+        </select>
+        <button id="request-sub-change-btn" class="action-btn-black">Submit Request</button>
+      </div>
+    </section>
 
     <div class="settings-grid">
       <section class="admin-section">
         <div class="section-header"><h2>Update Email</h2></div>
         <div class="form-group">
-          <input type="email" id="new-email" placeholder="New Email Address" style="width:100%; padding:15px 0; border:none; border-bottom:1px solid #ddd; outline:none;">
-          <button id="update-email-btn" class="action-btn" style="margin-top:20px; width:100%;">Apply Identity Change</button>
+          <input type="email" id="new-email" class="input-field" placeholder="New Email Address">
+          <button id="update-email-btn" class="update-btn">Apply Identity Change</button>
         </div>
       </section>
 
       <section class="admin-section">
         <div class="section-header"><h2>Security</h2></div>
         <div class="form-group">
-          <input type="password" id="new-password" placeholder="New Password" style="width:100%; padding:15px 0; border:none; border-bottom:1px solid #ddd; outline:none;">
-          <button id="update-password-btn" class="action-btn" style="margin-top:20px; width:100%;">Update Passcode</button>
+          <input type="password" id="new-password" class="input-field" placeholder="New Password">
+          <button id="update-password-btn" class="update-btn">Update Passcode</button>
         </div>
       </section>
     </div>
@@ -96,7 +128,7 @@
     <section class="danger-zone">
       <div class="section-header"><h2 style="color: #d9534f;">Termination</h2></div>
       <p style="font-size: 0.9rem; color: #666; margin-bottom: 20px;">Closing your account will immediately revoke access to all digital assets and purchase history.</p>
-      <button id="delete-account-btn" style="background: transparent; color: #d9534f; border: 1px solid #d9534f; padding: 10px 20px; cursor: pointer; font-weight: 700; text-transform: uppercase; font-size: 0.7rem;">Delete Account Permanently</button>
+      <button id="delete-account-btn" class="delete-btn">Delete Account Permanently</button>
     </section>
   </main>
 
