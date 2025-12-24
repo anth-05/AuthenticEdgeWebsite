@@ -20,19 +20,14 @@
 </header>
 
 <main>
-  <section class="hero full-bleed-hero">
-    <div class="hero-bg-overlay product-visual"></div>
-    <div class="hero-content">
-      <span class="eyebrow" style="color: rgba(255,255,255,0.6);">Available Winter 2025</span>
-      <h2 style="color: white;">Inventory<br>Arriving Soon</h2>
-      <p>Standalone apparel and limited footwear drops are in production. Join the waitlist for exclusive early access.</p>
-      
-      <div class="notify-container">
-        <input type="email" id="notifyEmail" placeholder="ENTER YOUR EMAIL" class="notify-input">
-        <button class="btn-notify" id="notifyBtn">Notify Me</button>
-      </div>
-    </div>
-  </section>
+  <div class="search-container">
+    <input type="text" id="archiveSearch" placeholder="SEARCH ARCHIVES (E.G. 'JORDAN', 'VINTAGE')..." />
+</div>
+<nav class="filter-nav">
+  <div class="container">
+    <ul class="filter-list" id="dynamic-filters"></ul>
+  </div>
+</nav>
 
   <section class="collection-grid-section">
     <div class="container">
@@ -51,71 +46,8 @@
     </div>
 </footer>
 
-<div class="chat-widget" id="chatWidget">
-  <div class="chat-window">
-    <div class="chat-header">Concierge Support</div>
-    <div class="chat-body" id="chatBox"></div>
-    <div class="chat-input-bar">
-      <input type="text" id="chatInput" placeholder="How can we assist you?" autocomplete="off" />
-      <label class="file-btn" title="Attach image">
-        📎<input type="file" id="chatFile" hidden accept="image/*">
-      </label>
-      <button id="chatSend">➤</button>
-    </div>
-  </div>
-  <div class="chat-toggle-btn" id="chatToggle">
-    <span>💬</span>
-  </div>
-</div>
-
 <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 <script src="header.js"></script>
-<script type="module">
-  import { API_BASE_URL } from "./config.js";
-
-  // 1. Fetch Products
-  async function loadProducts() {
-    const grid = document.getElementById("product-grid");
-    try {
-      const res = await fetch(`${API_BASE_URL}/api/products`);
-      const products = await res.json();
-
-      if (products.length === 0) {
-        grid.innerHTML = `<p class="empty-msg">Our current collection is strictly limited. Check back soon.</p>`;
-        return;
-      }
-
-      // UPDATE: Wrapped the card in an <a> tag and added the dynamic ID
-      grid.innerHTML = products.map(p => `
-        <a href="single-product.html?id=${p.id}" class="product-card-link">
-          <div class="product-card">
-            <div class="product-img-frame">
-              <img src="${p.image}" alt="${p.name}" loading="lazy">
-            </div>
-            <div class="product-details">
-              <span class="product-cat">${p.quality}</span>
-              <h3>${p.name}</h3>
-              <p class="status ${p.availability === 'available' ? 'in-stock' : 'sold-out'}">
-                ${p.availability === 'available' ? 'Available' : 'Sold Out'}
-              </p>
-            </div>
-          </div>
-        </a>
-      `).join('');
-    } catch (err) {
-      grid.innerHTML = `<p>Archive sync unavailable.</p>`;
-    }
-  }
-
-  // 2. Notify Me Logic
-  document.getElementById("notifyBtn").onclick = async () => {
-    const email = document.getElementById("notifyEmail").value;
-    if (!email) return alert("Please enter your email.");
-    alert("You have been added to the Winter 2025 priority list.");
-  };
-
-  window.onload = loadProducts;
-</script>
-<script type="module" src="user-chat.js"></script>
+<script type="module" src="product.js"></script>
 </body>
 </html>
