@@ -190,7 +190,6 @@ app.post('/api/admin/reply', authenticateToken, upload.single('imageFile'), asyn
 });
 
 // Call the function
-migrateDatabase();
 app.delete("/api/products/:id", authenticateToken, verifyAdmin, async (req, res) => {
   try {
     const { id } = req.params;
