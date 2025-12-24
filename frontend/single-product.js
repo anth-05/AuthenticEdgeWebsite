@@ -1,37 +1,37 @@
-/**
- * SINGLE PRODUCT LOADER
- * This script identifies the product from the URL and populates the UI.
- */
+import { API_BASE_URL } from "./config.js";
 
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Get the Product ID from the URL (e.g., ?id=33)
     const urlParams = new URLSearchParams(window.location.search);
     const productId = urlParams.get('id');
 
     if (!productId) {
-        window.location.href = '/collection'; // Redirect if no ID found
+        window.location.href = 'collection.html';
         return;
     }
 
-    // 2. Fetch all products (Replace with your actual API endpoint if different)
-    // For now, we fetch the same JSON used in your collection grid
-    fetch('/api/products') 
-        .then(response => response.json())
+    // Use the full URL from your config
+    fetch(`${API_BASE_URL}/api/products`) 
+        .then(response => {
+            if (!response.ok) throw new Error("API Route not found");
+            return response.json();
+        })
         .then(products => {
-            // 3. Find the specific product
             const product = products.find(p => p.id == productId);
-
             if (product) {
                 renderProductDetails(product);
             } else {
-                document.getElementById('productTitle').innerText = "Product Not Found";
+                showError("Product not found in archive.");
             }
         })
         .catch(err => {
             console.error("Error loading product:", err);
-            document.getElementById('productTitle').innerText = "Error Loading Archive";
+            showError("Unable to load product details.");
         });
 });
+
+function showError(msg) {
+    document.getElementById('productTitle').innerText = msg;
+}
 
 /**
  * Injects the product data into the HTML elements
@@ -60,7 +60,47 @@ function renderProductDetails(product) {
         msgBtn.style.cursor = "not-allowed";
         msgBtn.disabled = true;
     }
+    async function handleInquiry() {
+    const token = localStorage.getItem("token");
+    
+    // 1. Check if user is logged in
+    if (!token) {
+        alert("Please sign in to send an inquiry.");
+        window.location.href = "login.html";
+        return;
+    }
 
+    const title = document.getElementById('productTitle').innerText;
+    const price = document.getElementById('productPrice').innerText;
+    const productId = new URLSearchParams(window.location.search).get('id');
+
+    // 2. Construct a professional "Concierge" message
+    const inquiryMessage = `INQUIRY: ${title} (${price}). I would like more information regarding this piece.`;
+
+    try {
+        const res = await fetch(`${API_BASE_URL}/api/messages/send`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify({ 
+                message: inquiryMessage,
+                productId: productId // Optional: send ID if your DB supports it
+            })
+        });
+
+        if (res.ok) {
+            alert("Inquiry sent to our concierge team.");
+            // Optional: Redirect them to their own messages page to see the chat
+            // window.location.href = "messages.html"; 
+        }
+    } catch (err) {
+        console.error("Inquiry failed", err);
+    }
+}
+
+document.getElementById('messageBtn').onclick = handleInquiry;
     // Update Browser Tab Title
     document.title = `${product.title} | Authentic Edge`;
 }

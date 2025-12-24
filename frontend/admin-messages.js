@@ -132,6 +132,23 @@ function scrollToBottom() {
     chatBody.scrollTop = chatBody.scrollHeight;
 }
 
+function renderBubble(msg) {
+    const div = document.createElement("div");
+    div.className = `message ${msg.sender}`; 
+    
+    // Check if it's a product inquiry
+    let content = msg.message;
+    let extraClass = "";
+    
+    if (content.startsWith("INQUIRY:")) {
+        extraClass = "inquiry-bubble";
+        content = content.replace("INQUIRY:", "<strong>PRODUCT INQUIRY:</strong><br>");
+    }
+
+    div.innerHTML = `<div class="bubble ${extraClass}">${content}</div>`;
+    chatBody.appendChild(div);
+}
+
 /* --- EVENT LISTENERS --- */
 adminSend.onclick = handleReply;
 adminInput.onkeypress = (e) => { if (e.key === "Enter") handleReply(); };
