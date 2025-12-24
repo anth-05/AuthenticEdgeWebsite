@@ -22,15 +22,15 @@
 /* 1. Clean Frame: No border, very light gray background */
 .product-img-frame {
     width: 80%;
+    margin: 0 auto 12px auto; /* Added 'auto' to left/right to center the box */
     aspect-ratio: 1 / 1;
-    background-color: #f5f5f5; /* Clean light gray */
+    background-color: #f5f5f5;
     overflow: hidden;
-    margin-bottom: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
-    padding: 12%; /* Internal breathing room for the product */
+    padding: 12%; 
     transition: background-color 0.3s ease;
 }
 
