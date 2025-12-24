@@ -40,21 +40,9 @@
     flex: 1;
     overflow-y: auto;
 }
-
-.user-item {
-    padding: 20px 30px;
-    border-bottom: 1px solid #f0f0f0;
-    cursor: pointer;
-    transition: background 0.2s;
-}
-
-.user-item:hover { background: #fff; }
-.user-item.active {
-    background: #fff;
-    border-left: 4px solid #000;
-}
-
+/* Sidebar legibility */
 .user-item .user-email {
+    color: #000; /* Force black text on light gray/white background */
     font-weight: 700;
     font-size: 0.85rem;
     display: block;
@@ -62,11 +50,54 @@
 }
 
 .user-item .last-msg {
+    color: #666; /* Darker gray for better contrast than #999 */
     font-size: 0.75rem;
-    color: #999;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+}
+
+.user-item.active .user-email {
+    color: #000; /* Keep black for active state */
+}
+
+/* Chat Bubble Visibility */
+.bubble {
+    padding: 12px 18px;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    word-wrap: break-word; /* Prevents long text from disappearing off-screen */
+}
+
+.message.admin .bubble {
+    background: #000;
+    color: #fff; /* White text on black background for your replies */
+    border-radius: 2px; /* Sharp editorial corners */
+}
+
+.message.user .bubble {
+    background: #f4f4f4; /* Light gray to distinguish from the white background */
+    color: #000; /* Black text on light background for user messages */
+    border-radius: 2px;
+    border: 1px solid #eee;
+}
+
+/* Header Text */
+.chat-header h3 {
+    color: #000;
+    margin: 5px 0 0 0;
+    font-size: 1.1rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+/* Input Field Readability */
+#adminInput {
+    color: #000;
+    background: transparent;
+    width: 100%;
+    padding: 10px 0;
+}
+
+#adminInput::placeholder {
+    color: #bbb; /* Subtle placeholder that doesn't hide the cursor */
 }
 
 /* CHAT PANEL */

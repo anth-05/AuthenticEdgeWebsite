@@ -41,6 +41,12 @@ function appendBubble(msg) {
     div.textContent = msg.message;
     chatBox.appendChild(div);
 }
+function scrollToBottom() {
+    const stream = document.querySelector('.message-stream');
+    stream.scrollTop = stream.scrollHeight;
+}
+// Call this after loadMyMessages() and after sending a message
 
 chatSend.onclick = sendMessage;
 loadMyMessages();
+scrollToBottom();
