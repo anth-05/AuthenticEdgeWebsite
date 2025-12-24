@@ -11,16 +11,16 @@ function initMenu() {
     // 1. Define Universal Links (Editorial Style)
     let menuHTML = `
         <a href="index.html" class="nav-link">Home</a>
-        <a href="product.html" class="nav-link">Collection</a>
-        <a href="subscription.html" class="nav-link">Membership</a>
+        <a href="product.html" class="nav-link">Products</a>
+        <a href="subscription.html" class="nav-link">Subscription</a>
     `;
 
     // 2. Conditional Auth Links
     if (!token) {
         menuHTML += `
-            <a href="contact.html" class="nav-link">Inquiry</a>
+            <a href="contact.html" class="nav-link">Contact</a>
             <a href="login.html" class="nav-link">Sign In</a>
-            <a href="register.html" class="nav-cta">Apply Now</a>
+            <a href="register.html" class="nav-cta">Register</a>
         `;
     } else {
         // Show Messages tab for logged-in users and admins
