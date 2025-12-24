@@ -2,16 +2,28 @@ import { API_BASE_URL } from "./config.js";
 
 /* -------------------------------------------------------
    IMAGE TYPE SWITCHER (URL ↔ FILE)
+   This logic stays OUTSIDE the submit listener
 ------------------------------------------------------- */
 const radioGroup = document.querySelectorAll('input[name="imageType"]');
 const urlRow = document.getElementById('image-url-row');
 const uploadRow = document.getElementById('image-upload-row');
+const urlInput = document.querySelector('input[name="image"]');
+const fileInput = document.querySelector('input[name="imageUpload"]');
 
 radioGroup.forEach(radio => {
     radio.addEventListener('change', () => {
         const isUrl = radio.value === "url";
         if (urlRow) urlRow.style.display = isUrl ? 'block' : 'none';
         if (uploadRow) uploadRow.style.display = isUrl ? 'none' : 'block';
+
+        // Toggle 'required' based on visibility to prevent "not focusable" errors
+        if (isUrl) {
+            if (urlInput) urlInput.required = true;
+            if (fileInput) { fileInput.required = false; fileInput.value = ""; }
+        } else {
+            if (urlInput) { urlInput.required = false; urlInput.value = ""; }
+            if (fileInput) fileInput.required = true;
+        }
     });
 });
 
@@ -55,7 +67,6 @@ async function loadProducts() {
             </tr>
         `).join("");
 
-        // Attach Event Listeners
         tbody.querySelectorAll('.delete-btn').forEach(btn =>
             btn.addEventListener('click', () => deleteProduct(btn.dataset.id))
         );
@@ -72,10 +83,10 @@ async function loadProducts() {
 }
 
 /* -------------------------------------------------------
-   DELETE PRODUCT
+   DELETE & EDIT MODAL LOGIC
 ------------------------------------------------------- */
 async function deleteProduct(id) {
-    if (!confirm("Remove this item from the collection?")) return;
+    if (!confirm("Remove this item?")) return;
     const token = localStorage.getItem("token");
     try {
         const res = await fetch(`${API_BASE_URL}/api/products/${id}`, {
@@ -83,14 +94,9 @@ async function deleteProduct(id) {
             headers: { Authorization: `Bearer ${token}` }
         });
         if (res.ok) loadProducts();
-    } catch (e) {
-        console.error("Deletion error:", e);
-    }
+    } catch (e) { console.error(e); }
 }
 
-/* -------------------------------------------------------
-   EDIT MODAL LOGIC
-------------------------------------------------------- */
 function openEditModal(p) {
     document.getElementById("edit-product-id").value = p.id;
     document.getElementById("edit-name").value = p.name || "";
@@ -109,96 +115,31 @@ window.closeEditModal = () => {
     if (modal) modal.style.display = "none";
 };
 
-// Update Logic
-document.getElementById("edit-product-form")?.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const token = localStorage.getItem("token");
-    const id = document.getElementById("edit-product-id").value;
-
-    const updated = {
-        name: document.getElementById("edit-name").value,
-        description: document.getElementById("edit-description").value,
-        image: document.getElementById("edit-image").value,
-        gender: document.getElementById("edit-gender").value,
-        quality: document.getElementById("edit-quality").value,
-        availability: document.getElementById("edit-availability").value,
-    };
-
-    try {
-        const res = await fetch(`${API_BASE_URL}/api/products/${id}`, {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`
-            },
-            body: JSON.stringify(updated)
-        });
-        if (res.ok) {
-            window.closeEditModal();
-            loadProducts();
-        }
-    } catch (error) {
-        console.error("Update failed:", error);
-    }
-});
-
 /* -------------------------------------------------------
-   ADD PRODUCT FUNCTION (FIXED ACCESSORS)
+   SUBMIT ADD PRODUCT (FIXED INITIALIZATION)
 ------------------------------------------------------- */
 document.getElementById("add-product-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const token = localStorage.getItem("token");
     const form = e.target;
-    // Safely get availability, or default to "In Stock" if empty
-    const availabilityValue = form.elements["availability"] ? form.elements["availability"].value.trim() : "In Stock";
-    fd.append("availability", availabilityValue || "In Stock");
-    
-    /* -------------------------------------------------------
-   IMAGE TYPE SWITCHER (FIXED VALIDATION)
-------------------------------------------------------- */
-const radioGroup = document.querySelectorAll('input[name="imageType"]');
-const urlRow = document.getElementById('image-url-row');
-const uploadRow = document.getElementById('image-upload-row');
 
-// Select the actual input elements inside those rows
-const urlInput = document.querySelector('input[name="image"]');
-const fileInput = document.querySelector('input[name="imageUpload"]');
-
-radioGroup.forEach(radio => {
-    radio.addEventListener('change', () => {
-        const isUrl = radio.value === "url";
-
-        // Toggle visibility
-        if (urlRow) urlRow.style.display = isUrl ? 'block' : 'none';
-        if (uploadRow) uploadRow.style.display = isUrl ? 'none' : 'block';
-
-        // THE FIX: Toggle 'required' and reset values
-        if (isUrl) {
-            urlInput.required = true;
-            fileInput.required = false;
-            fileInput.value = ""; // Clear file selection if switching back
-        } else {
-            urlInput.required = false;
-            urlInput.value = "";    // Clear URL if switching to upload
-            fileInput.required = true;
-        }
-    });
-});
-    // Safer way to find checked radio
-    const imageType = form.querySelector('input[name="imageType"]:checked').value;
-
+    // 1. Create FormData FIRST
     const fd = new FormData();
-    // Use .elements to avoid "undefined" errors
+
+    // 2. Safely get values
+    const imageType = form.querySelector('input[name="imageType"]:checked').value;
+    const avail = form.elements["availability"] ? form.elements["availability"].value.trim() : "In Stock";
+
     fd.append("name", form.elements["name"].value.trim());
     fd.append("description", form.elements["description"].value.trim());
     fd.append("gender", form.elements["gender"].value.trim());
     fd.append("quality", form.elements["quality"].value.trim());
-    fd.append("availability", form.elements["availability"].value.trim() || "In Stock");
+    fd.append("availability", avail || "In Stock");
 
     if (imageType === "upload") {
-        const fileInput = form.querySelector('input[name="imageUpload"]');
-        if (!fileInput.files[0]) return alert("Please select a file.");
-        fd.append("imageFile", fileInput.files[0]); 
+        const fileIn = form.querySelector('input[name="imageUpload"]');
+        if (!fileIn.files[0]) return alert("Please select a file.");
+        fd.append("imageFile", fileIn.files[0]); 
     } else {
         const imageUrl = form.elements["image"].value.trim();
         if (!imageUrl) return alert("Please enter a URL.");
@@ -215,6 +156,9 @@ radioGroup.forEach(radio => {
         if (res.ok) {
             alert("Product published.");
             form.reset();
+            // Reset visibility to URL mode
+            if (urlRow) urlRow.style.display = 'block';
+            if (uploadRow) uploadRow.style.display = 'none';
             loadProducts();
         } else {
             const errorText = await res.text();
