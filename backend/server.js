@@ -205,6 +205,26 @@ app.post('/api/messages/send', authenticateToken, async (req, res) => {
     // Logic to save message to your database goes here
     res.status(200).json({ success: true });
 });
+app.post('/api/messages', authenticateToken, upload.single('imageFile'), async (req, res) => {
+    try {
+        const userId = req.user.id; // Get ID from the token
+        const { message } = req.body;
+        
+        // Handle the file exactly like the admin side
+        const file_url = req.file ? req.file.path || req.file.location : null;
+
+        // INSERT into the same table
+        const result = await pool.query(
+            "INSERT INTO messages (user_id, sender, message, file_url) VALUES ($1, $2, $3, $4) RETURNING *",
+            [userId, 'user', message || "", file_url]
+        );
+
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error("USER MESSAGE ERROR:", err.message);
+        res.status(500).json({ error: "Failed to send message" });
+    }
+});
 // UPDATE User Role
 app.put("/api/users/:id", authenticateToken, verifyAdmin, async (req, res) => {
     try {
@@ -398,7 +418,22 @@ app.get("/api/stats", authenticateToken, verifyAdmin, async (req, res) => {
     respondServerError(res, err, "Failed to fetch stats");
   }
 });
-
+// GET USER MESSAGES
+app.get('/api/messages', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.id; // Extracted from JWT
+        
+        const result = await pool.query(
+            "SELECT * FROM messages WHERE user_id = $1 ORDER BY created_at ASC",
+            [userId]
+        );
+        
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Could not retrieve messages" });
+    }
+});
 app.post("/api/messages", authenticateToken, async (req, res) => {
   const { rows } = await pool.query("INSERT INTO messages (user_id, sender, message) VALUES ($1, 'user', $2) RETURNING *", [req.user.id, req.body.message]);
   res.json(rows[0]);

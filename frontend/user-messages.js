@@ -85,6 +85,48 @@ async function sendMessage() {
         console.error("Error sending:", err);
     }
 }
+/**
+ * 1. LOAD CONVERSATION HISTORY
+ */
+async function loadMessages() {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    try {
+        const res = await fetch(`${API_BASE_URL}/api/messages`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+
+        if (res.ok) {
+            const data = await res.json();
+            // Handle both array and Postgres row object
+            const messages = Array.isArray(data) ? data : data.rows;
+
+            chatBox.innerHTML = ""; // Clear "Loading..." text
+            
+            if (messages.length === 0) {
+                chatBox.innerHTML = `<p style="text-align:center; font-size:0.7rem; color:#999; margin-top:20px;">START A CONVERSATION WITH OUR CONCIERGE.</p>`;
+                return;
+            }
+
+            messages.forEach(renderMessage);
+            scrollToBottom();
+        }
+    } catch (err) {
+        console.error("Failed to load messages:", err);
+        chatBox.innerHTML = `<p style="text-align:center; font-size:0.7rem; color:red;">CONNECTION ERROR.</p>`;
+    }
+}
+
+// Helper to keep chat at the bottom
+function scrollToBottom() {
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+/* --- INITIALIZE --- */
+loadMessages();
+// Refresh every 10 seconds to check for admin replies
+setInterval(loadMessages, 10000);
 
 chatSend.onclick = sendMessage;
 chatInput.onkeypress = (e) => { if (e.key === "Enter") sendMessage(); };
