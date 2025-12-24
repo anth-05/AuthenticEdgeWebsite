@@ -102,7 +102,24 @@ document.getElementById("update-password-btn")
     alert("Password updated.");
     document.getElementById("new-password").value = "";
   });
-
+/* =========================
+   CANCEL SUBSCRIPTION
+========================= */
+document.getElementById("cancel-sub-btn")
+  ?.addEventListener("click", async () => {
+    const confirmCancel = confirm("Are you sure you want to request a cancellation of your current membership?");
+    
+    if (confirmCancel) {
+      try {
+        // We reuse the request endpoint but pass 'Cancellation' as the plan
+        await api("/api/subscription/request", "POST", { plan: "Cancellation" });
+        alert("Cancellation request submitted. Our team will process it shortly.");
+        location.reload();
+      } catch (err) {
+        alert("Error submitting request: " + err.message);
+      }
+    }
+  });
 /* =========================
    DELETE ACCOUNT
 ========================= */

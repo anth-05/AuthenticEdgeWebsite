@@ -215,6 +215,26 @@ app.post("/api/subscription/request", authenticateToken, async (req, res) => {
         res.status(500).json({ error: "Request failed" });
     }
 });
+app.post("/api/subscription/request", authenticateToken, async (req, res) => {
+    try {
+        const { plan } = req.body;
+        const userId = req.user.id;
+
+        // If the plan is "Cancellation", the admin will see it in the 'requested_plan' column
+        await pool.query(
+            `INSERT INTO subscriptions (user_id, requested_plan, status)
+             VALUES ($1, $2, 'pending')
+             ON CONFLICT (user_id) 
+             DO UPDATE SET requested_plan = $2, status = 'pending', updated_at = NOW()`,
+            [userId, plan]
+        );
+
+        res.json({ success: true, message: "Request updated" });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Failed to process subscription request" });
+    }
+});
 app.get("/api/user/profile", authenticateToken, async (req, res) => {
   try {
     const { rows } = await pool.query(
