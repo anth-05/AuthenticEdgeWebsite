@@ -115,44 +115,7 @@ async function bulkDelete() {
             headers: { Authorization: `Bearer ${token}` }
         });
     }
-    loadInbox();
-}
 
-// ... rest of your existing selectConversation, handleReply, renderBubble functions ...
-/**
- * 1. LOAD INBOX SIDEBAR
- */
-async function loadInbox() {
-    const token = localStorage.getItem("token");
-    try {
-        const res = await fetch(`${API_BASE_URL}/api/admin/conversations`, {
-            headers: { Authorization: `Bearer ${token}` }
-        });
-        const users = await res.json();
-        
-        if (!Array.isArray(users) || users.length === 0) {
-            messageBadge.textContent = "0";
-            usersList.innerHTML = "<p style='padding:20px; font-size:0.7rem; color:#999;'>NO INQUIRIES FOUND.</p>";
-            return;
-        }
-
-        messageBadge.textContent = users.length;
-        
-        // Render users list
-        usersList.innerHTML = "";
-        users.forEach(u => {
-            const div = document.createElement("div");
-            div.className = `user-item ${activeUser === u.user_id ? 'active' : ''}`;
-            div.innerHTML = `
-                <span class="user-email">${u.email}</span>
-                <span class="last-msg">View private inquiry</span>
-            `;
-            div.onclick = () => selectConversation(u.user_id, u.email);
-            usersList.appendChild(div);
-        });
-    } catch (err) {
-        console.error("Inbox load error:", err);
-    }
 }
 
 /**
