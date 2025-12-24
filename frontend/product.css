@@ -3,203 +3,96 @@
 .collection-grid-section {
     padding: 60px 0;
     background-color: #fff;
+    border-top: 1px solid #eee;
 }
 
-/* 1. Container width increased to support 4 columns comfortably */
 .container {
-    max-width: 1400px; 
+    max-width: 100%; /* Spans full width for the editorial look */
     margin: 0 auto;
-    padding: 0 5%; /* Flexible side padding to push away from edges */
+    padding: 0; 
 }
 
-/* 2. Base Grid: Starts at 4 columns for desktops */
+/* Base Grid: Standardized with borders between items */
 .product-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    column-gap: 30px; 
-    row-gap: 50px;
+    /* Remove gaps so borders touch each other */
+    gap: 0; 
+    border-left: 1px solid #eee;
 }
 
-/* 3. Smaller, Centered Images: Increased padding to shrink the product visual */
-.product-img-frame {
-    width: 100%;
-    aspect-ratio: 1 / 1;
-    background-color: #f6f6f6;
-    overflow: hidden;
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    border: 1px solid #f0f0f0;
-    padding: 50px; /* More "white space" around the product */
-}
-
-.product-img-frame img {
-    max-width: 100%; 
-    max-height: 100%;
-    width: auto;
-    height: auto;
-    object-fit: contain;
-    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-/* ========== BREAKPOINTS: 4 -> 3 -> 2 -> 1 ========== */
-
-/* Laptop/Smaller Desktops: 3 Columns */
-@media (max-width: 1100px) {
-    .product-grid {
-        grid-template-columns: repeat(3, 1fr);
-        column-gap: 25px;
-    }
-}
-
-/* Tablets: 2 Columns */
-@media (max-width: 850px) {
-    .product-grid {
-        grid-template-columns: repeat(2, 1fr);
-        column-gap: 20px;
-    }
-    .container {
-        padding: 0 30px;
-    }
-}
-
-/* Mobile: 1 Column */
-@media (max-width: 550px) {
-    .product-grid {
-        grid-template-columns: 1fr;
-    }
-    .container {
-        padding: 0 20px;
-    }
-    .product-img-frame {
-        padding: 40px; /* Slightly less padding on mobile to keep product visible */
-    }
-}
-
-/* ========== REMAINING UI STYLES ========== */
-
+/* Individual Card: Added a right and bottom border for the grid effect */
 .product-card-link {
     text-decoration: none;
     color: inherit;
     display: block;
+    border-right: 1px solid #eee;
+    border-bottom: 1px solid #eee;
+    transition: background-color 0.3s ease;
+}
+
+.product-card-link:hover {
+    background-color: #fafafa;
 }
 
 .product-card {
     display: flex;
     flex-direction: column;
     height: 100%;
+    padding: 20px;
 }
 
-.product-card-link:hover .product-img-frame img {
-    transform: scale(1.05);
-}
-
-.product-card-link:hover .product-img-frame {
-    border-color: #e0e0e0;
-}
-
-.product-details {
+/* Image Frame: Light background and centered */
+.product-img-frame {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    background-color: #f9f9f9;
+    overflow: hidden;
+    margin-bottom: 20px;
     display: flex;
-    flex-direction: column;
-    padding: 0 5px;
+    align-items: center;
+    justify-content: center;
+    padding: 15%; /* This keeps the image smaller and centered */
+}
+
+.product-img-frame img {
+    max-width: 100%; 
+    max-height: 100%;
+    object-fit: contain;
+    mix-blend-mode: multiply; /* Helps blend white image backgrounds into the gray frame */
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Responsive Breakpoints */
+
+@media (max-width: 1200px) {
+    .product-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 850px) {
+    .product-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 550px) {
+    .product-grid { grid-template-columns: 1fr; }
+}
+
+/* Details Section */
+.product-details {
+    padding-top: 10px;
+    text-align: left;
 }
 
 .product-cat {
-    font-size: 0.65rem;
+    font-size: 0.6rem;
+    color: #999;
     text-transform: uppercase;
-    letter-spacing: 0.15em;
-    color: #a0a0a0;
-    margin-bottom: 8px;
-    font-weight: 600;
+    letter-spacing: 0.1em;
 }
 
 .product-details h3 {
-    font-size: 0.9rem;
-    font-weight: 700;
-    margin: 0 0 10px 0;
-    color: #000;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin: 5px 0;
     text-transform: uppercase;
-    letter-spacing: 0.02em;
-    line-height: 1.2;
-}
-
-.status {
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-top: auto;
-    padding-top: 5px;
-}
-
-.status.in-stock { color: #000; font-weight: 600; }
-.status.sold-out { color: #d1d1d1; font-weight: 400; }
-
-/* Filter & Search UI */
-.filter-nav {
-    border-bottom: 1px solid #eee;
-    padding: 20px 0;
-    position: sticky;
-    top: 70px;
-    background: #fff;
-    z-index: 10;
-}
-
-.filter-list {
-    display: flex;
-    list-style: none;
-    gap: 30px;
-    justify-content: center;
-    padding: 0;
-    margin: 0;
-    overflow-x: auto;
-    scrollbar-width: none;
-}
-
-.filter-list::-webkit-scrollbar { display: none; }
-
-.filter-btn {
-    background: none;
-    border: none;
-    font-size: 0.7rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-    color: #a0a0a0;
-    cursor: pointer;
-    padding: 5px 0;
-    transition: color 0.3s ease;
-    position: relative;
-    white-space: nowrap;
-}
-
-.filter-btn:hover, .filter-btn.active { color: #000; }
-.filter-btn.active::after {
-    content: '';
-    position: absolute;
-    bottom: -2px;
-    left: 0;
-    width: 100%;
-    height: 1px;
-    background: #000;
-}
-
-.search-container {
-    max-width: 500px;
-    margin: 0 auto 30px;
-    padding: 0 20px;
-}
-
-#archiveSearch {
-    width: 100%;
-    background: transparent;
-    border: none;
-    border-bottom: 1px solid #eee;
-    padding: 15px 0;
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.2em;
-    text-align: center;
-    outline: none;
 }
