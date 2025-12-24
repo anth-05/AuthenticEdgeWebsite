@@ -31,29 +31,10 @@
 /* THE GRID */
 .sub-grid {
     display: grid;
-    /* Changed to 4 columns for desktop */
     grid-template-columns: repeat(4, 1fr); 
     gap: 1.5rem;
     margin-top: 60px;
     width: 100%;
-}
-
-/* Tablet view: 2x2 Grid */
-@media (max-width: 1100px) {
-    .sub-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-/* Mobile view: 1 Column */
-@media (max-width: 650px) {
-    .sub-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .subscriptions-hero {
-        padding-top: 100px;
-    }
 }
 
 .sub-card {
@@ -63,9 +44,16 @@
     display: flex;
     flex-direction: column;
     transition: all 0.3s ease;
+    background: #fff;
 }
 
 .sub-card:hover {
+    border-color: #000;
+}
+
+/* Featured Tier */
+.sub-card.highlight {
+    background-color: #f9f9f9; /* Subtle light grey instead of dark grey for better readability */
     border-color: #000;
 }
 
@@ -111,10 +99,88 @@
     text-transform: uppercase;
     letter-spacing: 0.1em;
     cursor: pointer;
+    transition: opacity 0.2s;
 }
 
-/* Featured Tier */
-.sub-card.highlight {
-    background-color: #dedede;
-    border-color: #a7a6a6;
+.btn-select:hover {
+    opacity: 0.8;
+}
+
+/* ========== UNIVERSAL MODAL STYLING ========== */
+.modal-overlay {
+    display: none; /* Toggled by JS */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9); /* Dark backdrop for focus */
+    z-index: 10000; /* Ensures it sits above header/cards */
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(4px);
+}
+
+.modal-content {
+    background: #fff;
+    padding: 50px;
+    width: 90%;
+    max-width: 450px;
+    text-align: center;
+    border: 1px solid #000;
+}
+
+.modal-content h3 {
+    text-transform: uppercase;
+    font-weight: 800;
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+}
+
+.modal-content p {
+    color: #666;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin-bottom: 30px;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-primary, .btn-secondary {
+    flex: 1;
+    padding: 15px;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    cursor: pointer;
+    border: none;
+    text-align: center;
+    text-decoration: none;
+}
+
+.btn-primary { background: #000; color: #fff; }
+.btn-secondary { background: #eee; color: #000; }
+
+/* Styling for Auth Links added to HTML */
+#auth-links .btn-primary, 
+#auth-links .btn-secondary {
+    width: 100%;
+    display: block;
+    box-sizing: border-box;
+}
+
+/* RESPONSIVE BREAKPOINTS */
+@media (max-width: 1100px) {
+    .sub-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 650px) {
+    .sub-grid { grid-template-columns: 1fr; }
+    .subscriptions-hero { padding-top: 100px; }
+    .section-header h2 { font-size: 2.2rem; }
+    .modal-content { padding: 30px; }
+    .modal-actions { flex-direction: column; }
 }
