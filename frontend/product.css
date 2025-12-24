@@ -1,40 +1,26 @@
-/* ========== REFINED PRODUCT GRID ========== */
+/* ========== DYNAMIC RESPONSIVE PRODUCT GRID ========== */
 
 .collection-grid-section {
-    padding: 60px 0; /* Balanced vertical spacing */
+    padding: 60px 0;
     background-color: #fff;
 }
 
-/* 1. Added significant side padding to push the grid away from the screen edges */
+/* 1. Container width increased to support 4 columns comfortably */
 .container {
-    max-width: 1200px;
+    max-width: 1400px; 
     margin: 0 auto;
-    padding: 0 50px; /* Pulls content in from the left and right */
+    padding: 0 5%; /* Flexible side padding to push away from edges */
 }
 
+/* 2. Base Grid: Starts at 4 columns for desktops */
 .product-grid {
     display: grid;
-    /* 2. Smaller min-width (260px) allows for more breathing room/smaller boxes */
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    column-gap: 40px; 
-    row-gap: 60px;
+    grid-template-columns: repeat(4, 1fr);
+    column-gap: 30px; 
+    row-gap: 50px;
 }
 
-/* The Link Wrapper */
-.product-card-link {
-    text-decoration: none;
-    color: inherit;
-    display: block;
-}
-
-/* Individual Card */
-.product-card {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-}
-
-/* 3. Image Frame: Increased internal padding to make the product look smaller */
+/* 3. Smaller, Centered Images: Increased padding to shrink the product visual */
 .product-img-frame {
     width: 100%;
     aspect-ratio: 1 / 1;
@@ -46,29 +32,74 @@
     justify-content: center;
     position: relative;
     border: 1px solid #f0f0f0;
-    padding: 40px; /* Internal "white space" around the product */
+    padding: 50px; /* More "white space" around the product */
 }
 
-/* 4. Smaller Images: Reduced from 80% to 60% for a high-end editorial look */
 .product-img-frame img {
-    max-width: 60%; 
-    max-height: 60%;
+    max-width: 100%; 
+    max-height: 100%;
     width: auto;
     height: auto;
     object-fit: contain;
     transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Subtle Hover Effect */
+/* ========== BREAKPOINTS: 4 -> 3 -> 2 -> 1 ========== */
+
+/* Laptop/Smaller Desktops: 3 Columns */
+@media (max-width: 1100px) {
+    .product-grid {
+        grid-template-columns: repeat(3, 1fr);
+        column-gap: 25px;
+    }
+}
+
+/* Tablets: 2 Columns */
+@media (max-width: 850px) {
+    .product-grid {
+        grid-template-columns: repeat(2, 1fr);
+        column-gap: 20px;
+    }
+    .container {
+        padding: 0 30px;
+    }
+}
+
+/* Mobile: 1 Column */
+@media (max-width: 550px) {
+    .product-grid {
+        grid-template-columns: 1fr;
+    }
+    .container {
+        padding: 0 20px;
+    }
+    .product-img-frame {
+        padding: 40px; /* Slightly less padding on mobile to keep product visible */
+    }
+}
+
+/* ========== REMAINING UI STYLES ========== */
+
+.product-card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+.product-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
 .product-card-link:hover .product-img-frame img {
-    transform: scale(1.05); /* Slightly less aggressive zoom */
+    transform: scale(1.05);
 }
 
 .product-card-link:hover .product-img-frame {
     border-color: #e0e0e0;
 }
 
-/* Details Section */
 .product-details {
     display: flex;
     flex-direction: column;
@@ -85,7 +116,7 @@
 }
 
 .product-details h3 {
-    font-size: 0.9rem; /* Slightly smaller title */
+    font-size: 0.9rem;
     font-weight: 700;
     margin: 0 0 10px 0;
     color: #000;
@@ -94,7 +125,6 @@
     line-height: 1.2;
 }
 
-/* Status */
 .status {
     font-size: 0.7rem;
     text-transform: uppercase;
@@ -103,17 +133,10 @@
     padding-top: 5px;
 }
 
-.status.in-stock {
-    color: #000;
-    font-weight: 600;
-}
+.status.in-stock { color: #000; font-weight: 600; }
+.status.sold-out { color: #d1d1d1; font-weight: 400; }
 
-.status.sold-out {
-    color: #d1d1d1;
-    font-weight: 400;
-}
-
-/* ========== FILTER NAVIGATION ========== */
+/* Filter & Search UI */
 .filter-nav {
     border-bottom: 1px solid #eee;
     padding: 20px 0;
@@ -134,9 +157,7 @@
     scrollbar-width: none;
 }
 
-.filter-list::-webkit-scrollbar {
-    display: none;
-}
+.filter-list::-webkit-scrollbar { display: none; }
 
 .filter-btn {
     background: none;
@@ -153,10 +174,7 @@
     white-space: nowrap;
 }
 
-.filter-btn:hover, .filter-btn.active {
-    color: #000;
-}
-
+.filter-btn:hover, .filter-btn.active { color: #000; }
 .filter-btn.active::after {
     content: '';
     position: absolute;
@@ -167,9 +185,8 @@
     background: #000;
 }
 
-/* ========== SEARCH CONTAINER ========== */
 .search-container {
-    max-width: 500px; /* Made search bar slightly narrower */
+    max-width: 500px;
     margin: 0 auto 30px;
     padding: 0 20px;
 }
@@ -185,23 +202,4 @@
     letter-spacing: 0.2em;
     text-align: center;
     outline: none;
-    transition: border-color 0.3s;
-}
-
-#archiveSearch:focus {
-    border-color: #000;
-}
-
-@media (max-width: 768px) {
-    .container {
-        padding: 0 20px; /* Less padding on mobile to keep items visible */
-    }
-    .product-grid {
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-        column-gap: 20px;
-    }
-    .filter-list {
-        justify-content: flex-start;
-        padding-left: 20px;
-    }
 }

@@ -27,9 +27,9 @@ function generateDynamicFilters() {
     const brandSet = new Set();
     
     allProducts.forEach(p => {
-        if (p.description) {
+        if (p.name) {
             // Extract the first word and remove non-alphanumeric chars (like commas)
-            const firstWord = p.description.trim().split(/\s+/)[0].replace(/[^a-zA-Z0-0]/g, "").toUpperCase();
+            const firstWord = p.name.trim().split(/\s+/)[0].replace(/[^a-zA-Z0-0]/g, "").toUpperCase();
             if (firstWord) brandSet.add(firstWord);
         }
     });
@@ -60,7 +60,7 @@ function setupFilterEvents() {
             } else {
                 // BUG FIX: Use .includes() so it finds the brand even if it's not the only word
                 const filtered = allProducts.filter(p => {
-                    const desc = (p.description || "").toUpperCase();
+                    const desc = (p.name || "").toUpperCase();
                     return desc.includes(filterValue); 
                 });
                 renderGrid(filtered);
