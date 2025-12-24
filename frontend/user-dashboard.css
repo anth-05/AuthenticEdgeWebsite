@@ -70,13 +70,44 @@
     font-size: 0.9rem;
 }
 
-.status-tag {
+/* ========== SUBSCRIPTION STATUS TAGS ========== */
+.status-pill {
     font-size: 0.6rem;
     text-transform: uppercase;
     font-weight: 800;
-    background: #000;
+    padding: 4px 10px;
+    letter-spacing: 0.05em;
+    display: inline-block;
+}
+
+/* Dynamic Colors based on JS classes */
+.status-pill.active {
+    background: #000; /* Black for Active */
     color: #fff;
-    padding: 2px 8px;
+}
+
+.status-pill.pending {
+    background: #f0f0f0; /* Light Grey for Pending */
+    color: #ffa500;      /* Orange text */
+    border: 1px solid #eee;
+}
+
+.status-pill.none {
+    background: transparent;
+    color: #999;
+    border: 1px solid #eee;
+}
+
+/* Improvement to the Membership Card Layout */
+.membership-card {
+    border: 1px solid #eee;
+    padding: 30px;
+    background: #fff;
+    transition: transform 0.2s ease;
+}
+
+.membership-card:hover {
+    border-color: #000;
 }
 
 .editorial-select {

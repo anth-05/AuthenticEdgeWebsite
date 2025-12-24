@@ -165,6 +165,58 @@ app.delete("/api/products/:id", authenticateToken, verifyAdmin, async (req, res)
     res.json({ message: "Deleted" });
   } catch (err) { respondServerError(res, err, "Delete failed"); }
 });
+// subscription route
+// 1. Get User Profile (to check current sub status)
+app.get("/api/user/profile", authenticateToken, async (req, res) => {
+  try {
+    const { rows } = await pool.query(
+      "SELECT email, role, subscription FROM users WHERE id = $1",
+      [req.user.id]
+    );
+    res.json(rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch profile" });
+  }
+});
+
+// 2. Handle Subscription Request
+app.post("/api/subscription/request", authenticateToken, async (req, res) => {
+  try {
+    const { plan } = req.body;
+    
+    // Option A: Update the user's subscription directly (Pending status)
+    // We'll update the user record to reflect the request
+    await pool.query(
+      "UPDATE users SET subscription = $1 WHERE id = $2",
+      [`Pending: ${plan}`, req.user.id]
+    );
+
+    // Option B: (Recommended) Log it in a separate 'requests' table
+    /*
+    await pool.query(
+      "INSERT INTO membership_requests (user_id, plan, status) VALUES ($1, $2, 'pending')",
+      [req.user.id, plan]
+    );
+    */
+
+    res.json({ success: true, message: "Subscription request received" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to process request" });
+  }
+});
+app.get("/api/user/profile", authenticateToken, async (req, res) => {
+  try {
+    const { rows } = await pool.query(
+      "SELECT id, email, role, subscription, created_at FROM users WHERE id = $1",
+      [req.user.id]
+    );
+    if (rows.length === 0) return res.status(404).json({ error: "User not found" });
+    res.json(rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: "Server error" });
+  }
+});
 
 /* ---------------- ADMIN & MESSAGE ROUTES ---------------- */
 app.get("/api/users", authenticateToken, verifyAdmin, async (req, res) => {

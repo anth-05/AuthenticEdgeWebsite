@@ -3,6 +3,7 @@ import { API_BASE_URL } from "./config.js";
 const token = localStorage.getItem("token");
 const role = localStorage.getItem("role");
 
+// Protect Route
 if (!token || role !== "user") {
   window.location.href = "login.html";
 }
@@ -22,57 +23,80 @@ async function api(path, method = "GET", body) {
 
   if (res.status === 401) logout();
   const data = await res.json();
-  if (!res.ok) throw new Error(data.error);
+  if (!res.ok) throw new Error(data.error || "API Error");
   return data;
 }
 
 /* =========================
-   LOAD USER
+   LOAD PROFILE & SUBSCRIPTION
 ========================= */
-(async () => {
+async function loadUserData() {
   try {
-    const res = await api("/api/user");
-    const user = res.user;
+    // We use the profile endpoint we created in the previous step
+    const user = await api("/api/user/profile");
 
+    // Update User Info
     document.getElementById("user-info").innerHTML = `
       <p><strong>Email:</strong> ${user.email}</p>
       <p><strong>Joined:</strong> ${new Date(user.created_at).toDateString()}</p>
     `;
-  } catch {
+
+    // Handle Subscription Logic
+    const subData = user.subscription || "none";
+    const currentPlanEl = document.getElementById("current-plan");
+    const statusEl = document.getElementById("sub-status");
+    const requestedPlanEl = document.getElementById("requested-plan");
+
+    if (subData.startsWith("Pending:")) {
+      // If status is "Pending: Edge"
+      currentPlanEl.textContent = "None (Inactive)";
+      requestedPlanEl.textContent = subData.replace("Pending: ", "");
+      statusEl.textContent = "Pending Review";
+      statusEl.className = "status-pill pending";
+    } else if (subData === "none") {
+      currentPlanEl.textContent = "No Active Plan";
+      requestedPlanEl.textContent = "None";
+      statusEl.textContent = "Inactive";
+      statusEl.className = "status-pill none";
+    } else {
+      // Active Plan (e.g., "Edge")
+      currentPlanEl.textContent = subData;
+      requestedPlanEl.textContent = "None";
+      statusEl.textContent = "Active";
+      statusEl.className = "status-pill active";
+    }
+
+  } catch (err) {
+    console.error(err);
     document.getElementById("user-info").textContent = "Failed to load profile.";
   }
-})();
+}
+
+// Run loader
+loadUserData();
 
 /* =========================
-   LOAD SUBSCRIPTION
-========================= */
-(async () => {
-  try {
-    const sub = await api("/api/subscription");
-
-    document.getElementById("current-plan").textContent =
-      sub.current_plan ?? "Standard";
-
-    document.getElementById("requested-plan").textContent =
-      sub.requested_plan ?? "None";
-
-    const statusEl = document.getElementById("sub-status");
-    statusEl.textContent = sub.status ?? "none";
-    statusEl.className = `status-pill ${sub.status || "none"}`;
-  } catch {}
-})();
-
-/* =========================
-   SUBSCRIPTION REQUEST
+   SUBSCRIPTION CHANGE REQUEST
 ========================= */
 document.getElementById("request-sub-change-btn")
   ?.addEventListener("click", async () => {
     const plan = document.getElementById("new-plan").value;
-    await api("/api/subscription/request", "POST", { plan });
-    alert("Subscription request submitted for review.");
-    location.reload();
+    try {
+      await api("/api/subscription/request", "POST", { plan });
+      alert("Your request for the " + plan + " plan has been submitted!");
+      location.reload();
+    } catch (err) {
+      alert(err.message);
+    }
   });
 
+/* =========================
+   LOGOUT, EMAIL, PASSWORD, DELETE (Keep your existing code below)
+========================= */
+function logout() {
+  localStorage.clear();
+  window.location.href = "login.html";
+}
 /* =========================
    UPDATE EMAIL
 ========================= */

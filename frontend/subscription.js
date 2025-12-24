@@ -1,30 +1,56 @@
-// subscription.js
 import { API_BASE_URL } from "./config.js";
-import { openModal } from "./modal.js";
 
 const cards = document.querySelectorAll(".sub-card");
-const token = localStorage.getItem("token");
 
 cards.forEach(card => {
-  card.addEventListener("click", async () => {
-    const plan = card.dataset.plan;
-    if (!plan) return;
+  const btn = card.querySelector(".btn-select");
+  
+  btn.addEventListener("click", async (e) => {
+    e.stopPropagation();
+    const planName = card.querySelector("h3").innerText;
+    const token = localStorage.getItem("token");
+
+    // STATE 1: Logged Out
+    if (!token) {
+      document.getElementById("auth-modal").style.display = "flex";
+      return;
+    }
 
     try {
-      const res = await fetch(`${API_BASE_URL}/api/subscription/request`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({ plan })
+      // Get user profile to check existing subscription
+      const userRes = await fetch(`${API_BASE_URL}/api/user/profile`, {
+        headers: { Authorization: `Bearer ${token}` }
       });
+      const userData = await userRes.json();
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
+      // STATE 2: Logged In & Already Subscribed
+      if (userData.subscription && userData.subscription !== 'none') {
+        if (confirm(`You currently have the ${userData.subscription} plan. Go to settings to manage your subscription?`)) {
+          window.location.href = "settings.html";
+        }
+        return;
+      }
 
-      openModal("Request Sent", "Your membership request has been submitted.");
+      // STATE 3: Logged In & No Subscription
+      if (confirm(`Are you sure you want to select the ${planName} plan?`)) {
+        const subRes = await fetch(`${API_BASE_URL}/api/subscription/request`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({ plan: planName })
+        });
+
+        if (subRes.ok) {
+          alert("Request Sent! We will contact you shortly to finalize your membership.");
+        } else {
+          const errData = await subRes.json();
+          throw new Error(errData.error || "Request failed");
+        }
+      }
     } catch (err) {
+      console.error(err);
       alert(err.message);
     }
   });
