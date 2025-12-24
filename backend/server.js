@@ -383,12 +383,15 @@ app.get('/api/admin/messages/:userId', authenticateToken, async (req, res) => {
     const { userId } = req.params;
     try {
         const result = await pool.query(
-            "SELECT sender, message, file_url, created_at FROM messages WHERE user_id = $1 ORDER BY created_at ASC",
+            "SELECT sender, message, created_at FROM messages WHERE user_id = $1 ORDER BY created_at ASC",
             [userId]
         );
-        res.json(result.rows); // Use .rows here too!
+        
+        // IMPORTANT: You must send back result.rows
+        res.json(result.rows); 
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error(err);
+        res.status(500).json({ error: "Failed to fetch history" });
     }
 });
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
