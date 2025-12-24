@@ -382,7 +382,7 @@ app.post("/api/messages", authenticateToken, async (req, res) => {
 app.get('/api/admin/messages/:userId', authenticateToken, async (req, res) => {
     const { userId } = req.params;
     try {
-        const result = await db.query(
+        const result = await pool.query(
             "SELECT sender, message, file_url, created_at FROM messages WHERE user_id = $1 ORDER BY created_at ASC",
             [userId]
         );
