@@ -91,13 +91,6 @@ document.getElementById("request-sub-change-btn")
   });
 
 /* =========================
-   LOGOUT, EMAIL, PASSWORD, DELETE (Keep your existing code below)
-========================= */
-function logout() {
-  localStorage.clear();
-  window.location.href = "login.html";
-}
-/* =========================
    UPDATE EMAIL
 ========================= */
 document.getElementById("update-email-btn")
