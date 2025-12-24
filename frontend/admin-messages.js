@@ -188,6 +188,27 @@ clearPreview.onclick = () => {
     imagePreviewContainer.style.display = "none";
     imagePreview.src = "";
 };
+// Database Migration: Run this once to ensure the column exists
+async function migrateDatabase() {
+    try {
+        // This command checks if the column exists, and adds it if it doesn't
+        await db.query(`
+            DO $$ 
+            BEGIN 
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                               WHERE table_name='messages' AND column_name='file_url') THEN
+                    ALTER TABLE messages ADD COLUMN file_url TEXT;
+                END IF;
+            END $$;
+        `);
+        console.log("✅ Database migration complete: file_url column is ready.");
+    } catch (err) {
+        console.error("❌ Migration failed:", err.message);
+    }
+}
+
+// Call the function
+migrateDatabase();
 
 // 3. Update handleReply to hide preview after sending
 async function handleReply() {
@@ -202,11 +223,14 @@ async function handleReply() {
 
     const token = localStorage.getItem("token");
     try {
-        const res = await fetch(`${API_BASE_URL}/api/admin/reply`, {
-            method: "POST",
-            headers: { "Authorization": `Bearer ${token}` },
-            body: fd
-        });
+            const res = await fetch(`${API_BASE_URL}/api/admin/reply`, {
+        method: "POST",
+        headers: { 
+            "Authorization": `Bearer ${token}` 
+            // NO Content-Type here!
+        },
+        body: fd // The browser automatically adds 'multipart/form-data; boundary=...'
+    });
 
         if (res.ok) {
             const data = await res.json();
