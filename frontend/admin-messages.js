@@ -8,9 +8,12 @@ const adminInput = document.getElementById("adminInput");
 const adminSend = document.getElementById("adminSend");
 const messageBadge = document.getElementById("message-badge");
 const fileInput = document.getElementById("fileInput");
+const attachBtn = document.getElementById("attachBtn");
+attachBtn.onclick = () => fileInput.click();
 /**
  * 1. LOAD INBOX SIDEBAR
  */
+
 async function loadInbox() {
     const token = localStorage.getItem("token");
     try {
@@ -89,6 +92,14 @@ async function selectConversation(userId, email) {
         console.error("History load error:", err);
     }
 }
+fileInput.onchange = () => {
+    const file = fileInput.files[0];
+    if (file) {
+        console.log("File selected:", file.name);
+        // This is where your Image Preview logic from before kicks in
+        showPreview(file); 
+    }
+};
 
 /**
  * 3. DELETE LOGIC

@@ -188,24 +188,6 @@ app.post('/api/admin/reply', authenticateToken, upload.single('imageFile'), asyn
         res.status(500).send("Server Error");
     }
 });
-// Database Migration: Run this once to ensure the column exists
-async function migrateDatabase() {
-    try {
-        // This command checks if the column exists, and adds it if it doesn't
-        await pool.query(`
-            DO $$ 
-            BEGIN 
-                IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
-                               WHERE table_name='messages' AND column_name='file_url') THEN
-                    ALTER TABLE messages ADD COLUMN file_url TEXT;
-                END IF;
-            END $$;
-        `);
-        console.log("✅ Database migration complete: file_url column is ready.");
-    } catch (err) {
-        console.error("❌ Migration failed:", err.message);
-    }
-}
 
 // Call the function
 migrateDatabase();
