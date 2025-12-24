@@ -1,98 +1,151 @@
-/* ========== DYNAMIC RESPONSIVE PRODUCT GRID ========== */
+/* ========== CLEAN ARCHIVE PRODUCT GRID ========== */
 
 .collection-grid-section {
-    padding: 60px 0;
+    padding: 40px 0;
     background-color: #fff;
-    border-top: 1px solid #eee;
 }
 
 .container {
-    max-width: 100%; /* Spans full width for the editorial look */
+    max-width: 1400px; 
     margin: 0 auto;
-    padding: 0; 
+    padding: 0 40px; 
 }
 
-/* Base Grid: Standardized with borders between items */
+/* Base Grid: Tight gap for the editorial look */
 .product-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    /* Remove gaps so borders touch each other */
-    gap: 0; 
-    border-left: 1px solid #eee;
+    column-gap: 20px; 
+    row-gap: 40px;
 }
 
-/* Individual Card: Added a right and bottom border for the grid effect */
-.product-card-link {
-    text-decoration: none;
-    color: inherit;
-    display: block;
-    border-right: 1px solid #eee;
-    border-bottom: 1px solid #eee;
-    transition: background-color 0.3s ease;
-}
-
-.product-card-link:hover {
-    background-color: #fafafa;
-}
-
-.product-card {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    padding: 20px;
-}
-
-/* Image Frame: Light background and centered */
+/* 1. Clean Frame: No border, very light gray background */
 .product-img-frame {
     width: 100%;
     aspect-ratio: 1 / 1;
-    background-color: #f9f9f9;
+    background-color: #f5f5f5; /* Clean light gray */
     overflow: hidden;
-    margin-bottom: 20px;
+    margin-bottom: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 15%; /* This keeps the image smaller and centered */
+    position: relative;
+    padding: 12%; /* Internal breathing room for the product */
+    transition: background-color 0.3s ease;
 }
 
 .product-img-frame img {
     max-width: 100%; 
     max-height: 100%;
+    width: auto;
+    height: auto;
     object-fit: contain;
-    mix-blend-mode: multiply; /* Helps blend white image backgrounds into the gray frame */
+    mix-blend-mode: multiply; /* Blends white product bgs into the frame */
     transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Responsive Breakpoints */
+/* Hover: Subtle lift and background darken */
+.product-card-link:hover .product-img-frame {
+    background-color: #ededed;
+}
+.product-card-link:hover .product-img-frame img {
+    transform: scale(1.04);
+}
 
+/* 2. Responsive Breakpoints: 4 -> 3 -> 2 -> 1 */
 @media (max-width: 1200px) {
     .product-grid { grid-template-columns: repeat(3, 1fr); }
 }
 
 @media (max-width: 850px) {
     .product-grid { grid-template-columns: repeat(2, 1fr); }
+    .container { padding: 0 20px; }
 }
 
-@media (max-width: 550px) {
+@media (max-width: 480px) {
     .product-grid { grid-template-columns: 1fr; }
 }
 
-/* Details Section */
+/* 3. Refined Typography (Clean Labeling) */
 .product-details {
-    padding-top: 10px;
-    text-align: left;
+    display: flex;
+    flex-direction: column;
+    padding: 0 2px;
 }
 
 .product-cat {
-    font-size: 0.6rem;
-    color: #999;
+    font-size: 10px;
     text-transform: uppercase;
     letter-spacing: 0.1em;
+    color: #999;
+    margin-bottom: 4px;
+    font-weight: 500;
 }
 
 .product-details h3 {
-    font-size: 0.85rem;
+    font-size: 13px;
+    font-weight: 400; /* Lighter weight for cleaner look */
+    margin: 0 0 6px 0;
+    color: #111;
+    text-transform: capitalize;
+    line-height: 1.4;
+}
+
+.status {
+    font-size: 11px;
     font-weight: 600;
-    margin: 5px 0;
     text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.status.in-stock { color: #111; }
+.status.sold-out { color: #ccc; }
+
+/* 4. Filter & Search UI (Minimalist) */
+.filter-nav {
+    padding: 30px 0;
+    background: #fff;
+    z-index: 10;
+}
+
+.filter-list {
+    display: flex;
+    list-style: none;
+    gap: 25px;
+    justify-content: center;
+    padding: 0;
+    margin: 0;
+}
+
+.filter-btn {
+    background: none;
+    border: none;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #aaa;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.filter-btn:hover, .filter-btn.active { 
+    color: #000; 
+}
+
+.search-container {
+    max-width: 400px;
+    margin: 0 auto 40px;
+}
+
+#archiveSearch {
+    width: 100%;
+    border: none;
+    border-bottom: 1px solid #e0e0e0;
+    padding: 10px 0;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    text-align: center;
+    outline: none;
 }
