@@ -167,27 +167,25 @@ app.put("/api/products/:id", authenticateToken, verifyAdmin, upload.single("imag
   } catch (err) { respondServerError(res, err, "Failed to update product"); }
 });
 
-// Update your reply route
-app.post('/api/admin/reply', authenticateToken, upload.single('image'), async (req, res) => {
+// Use the same 'upload' middleware you used for products
+app.post('/api/admin/reply', authenticateToken, upload.single('imageFile'), async (req, res) => {
     try {
         const { userId, message } = req.body;
         
-        // If a file was uploaded, req.file will exist
-        const file_url = req.file ? `/uploads/${req.file.filename}` : null;
+        // Use the same file handling logic as your products
+        // If your product logic saves to 'req.file.path' or 'req.file.location', do the same here
+        const file_url = req.file ? req.file.path || req.file.location : null;
 
-        // Use Postgres $ syntax
-        const result = await pool.query(
-            "INSERT INTO messages (user_id, sender, message, file_url) VALUES ($1, $2, $3, $4) RETURNING file_url",
+        const result = await db.query(
+            "INSERT INTO messages (user_id, sender, message, file_url) VALUES ($1, $2, $3, $4) RETURNING *",
             [userId, 'admin', message, file_url]
         );
 
-        res.json({ 
-            success: true, 
-            file_url: result.rows[0].file_url 
-        });
+        // Return the whole row so renderBubble can use it
+        res.json(result.rows[0]);
     } catch (err) {
-        console.error("REPLY ERROR:", err.message);
-        res.status(500).json({ error: err.message });
+        console.error(err);
+        res.status(500).send("Server Error");
     }
 });
 app.delete("/api/products/:id", authenticateToken, verifyAdmin, async (req, res) => {

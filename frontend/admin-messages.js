@@ -169,42 +169,53 @@ function setupInboxHeader() {
         document.getElementById('deleteSelected').onclick = bulkDelete;
     }
 }
+// 1. Listen for file selection
+fileInput.addEventListener("change", function() {
+    const file = this.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            imagePreview.src = e.target.result;
+            imagePreviewContainer.style.display = "block";
+        }
+        reader.readAsDataURL(file);
+    }
+});
 
+// 2. Clear preview if you change your mind
+clearPreview.onclick = () => {
+    fileInput.value = "";
+    imagePreviewContainer.style.display = "none";
+    imagePreview.src = "";
+};
+
+// 3. Update handleReply to hide preview after sending
 async function handleReply() {
     const text = adminInput.value.trim();
     const file = fileInput.files[0];
-    
-    // Only proceed if there is text OR a file
-    if ((!text && !file) || !activeUser) return;
+    if (!text && !file) return;
+
+    const fd = new FormData();
+    fd.append("userId", activeUser);
+    fd.append("message", text);
+    if (file) fd.append("imageFile", file);
 
     const token = localStorage.getItem("token");
-    const formData = new FormData();
-    formData.append("userId", activeUser);
-    if (text) formData.append("message", text);
-    if (file) formData.append("image", file); // Must match backend field name
-
-            try {
+    try {
         const res = await fetch(`${API_BASE_URL}/api/admin/reply`, {
             method: "POST",
-            headers: { 
-                // "Content-Type" MUST BE DELETED HERE
-                "Authorization": `Bearer ${token}` 
-            },
-            body: formData // The browser handles the Content-Type automatically
+            headers: { "Authorization": `Bearer ${token}` },
+            body: fd
         });
 
         if (res.ok) {
             const data = await res.json();
-            // Render the message with the returned file_url
-            renderBubble({ 
-                sender: 'admin', 
-                message: text, 
-                file_url: data.file_url 
-            });
+            renderBubble(data);
             
-            // Clear inputs
+            // RESET EVERYTHING
             adminInput.value = "";
-            fileInput.value = ""; 
+            fileInput.value = "";
+            imagePreviewContainer.style.display = "none"; // Hide preview
             scrollToBottom();
         }
     } catch (err) {
