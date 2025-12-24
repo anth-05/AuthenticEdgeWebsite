@@ -1,15 +1,22 @@
 /* ========== REFINED PRODUCT GRID ========== */
 
 .collection-grid-section {
-    padding: 80px 0;
+    padding: 60px 0; /* Balanced vertical spacing */
     background-color: #fff;
+}
+
+/* 1. Added significant side padding to push the grid away from the screen edges */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 50px; /* Pulls content in from the left and right */
 }
 
 .product-grid {
     display: grid;
-    /* Strict 3-column layout on desktop, scales down nicely */
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    column-gap: 30px;
+    /* 2. Smaller min-width (260px) allows for more breathing room/smaller boxes */
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    column-gap: 40px; 
     row-gap: 60px;
 }
 
@@ -27,11 +34,11 @@
     height: 100%;
 }
 
-/* Image Frame: The "Gallery" Box */
+/* 3. Image Frame: Increased internal padding to make the product look smaller */
 .product-img-frame {
     width: 100%;
-    aspect-ratio: 1 / 1; /* Square frames look more balanced in rows */
-    background-color: #f6f6f6; /* Soft off-white for the "studio" feel */
+    aspect-ratio: 1 / 1;
+    background-color: #f6f6f6;
     overflow: hidden;
     margin-bottom: 20px;
     display: flex;
@@ -39,27 +46,29 @@
     justify-content: center;
     position: relative;
     border: 1px solid #f0f0f0;
+    padding: 40px; /* Internal "white space" around the product */
 }
 
+/* 4. Smaller Images: Reduced from 80% to 60% for a high-end editorial look */
 .product-img-frame img {
-    max-width: 80%; /* Prevents image from touching the edges */
-    max-height: 80%;
+    max-width: 60%; 
+    max-height: 60%;
     width: auto;
     height: auto;
-    object-fit: contain; /* Ensures the whole product is always visible */
+    object-fit: contain;
     transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* Subtle Hover Effect */
 .product-card-link:hover .product-img-frame img {
-    transform: scale(1.08);
+    transform: scale(1.05); /* Slightly less aggressive zoom */
 }
 
 .product-card-link:hover .product-img-frame {
     border-color: #e0e0e0;
 }
 
-/* Details Section: Strict Alignment */
+/* Details Section */
 .product-details {
     display: flex;
     flex-direction: column;
@@ -76,7 +85,7 @@
 }
 
 .product-details h3 {
-    font-size: 0.95rem;
+    font-size: 0.9rem; /* Slightly smaller title */
     font-weight: 700;
     margin: 0 0 10px 0;
     color: #000;
@@ -85,9 +94,9 @@
     line-height: 1.2;
 }
 
-/* Status: The Baseline */
+/* Status */
 .status {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     margin-top: auto;
@@ -95,7 +104,7 @@
 }
 
 .status.in-stock {
-    color: #000; /* Black for "available" fits editorial better than green */
+    color: #000;
     font-weight: 600;
 }
 
@@ -103,12 +112,13 @@
     color: #d1d1d1;
     font-weight: 400;
 }
+
 /* ========== FILTER NAVIGATION ========== */
 .filter-nav {
     border-bottom: 1px solid #eee;
     padding: 20px 0;
     position: sticky;
-    top: 70px; /* Adjust based on your header height */
+    top: 70px;
     background: #fff;
     z-index: 10;
 }
@@ -120,6 +130,12 @@
     justify-content: center;
     padding: 0;
     margin: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.filter-list::-webkit-scrollbar {
+    display: none;
 }
 
 .filter-btn {
@@ -134,6 +150,7 @@
     padding: 5px 0;
     transition: color 0.3s ease;
     position: relative;
+    white-space: nowrap;
 }
 
 .filter-btn:hover, .filter-btn.active {
@@ -150,19 +167,9 @@
     background: #000;
 }
 
-@media (max-width: 768px) {
-    .filter-list {
-        gap: 15px;
-        overflow-x: auto;
-        justify-content: flex-start;
-        padding-bottom: 5px;
-    }
-    .filter-btn {
-        white-space: nowrap;
-    }
-}
+/* ========== SEARCH CONTAINER ========== */
 .search-container {
-    max-width: 600px;
+    max-width: 500px; /* Made search bar slightly narrower */
     margin: 0 auto 30px;
     padding: 0 20px;
 }
@@ -173,7 +180,7 @@
     border: none;
     border-bottom: 1px solid #eee;
     padding: 15px 0;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.2em;
     text-align: center;
@@ -183,4 +190,18 @@
 
 #archiveSearch:focus {
     border-color: #000;
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 0 20px; /* Less padding on mobile to keep items visible */
+    }
+    .product-grid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        column-gap: 20px;
+    }
+    .filter-list {
+        justify-content: flex-start;
+        padding-left: 20px;
+    }
 }

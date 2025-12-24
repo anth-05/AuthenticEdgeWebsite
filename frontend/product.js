@@ -18,27 +18,32 @@ async function loadProducts() {
         grid.innerHTML = `<p>Archive sync unavailable.</p>`;
     }
 }
-
 function generateDynamicFilters() {
     const filterContainer = document.getElementById("dynamic-filters");
+    if (!filterContainer) return;
+
+    // 1. Create a set of unique brands found in descriptions
+    // We split by spaces and take the first word, but we clean it of punctuation
+    const brandSet = new Set();
     
-    // 1. Extract the first word from every description as the "Brand"
-    // We filter out empty descriptions and normalize to Uppercase
-    const brands = allProducts
-        .map(p => p.description ? p.description.trim().split(' ')[0].toUpperCase() : null)
-        .filter((brand, index, self) => brand && self.indexOf(brand) === index); // Remove duplicates
+    allProducts.forEach(p => {
+        if (p.description) {
+            // Extract the first word and remove non-alphanumeric chars (like commas)
+            const firstWord = p.description.trim().split(/\s+/)[0].replace(/[^a-zA-Z0-0]/g, "").toUpperCase();
+            if (firstWord) brandSet.add(firstWord);
+        }
+    });
 
-    // 2. Create the "All" button first
+    // 2. Convert Set to Array and Sort
+    const brands = Array.from(brandSet).sort();
+
+    // 3. Build the HTML
     let filterHTML = `<li><button class="filter-btn active" data-filter="ALL">All</button></li>`;
-
-    // 3. Create buttons for each unique brand found (e.g., NIKE, DYSON, ADIDAS)
     filterHTML += brands.map(brand => `
         <li><button class="filter-btn" data-filter="${brand}">${brand}</button></li>
     `).join('');
 
     filterContainer.innerHTML = filterHTML;
-
-    // 4. Attach Click Events to new buttons
     setupFilterEvents();
 }
 
@@ -53,9 +58,10 @@ function setupFilterEvents() {
             if (filterValue === 'ALL') {
                 renderGrid(allProducts);
             } else {
+                // BUG FIX: Use .includes() so it finds the brand even if it's not the only word
                 const filtered = allProducts.filter(p => {
-                    const brandInDesc = p.description ? p.description.trim().split(' ')[0].toUpperCase() : "";
-                    return brandInDesc === filterValue;
+                    const desc = (p.description || "").toUpperCase();
+                    return desc.includes(filterValue); 
                 });
                 renderGrid(filtered);
             }
