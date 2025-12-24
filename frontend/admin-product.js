@@ -205,40 +205,56 @@ document.getElementById("edit-product-form")?.addEventListener("submit", async (
 });
 
 // Add Product
+/* -------------------------------------------------------
+   ADD PRODUCT FUNCTION
+------------------------------------------------------- */
 document.getElementById("add-product-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const token = localStorage.getItem("token");
     const form = e.target;
-    const imageType = document.querySelector("input[name='imageType']:checked").value;
+    
+    // Determine if we are using a URL or a File Upload
+    const imageType = form.querySelector("input[name='imageType']:checked").value;
 
+    // Use FormData to handle potential file uploads
     const fd = new FormData();
     fd.append("name", form.name.value.trim());
     fd.append("description", form.description.value.trim());
     fd.append("gender", form.gender.value.trim());
     fd.append("quality", form.quality.value.trim());
-    fd.append("availability", form.availability.value.trim());
+    fd.append("availability", form.availability.value.trim() || "In Stock");
 
     if (imageType === "upload") {
-        const file = document.getElementById("imageUpload").files[0];
-        if (!file) return alert("Select a file to upload.");
-        fd.append("imageFile", file);
+        const fileInput = form.querySelector('input[name="imageUpload"]');
+        if (!fileInput.files[0]) return alert("Please select a file to upload.");
+        fd.append("imageFile", fileInput.files[0]); 
     } else {
-        const url = document.getElementById("image").value.trim();
-        if (!url) return alert("Enter image URL.");
-        fd.append("image", url); // Note: Server.js expects 'image' for URL
+        const imageUrl = form.querySelector('input[name="image"]').value.trim();
+        if (!imageUrl) return alert("Please enter an image URL.");
+        fd.append("image", imageUrl); 
     }
 
     try {
         const res = await fetch(`${API_BASE_URL}/api/products`, {
             method: "POST",
-            headers: { Authorization: `Bearer ${token}` },
+            headers: { 
+                // Do NOT set Content-Type header when using FormData; 
+                // the browser will set it automatically with the boundary.
+                Authorization: `Bearer ${token}` 
+            },
             body: fd
         });
 
+        // This is where your SyntaxError likely happened. 
+        // We check if res.ok before trying to parse .json()
         if (res.ok) {
+            alert("Product added successfully.");
             form.reset();
-            loadProducts();
-            alert("Inventory Updated Successfully.");
+            loadProducts(); // Refresh the table
+        } else {
+            const errorText = await res.text(); // Get raw text to debug if it's HTML
+            console.error("Server Error Response:", errorText);
+            alert("Failed to add product. Check console for details.");
         }
     } catch (error) {
         console.error("Add failed:", error);

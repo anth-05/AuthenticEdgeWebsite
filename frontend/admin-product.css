@@ -96,7 +96,7 @@
 
 .edit-btn:hover { border-color: #000; color: #000; }
 .delete-btn { color: #d00000; border-color: #ffdada; }
-.delete-btn:hover { background: #d00000; color: #fff; border-color: #d00000; }
+.delete-btn:hover { color: #d00000; border-color: #d00000; }
 
 /* MODAL REFINEMENT */
 .modal {
