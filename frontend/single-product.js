@@ -50,10 +50,12 @@ function renderProductDetails(product) {
 
     // 2. Update Text Content (Handle potential 'undefined' by providing fallbacks)
     const title = product.title || product.name || "Untitled Product";
+    const price = product.price || "Contact for Price";
     
     document.getElementById('productTitle').innerText = title;
     document.getElementById('productPrice').innerText = price;
     document.getElementById('productDescription').innerText = product.description || "No description available.";
+    document.getElementById('productCategory').innerText = product.category || "";
     
     // 3. Update Status Tag
     const statusTag = document.getElementById('productStatus');
