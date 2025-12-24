@@ -183,14 +183,14 @@ async function handleReply() {
     if (text) formData.append("message", text);
     if (file) formData.append("image", file); // Must match backend field name
 
-    try {
+            try {
         const res = await fetch(`${API_BASE_URL}/api/admin/reply`, {
             method: "POST",
             headers: { 
+                // "Content-Type" MUST BE DELETED HERE
                 "Authorization": `Bearer ${token}` 
-                // Note: Do NOT set Content-Type header when sending FormData
             },
-            body: formData
+            body: formData // The browser handles the Content-Type automatically
         });
 
         if (res.ok) {
