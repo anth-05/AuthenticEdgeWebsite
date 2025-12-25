@@ -489,16 +489,25 @@ const transporter = nodemailer.createTransport({
 });
 
 app.post("/api/contact", async (req, res) => {
-const name = validator.escape(req.body.name);
-  const email = validator.normalizeEmail(req.body.email);
-  const message = validator.escape(req.body.message);
+  // 1. Sanitize and Extract all fields
+  const name = validator.escape(req.body.name || "");
+  const email = validator.normalizeEmail(req.body.email || "");
+  const message = validator.escape(req.body.message || "");
+  const phone = validator.escape(req.body.phone || ""); // ADDED: This was missing!
 
   if (!validator.isEmail(email)) {
     return res.status(400).json({ error: "Invalid email address" });
   }
+
   try {
     // 2. Resolve path to your template
-    const templatePath = path.join(__dirname, 'emailTemplates', 'contact.html');
+    // Using process.cwd() ensures Render finds the folder correctly
+    const templatePath = path.join(process.cwd(), 'backend', 'emailTemplates', 'contact.html');
+    
+    if (!fs.existsSync(templatePath)) {
+        throw new Error(`Template not found at ${templatePath}`);
+    }
+    
     let htmlContent = fs.readFileSync(templatePath, 'utf8');
 
     // 3. Inject data into the template placeholders
@@ -510,9 +519,9 @@ const name = validator.escape(req.body.name);
 
     // 4. Configure and send the email
     const mailOptions = {
-      from: `"${name}" <${process.env.CONTACT_EMAIL}>`,
-      to: "anthilori25@gmail.com", // Change email
-      replyTo: email,                //
+      from: `"Authentic Edge Contact" <${process.env.CONTACT_EMAIL}>`,
+      to: "anthilori25@gmail.com", 
+      replyTo: email, 
       subject: `New Inquiry from ${name}`,
       html: htmlContent
     };
