@@ -2,7 +2,6 @@ import { API_BASE_URL } from "./config.js";
 
 /* -------------------------------------------------------
    IMAGE TYPE SWITCHER (URL ↔ FILE)
-   This logic stays OUTSIDE the submit listener
 ------------------------------------------------------- */
 const radioGroup = document.querySelectorAll('input[name="imageType"]');
 const urlRow = document.getElementById('image-url-row');
@@ -16,7 +15,6 @@ radioGroup.forEach(radio => {
         if (urlRow) urlRow.style.display = isUrl ? 'block' : 'none';
         if (uploadRow) uploadRow.style.display = isUrl ? 'none' : 'block';
 
-        // Toggle 'required' based on visibility to prevent "not focusable" errors
         if (isUrl) {
             if (urlInput) urlInput.required = true;
             if (fileInput) { fileInput.required = false; fileInput.value = ""; }
@@ -28,7 +26,7 @@ radioGroup.forEach(radio => {
 });
 
 /* -------------------------------------------------------
-   LOAD PRODUCTS INTO TABLE
+   LOAD PRODUCTS INTO TABLE (Sorted by Custom Order)
 ------------------------------------------------------- */
 async function loadProducts() {
     const token = localStorage.getItem("token");
@@ -43,8 +41,11 @@ async function loadProducts() {
         });
 
         if (!res.ok) throw new Error("Unauthorized access");
-        const products = await res.json();
+        let products = await res.json();
         
+        // --- ADDED: SORT LOGIC FOR ADMIN TABLE ---
+        products.sort((a, b) => (a.sort_index || 0) - (b.sort_index || 0));
+
         if (!products.length) {
             tbody.innerHTML = "<tr><td colspan='7'>No inventory recorded.</td></tr>";
             return;
@@ -52,7 +53,7 @@ async function loadProducts() {
 
         tbody.innerHTML = products.map(p => `
             <tr>
-                <td>#${p.id}</td>
+                <td>#${p.id} <br><small style="color:#888">Order: ${p.sort_index || 0}</small></td>
                 <td><img src="${p.image}" alt="${p.name}" class="product-thumb"></td>
                 <td><strong>${p.name}</strong></td>
                 <td>${p.gender || "—"}</td>
@@ -83,7 +84,7 @@ async function loadProducts() {
 }
 
 /* -------------------------------------------------------
-   DELETE & EDIT MODAL LOGIC
+   DELETE PRODUCT
 ------------------------------------------------------- */
 async function deleteProduct(id) {
     if (!confirm("Remove this item?")) return;
@@ -96,10 +97,14 @@ async function deleteProduct(id) {
         if (res.ok) loadProducts();
     } catch (e) { console.error(e); }
 }
+
 /* -------------------------------------------------------
-   OPEN EDIT MODAL (Populate fields)
+   OPEN EDIT MODAL
 ------------------------------------------------------- */
 function openEditModal(p) {
+    // Fixed: changed 'product' to 'p' to match function parameter
+    document.getElementById('edit-sort-index').value = p.sort_index || 0;
+    
     document.getElementById("edit-product-id").value = p.id;
     document.getElementById("edit-name").value = p.name || "";
     document.getElementById("edit-description").value = p.description || "";
@@ -108,7 +113,6 @@ function openEditModal(p) {
     document.getElementById("edit-quality").value = p.quality || "";
     document.getElementById("edit-availability").value = p.availability || "";
 
-    // Reset image rows to URL by default when opening
     document.querySelector('input[name="editImageType"][value="url"]').checked = true;
     if (editUrlRow) editUrlRow.style.display = 'block';
     if (editUploadRow) editUploadRow.style.display = 'none';
@@ -116,40 +120,38 @@ function openEditModal(p) {
     const modal = document.getElementById("edit-modal");
     if (modal) modal.style.display = "flex";
 }
+
 window.closeEditModal = () => {
     const modal = document.getElementById("edit-modal");
     if (modal) modal.style.display = "none";
 };
 
 /* -------------------------------------------------------
-   SUBMIT ADD PRODUCT (FIXED INITIALIZATION)
+   SUBMIT ADD PRODUCT (Including Sort Order)
 ------------------------------------------------------- */
 document.getElementById("add-product-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const token = localStorage.getItem("token");
     const form = e.target;
-
-    // 1. Create FormData FIRST
     const fd = new FormData();
 
-    // 2. Safely get values
     const imageType = form.querySelector('input[name="imageType"]:checked').value;
-    const avail = form.elements["availability"] ? form.elements["availability"].value.trim() : "In Stock";
-
+    
     fd.append("name", form.elements["name"].value.trim());
     fd.append("description", form.elements["description"].value.trim());
     fd.append("gender", form.elements["gender"].value.trim());
     fd.append("quality", form.elements["quality"].value.trim());
-    fd.append("availability", avail || "In Stock");
+    fd.append("availability", form.elements["availability"]?.value.trim() || "In Stock");
+    
+    // --- ADDED: GRAB SORT INDEX FROM ADD FORM ---
+    const sortIdx = form.querySelector('#add-sort-index')?.value || 0;
+    fd.append("sort_index", sortIdx);
 
     if (imageType === "upload") {
         const fileIn = form.querySelector('input[name="imageUpload"]');
-        if (!fileIn.files[0]) return alert("Please select a file.");
-        fd.append("imageFile", fileIn.files[0]); 
+        if (fileIn.files[0]) fd.append("imageFile", fileIn.files[0]); 
     } else {
-        const imageUrl = form.elements["image"].value.trim();
-        if (!imageUrl) return alert("Please enter a URL.");
-        fd.append("image", imageUrl); 
+        fd.append("image", form.elements["image"].value.trim()); 
     }
 
     try {
@@ -162,18 +164,11 @@ document.getElementById("add-product-form")?.addEventListener("submit", async (e
         if (res.ok) {
             alert("Product published.");
             form.reset();
-            // Reset visibility to URL mode
-            if (urlRow) urlRow.style.display = 'block';
-            if (uploadRow) uploadRow.style.display = 'none';
             loadProducts();
-        } else {
-            const errorText = await res.text();
-            console.error("Server says:", errorText);
         }
-    } catch (error) {
-        console.error("Add failed:", error);
-    }
+    } catch (error) { console.error("Add failed:", error); }
 });
+
 /* -------------------------------------------------------
    EDIT MODAL IMAGE SWITCHER
 ------------------------------------------------------- */
@@ -189,9 +184,8 @@ editRadioGroup.forEach(radio => {
     });
 });
 
-
 /* -------------------------------------------------------
-   SUBMIT EDIT PRODUCT
+   SUBMIT EDIT PRODUCT (Including Sort Order)
 ------------------------------------------------------- */
 document.getElementById("edit-product-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -204,37 +198,32 @@ document.getElementById("edit-product-form")?.addEventListener("submit", async (
     fd.append("gender", document.getElementById("edit-gender").value.trim());
     fd.append("quality", document.getElementById("edit-quality").value.trim());
     fd.append("availability", document.getElementById("edit-availability").value.trim());
+    
+    // --- ADDED: GRAB SORT INDEX FROM EDIT MODAL ---
+    fd.append("sort_index", document.getElementById("edit-sort-index").value);
 
     const imageType = document.querySelector('input[name="editImageType"]:checked').value;
     
     if (imageType === "upload") {
         const fileIn = document.getElementById('edit-image-upload');
-        if (fileIn.files[0]) {
-            fd.append("imageFile", fileIn.files[0]);
-        }
+        if (fileIn.files[0]) fd.append("imageFile", fileIn.files[0]);
     } else {
-        const imageUrl = document.getElementById("edit-image").value.trim();
-        fd.append("image", imageUrl);
+        fd.append("image", document.getElementById("edit-image").value.trim());
     }
 
     try {
         const res = await fetch(`${API_BASE_URL}/api/products/${id}`, {
             method: "PUT",
             headers: { Authorization: `Bearer ${token}` },
-            body: fd // Browser handles boundary for FormData automatically
+            body: fd
         });
 
         if (res.ok) {
             alert("Product updated successfully.");
             closeEditModal();
             loadProducts();
-        } else {
-            const err = await res.text();
-            alert("Update failed: " + err);
         }
-    } catch (error) {
-        console.error("Update error:", error);
-    }
+    } catch (error) { console.error("Update error:", error); }
 });
 
 document.addEventListener("DOMContentLoaded", loadProducts);

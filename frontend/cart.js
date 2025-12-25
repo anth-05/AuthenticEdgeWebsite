@@ -134,6 +134,7 @@ async function processInquiry(formData) {
 Name:       ${formData.get('voornaam')} ${formData.get('achternaam')}
 Email:      ${formData.get('email') || 'Not provided'}
 Size:       ${formData.get('maat')}
+Max Budget: ${formData.get('budget') || 'Not specified'}
 
 📍 SHIPPING ADDRESS
 Address:    ${formData.get('adres')}
@@ -146,10 +147,8 @@ Country:    ${formData.get('land')}
 ${productList}
 
 ------------------------------------------
-BANKING: AUTHENTIC EDGE NL
-IBAN:    NL15 REVO 9415 3189 96
 
-TOTAL: Agreed Price + Shipping (€7.25 p.p.) + €1 Tikkie fee.
+Shipping (€7.25 p.p.) + €1 Tikkie fee.
 ------------------------------------------
 `.trim();
 
