@@ -22,6 +22,16 @@ dotenv.config();
 const { Pool } = pkg;
 const app = express();
 
+const contactLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // Limit each IP to 5 contact requests per window
+  message: { success: false, error: "Too many requests. Please try again later." }
+});
+const verifyUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.RECAPTCHA_SECRET}&response=${req.body.recaptchaToken}`;
+const recaptchaRes = await fetch(verifyUrl, { method: 'POST' });
+const recaptchaData = await recaptchaRes.json();
+
+
 /* ---------------- DIRECTORY SETUP ---------------- */
 const UPLOADS_DIR = path.join(process.cwd(), "uploads");
 const PRODUCTS_UPLOAD_DIR = path.join(UPLOADS_DIR, "products");
@@ -488,64 +498,65 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-app.post("/api/contact", async (req, res) => {
-  // 1. Sanitize and Extract all fields
-  const name = validator.escape(req.body.name || "");
-  const email = validator.normalizeEmail(req.body.email || "");
-  const message = validator.escape(req.body.message || "");
-  const phone = validator.escape(req.body.phone || ""); // ADDED: This was missing!
+app.post("/api/contact", contactLimiter, async (req, res) => {
+    // 1. Sanitize and Extract all fields
+    const name = validator.escape(req.body.name || "");
+    const email = validator.normalizeEmail(req.body.email || "");
+    const message = validator.escape(req.body.message || "");
+    const phone = validator.escape(req.body.phone || "");
+    const recaptchaToken = req.body.recaptchaToken; // Ensure frontend sends this
 
-  if (!validator.isEmail(email)) {
-    return res.status(400).json({ error: "Invalid email address" });
-  }
-
-  try {
-    // 2. Resolve path to your template
-    // Using process.cwd() ensures Render finds the folder correctly
-    const templatePath = path.join(process.cwd(), 'backend', 'emailTemplates', 'contact.html');
-    
-    if (!fs.existsSync(templatePath)) {
-        throw new Error(`Template not found at ${templatePath}`);
+    if (!validator.isEmail(email)) {
+        return res.status(400).json({ error: "Invalid email address" });
     }
-    
-    let htmlContent = fs.readFileSync(templatePath, 'utf8');
 
-    // 3. Inject data into the template placeholders
-    htmlContent = htmlContent
-      .replace('{{name}}', name)
-      .replace('{{email}}', email)
-      .replace('{{phone}}', phone)
-      .replace('{{message}}', message);
+    try {
+        // 2. VERIFY RECAPTCHA FIRST
+        const verifyUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.RECAPTCHA_SECRET}&response=${recaptchaToken}`;
+        const recaptchaRes = await fetch(verifyUrl, { method: 'POST' });
+        const recaptchaData = await recaptchaRes.json();
 
-    // 4. Configure and send the email
-    const mailOptions = {
-      from: `"Authentic Edge Contact" <${process.env.CONTACT_EMAIL}>`,
-      to: "anthilori25@gmail.com", 
-      replyTo: email, 
-      subject: `New Inquiry from ${name}`,
-      html: htmlContent
-    };
+        // Now you can safely check recaptchaData
+        if (!recaptchaData.success || recaptchaData.score < 0.5) {
+            return res.status(403).json({ success: false, error: "Bot activity detected." });
+        }
 
-    await transporter.sendMail(mailOptions);
+        // 3. Resolve path to your template
+        const templatePath = path.join(process.cwd(), 'backend', 'emailTemplates', 'contact.html');
+        
+        if (!fs.existsSync(templatePath)) {
+            throw new Error(`Template not found at ${templatePath}`);
+        }
+        
+        let htmlContent = fs.readFileSync(templatePath, 'utf8');
 
-    res.json({ success: true, message: "Email sent successfully" });
-  } catch (error) {
-    console.error("Email Sending Error:", error);
-    res.status(500).json({ success: false, error: "Internal server error" });
-  }
+        // 4. Inject data into the template
+        htmlContent = htmlContent
+            .replace('{{name}}', name)
+            .replace('{{email}}', email)
+            .replace('{{phone}}', phone)
+            .replace('{{message}}', message);
+
+        // 5. Configure and send the email
+        const mailOptions = {
+            from: `"Authentic Edge Contact" <${process.env.CONTACT_EMAIL}>`,
+            to: "anthilori25@gmail.com", 
+            replyTo: email, 
+            subject: `New Inquiry from ${name}`,
+            html: htmlContent
+        };
+
+        await transporter.sendMail(mailOptions);
+
+        res.json({ success: true, message: "Email sent successfully" });
+
+    } catch (error) {
+        console.error("Email Sending Error:", error);
+        res.status(500).json({ success: false, error: "Internal server error" });
+    }
 });
 
-const verifyUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.RECAPTCHA_SECRET}&response=${req.body.recaptchaToken}`;
-const recaptchaRes = await fetch(verifyUrl, { method: 'POST' });
-const recaptchaData = await recaptchaRes.json();
 
-if (!recaptchaData.success || recaptchaData.score < 0.5) {
-  return res.status(403).json({ success: false, error: "Bot activity detected." });
-}
-const contactLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // Limit each IP to 5 contact requests per window
-  message: { success: false, error: "Too many requests. Please try again later." }
-});
+
 
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
