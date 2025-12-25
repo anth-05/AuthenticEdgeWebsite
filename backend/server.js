@@ -624,7 +624,7 @@ async function runMigration() {
             console.error("❌ Error running migration:", err.message);
         }
     } finally {
-        await connection.end();
+        await pool.end();
         process.exit();
     }
 }
