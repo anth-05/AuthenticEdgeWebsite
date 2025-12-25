@@ -125,12 +125,8 @@ export function addToCart(product) {
         });
         localStorage.setItem('ae_cart', JSON.stringify(cart));
     }
-    
-    // Open the drawer immediately so the user knows it worked
-    openCartDrawer();
-    refreshCartDisplay();
+    alert("Product added to your selection.");
 }
-
 function initCartUI() {
     const drawer = document.getElementById('cartDrawer');
     const overlay = document.getElementById('cartOverlay');
@@ -240,6 +236,12 @@ async function processInquiry(formData) {
 }
 
 function openCartDrawer() {
-    document.getElementById('cartDrawer').classList.add('open');
-    document.getElementById('cartOverlay').classList.add('show');
+    const drawer = document.getElementById('cartDrawer');
+    const overlay = document.getElementById('cartOverlay');
+    
+    // Use optional chaining or if-checks
+    if (drawer && overlay) {
+        drawer.classList.add('open');
+        overlay.classList.add('show');
+    }
 }
