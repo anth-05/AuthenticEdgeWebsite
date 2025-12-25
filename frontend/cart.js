@@ -2,9 +2,43 @@ import { API_BASE_URL } from "./config.js";
 
 // Initialize UI listeners as soon as the module loads
 document.addEventListener('DOMContentLoaded', () => {
+    
     setupCartUI();
     setupModalListeners();
     renderCartItems();
+
+    const drawer = document.getElementById('cartDrawer');
+    const overlay = document.getElementById('cartOverlay');
+    const closeBtn = document.getElementById('closeCart');
+    const trigger = document.getElementById('cartTrigger');
+
+    // 2. Define the toggle function
+    const closeCartDrawer = () => {
+        drawer.classList.remove('open');
+        overlay.classList.remove('show');
+    };
+
+    const openCartDrawer = () => {
+        drawer.classList.add('open');
+        overlay.classList.add('show');
+        renderCartItems(); // Refresh items when opening
+    };
+
+    // 3. Attach the listeners
+    if (closeBtn) {
+        closeBtn.onclick = (e) => {
+            e.preventDefault();
+            closeCartDrawer();
+        };
+    }
+
+    if (overlay) {
+        overlay.onclick = closeCartDrawer;
+    }
+
+    if (trigger) {
+        trigger.onclick = openCartDrawer;
+    }
 });
 
 export function addToCart(product) {
