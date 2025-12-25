@@ -41,14 +41,12 @@ function showError(msg) {
  * Injects product data and sets up button listeners
  */
 function renderProductDetails(product) {
-    // 1. Update Image (Check for both possible property names)
     const imgElement = document.getElementById('productImage');
     if (imgElement) {
         imgElement.src = product.image_url || product.image || '';
         imgElement.alt = product.title || product.name || "Product Image";
     }
 
-    // 2. Update Text Content (Handle potential 'undefined' by providing fallbacks)
     const title = product.title || product.name || "Untitled Product";
     const price = product.price || "Contact for Price";
     
@@ -57,26 +55,26 @@ function renderProductDetails(product) {
     document.getElementById('productDescription').innerText = product.description || "No description available.";
     document.getElementById('productCategory').innerText = product.category || "";
     
-    // 3. Update Status Tag
     const statusTag = document.getElementById('productStatus');
     const status = product.status || "Premium";
     statusTag.innerText = status;
     
-    // 4. Handle Sold Out state
     const msgBtn = document.getElementById('messageBtn');
+    
     if (status.toLowerCase() === 'sold out') {
         msgBtn.innerText = "Archive Only (Sold Out)";
         msgBtn.style.backgroundColor = "#ccc";
         msgBtn.style.cursor = "not-allowed";
         msgBtn.disabled = true;
     } else {
-        // Set up Inquiry click listener only if item is available
-        msgBtn.onclick = () => handleInquiry(title, price, product.id);
+        // CHANGE THIS LINE: 
+        // Instead of handleInquiry, call your exported addToCart function
+        msgBtn.innerText = "Add to Selection";
+        msgBtn.onclick = () => addToCart(product);
     }
 
     document.title = `${title} | Authentic Edge`;
 }
-
 /**
  * Sends inquiry message to admin
  */

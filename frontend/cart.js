@@ -1,48 +1,15 @@
 import { API_BASE_URL } from "./config.js";
 
-// Initialize UI listeners as soon as the module loads
+// AUTO-INITIALIZE UI
 document.addEventListener('DOMContentLoaded', () => {
-    
-    setupCartUI();
-    setupModalListeners();
-    renderCartItems();
-
-    const drawer = document.getElementById('cartDrawer');
-    const overlay = document.getElementById('cartOverlay');
-    const closeBtn = document.getElementById('closeCart');
-    const trigger = document.getElementById('cartTrigger');
-
-    // 2. Define the toggle function
-    const closeCartDrawer = () => {
-        drawer.classList.remove('open');
-        overlay.classList.remove('show');
-    };
-
-    const openCartDrawer = () => {
-        drawer.classList.add('open');
-        overlay.classList.add('show');
-        renderCartItems(); // Refresh items when opening
-    };
-
-    // 3. Attach the listeners
-    if (closeBtn) {
-        closeBtn.onclick = (e) => {
-            e.preventDefault();
-            closeCartDrawer();
-        };
-    }
-
-    if (overlay) {
-        overlay.onclick = closeCartDrawer;
-    }
-
-    if (trigger) {
-        trigger.onclick = openCartDrawer;
-    }
+    initCartUI();
+    initModalLogic();
+    refreshCartDisplay();
 });
 
 export function addToCart(product) {
     let cart = JSON.parse(localStorage.getItem('ae_cart')) || [];
+    
     if (!cart.some(item => item.id === product.id)) {
         cart.push({
             id: product.id,
@@ -52,40 +19,45 @@ export function addToCart(product) {
         });
         localStorage.setItem('ae_cart', JSON.stringify(cart));
     }
-    // Open UI automatically
-    document.getElementById('cartDrawer').classList.add('open');
-    document.getElementById('cartOverlay').classList.add('show');
-    renderCartItems();
+    
+    openCartDrawer();
+    refreshCartDisplay();
 }
 
-function setupCartUI() {
+function initCartUI() {
     const drawer = document.getElementById('cartDrawer');
     const overlay = document.getElementById('cartOverlay');
-    const closeBtn = document.getElementById('closeCart');
+    const closeBtn = document.getElementById('closeCart'); // The "X" Button
+    const trigger = document.getElementById('cartTrigger');
     const checkoutBtn = document.getElementById('checkoutBtn');
 
-    const toggle = () => {
-        drawer.classList.toggle('open');
-        overlay.classList.toggle('show');
+    // Define specific Close function to ensure "X" works
+    const closeDrawer = () => {
+        drawer.classList.remove('open');
+        overlay.classList.remove('show');
     };
 
-    if (closeBtn) closeBtn.onclick = toggle;
-    if (overlay) overlay.onclick = toggle;
-    
-    // Clicking "Submit Inquiry" opens the Info Modal
+    const openDrawer = () => {
+        drawer.classList.add('open');
+        overlay.classList.add('show');
+    };
+
+    if (closeBtn) closeBtn.onclick = closeDrawer;
+    if (overlay) overlay.onclick = closeDrawer;
+    if (trigger) trigger.onclick = openDrawer;
+
     if (checkoutBtn) {
         checkoutBtn.onclick = () => {
             const cart = JSON.parse(localStorage.getItem('ae_cart')) || [];
-            if (cart.length === 0) return alert("Your selection is empty.");
+            if (cart.length === 0) return alert("Selection is empty.");
             
-            drawer.classList.remove('open');
-            overlay.classList.remove('show');
+            closeDrawer();
             document.getElementById('checkoutModal').style.display = 'flex';
         };
     }
 }
 
-function setupModalListeners() {
+function initModalLogic() {
     const modal = document.getElementById('checkoutModal');
     const form = document.getElementById('checkoutForm');
     const closeBtn = document.getElementById('closeModal');
@@ -95,73 +67,78 @@ function setupModalListeners() {
     if (form) {
         form.onsubmit = async (e) => {
             e.preventDefault();
-            await sendInquiryWithDetails(new FormData(form));
+            const formData = new FormData(form);
+            await processInquiry(formData);
         };
     }
 }
 
-export function renderCartItems() {
+export function refreshCartDisplay() {
     const cart = JSON.parse(localStorage.getItem('ae_cart')) || [];
     const list = document.getElementById('cartItemsList');
     const badge = document.getElementById('cartBadge');
-    
+
     if (badge) badge.innerText = cart.length;
     if (!list) return;
 
+    if (cart.length === 0) {
+        list.innerHTML = '<p style="padding: 20px; color: #888;">No items selected.</p>';
+        return;
+    }
+
     list.innerHTML = cart.map((item, index) => `
         <div class="cart-item">
-            <img src="${item.image}" alt="${item.title}" style="width:60px; height:60px; object-fit:cover; border-radius:8px;">
+            <img src="${item.image}" alt="${item.title}" style="width:50px; height:50px; object-fit:cover;">
             <div class="cart-item-info">
                 <h4>${item.title}</h4>
                 <p>${item.price}</p>
-                <button class="remove-link" onclick="removeFromCart(${index})">Remove</button>
+                <button class="remove-link" onclick="removeFromSelection(${index})">Remove</button>
             </div>
         </div>
     `).join('');
 }
 
-window.removeFromCart = (index) => {
+window.removeFromSelection = (index) => {
     let cart = JSON.parse(localStorage.getItem('ae_cart')) || [];
     cart.splice(index, 1);
     localStorage.setItem('ae_cart', JSON.stringify(cart));
-    renderCartItems();
+    refreshCartDisplay();
 };
 
-async function sendInquiryWithDetails(formData) {
+async function processInquiry(formData) {
     const token = localStorage.getItem("token");
     const cart = JSON.parse(localStorage.getItem('ae_cart')) || [];
 
-    if (!token) {
-        alert("Please sign in first.");
-        window.location.href = "login.html";
-        return;
-    }
+    if (!token) return (window.location.href = "login.html");
 
-    // Prepare the text block exactly as requested
-    const details = `Authentic Edge NL\nNL15 REVO 9415 3189 96\n\n` +
+    const message = `Authentic Edge NL\nNL15 REVO 9415 3189 96\n\n` +
         `Voornaam: ${formData.get('voornaam')}\n` +
         `Achternaam: ${formData.get('achternaam')}\n` +
         `Adres: ${formData.get('adres')}\n` +
         `Maat: ${formData.get('maat')}\n\n` +
-        `SELECTION:\n` + cart.map(i => `- ${i.title} (${i.price})`).join('\n') +
-        `\n\nShipping: Akkoord met voorwaarden (+€7,25 per product).`;
+        `GEKOZEN PRODUCTEN:\n` + cart.map(i => `• ${i.title} (${i.price})`).join('\n') +
+        `\n\nVerzendkosten: €7,25 per product. Tikkie: +€1.`;
 
     try {
         const res = await fetch(`${API_BASE_URL}/api/messages/send`, {
             method: "POST",
             headers: { 
-                "Content-Type": "application/json",
+                "Content-Type": "application/json", 
                 "Authorization": `Bearer ${token}` 
             },
-            body: JSON.stringify({ message: details })
+            body: JSON.stringify({ message })
         });
 
         if (res.ok) {
-            alert("Inquiry successfully sent!");
             localStorage.removeItem('ae_cart');
             window.location.href = "user-messages.html";
         }
-    } catch (err) {
-        alert("Failed to send.");
-    }
+    } catch (e) { alert("Submission error."); }
+}
+
+function openCartDrawer() {
+    const drawer = document.getElementById('cartDrawer');
+    const overlay = document.getElementById('cartOverlay');
+    if(drawer) drawer.classList.add('open');
+    if(overlay) overlay.classList.add('show');
 }
