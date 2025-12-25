@@ -1,167 +1,116 @@
 import { API_BASE_URL } from "./config.js";
 
-// Initialize cart from storage
-let cart = JSON.parse(localStorage.getItem('ae_cart')) || [];
+// Initialize UI listeners as soon as the module loads
+document.addEventListener('DOMContentLoaded', () => {
+    setupCartUI();
+    setupModalListeners();
+    renderCartItems();
+});
 
-/**
- * Adds a product to the cart and updates UI
- */
 export function addToCart(product) {
-    if (cart.some(item => item.id === product.id)) {
-        // Open drawer even if already added so user knows where it is
-        toggleCartDrawer(true);
-        return;
+    let cart = JSON.parse(localStorage.getItem('ae_cart')) || [];
+    if (!cart.some(item => item.id === product.id)) {
+        cart.push({
+            id: product.id,
+            title: product.name || product.title,
+            price: product.price,
+            image: product.image || product.image_url
+        });
+        localStorage.setItem('ae_cart', JSON.stringify(cart));
     }
-
-    cart.push({
-        id: product.id,
-        title: product.title || product.name,
-        price: product.price,
-        image: product.image_url || product.image
-    });
-
-    saveAndRefresh();
-    toggleCartDrawer(true);
+    // Open UI automatically
+    document.getElementById('cartDrawer').classList.add('open');
+    document.getElementById('cartOverlay').classList.add('show');
+    renderCartItems();
 }
 
-/**
- * Removes an item by index
- */
-export function removeFromCart(index) {
-    cart.splice(index, 1);
-    saveAndRefresh();
+function setupCartUI() {
+    const drawer = document.getElementById('cartDrawer');
+    const overlay = document.getElementById('cartOverlay');
+    const closeBtn = document.getElementById('closeCart');
+    const checkoutBtn = document.getElementById('checkoutBtn');
+
+    const toggle = () => {
+        drawer.classList.toggle('open');
+        overlay.classList.toggle('show');
+    };
+
+    if (closeBtn) closeBtn.onclick = toggle;
+    if (overlay) overlay.onclick = toggle;
+    
+    // Clicking "Submit Inquiry" opens the Info Modal
+    if (checkoutBtn) {
+        checkoutBtn.onclick = () => {
+            const cart = JSON.parse(localStorage.getItem('ae_cart')) || [];
+            if (cart.length === 0) return alert("Your selection is empty.");
+            
+            drawer.classList.remove('open');
+            overlay.classList.remove('show');
+            document.getElementById('checkoutModal').style.display = 'flex';
+        };
+    }
 }
 
-/**
- * Clears entire cart
- */
-export function clearCart() {
-    cart = [];
-    saveAndRefresh();
+function setupModalListeners() {
+    const modal = document.getElementById('checkoutModal');
+    const form = document.getElementById('checkoutForm');
+    const closeBtn = document.getElementById('closeModal');
+
+    if (closeBtn) closeBtn.onclick = () => modal.style.display = 'none';
+
+    if (form) {
+        form.onsubmit = async (e) => {
+            e.preventDefault();
+            await sendInquiryWithDetails(new FormData(form));
+        };
+    }
 }
 
-function saveAndRefresh() {
-    localStorage.setItem('ae_cart', JSON.stringify(cart));
-    updateCartUI();
-    renderCartDrawer();
-}
-
-/**
- * Updates the floating badge count
- */
-function updateCartUI() {
-    const cartCount = document.getElementById('cartBadge');
-    if (cartCount) cartCount.innerText = cart.length;
-}
-
-/**
- * Generates the HTML for the sidebar list
- */
-export function renderCartDrawer() {
+export function renderCartItems() {
+    const cart = JSON.parse(localStorage.getItem('ae_cart')) || [];
     const list = document.getElementById('cartItemsList');
+    const badge = document.getElementById('cartBadge');
+    
+    if (badge) badge.innerText = cart.length;
     if (!list) return;
-
-    if (cart.length === 0) {
-        list.innerHTML = '<p class="empty-msg">Your selection is empty.</p>';
-        return;
-    }
 
     list.innerHTML = cart.map((item, index) => `
         <div class="cart-item">
-            <img src="${item.image}" alt="${item.title}">
+            <img src="${item.image}" alt="${item.title}" style="width:60px; height:60px; object-fit:cover; border-radius:8px;">
             <div class="cart-item-info">
                 <h4>${item.title}</h4>
                 <p>${item.price}</p>
-                <button class="remove-link" onclick="handleRemove(${index})">Remove</button>
+                <button class="remove-link" onclick="removeFromCart(${index})">Remove</button>
             </div>
         </div>
     `).join('');
 }
 
-/**
- * Formats cart into ONE message and sends to the existing message table
- */
-export async function submitCartInquiry() {
+window.removeFromCart = (index) => {
+    let cart = JSON.parse(localStorage.getItem('ae_cart')) || [];
+    cart.splice(index, 1);
+    localStorage.setItem('ae_cart', JSON.stringify(cart));
+    renderCartItems();
+};
+
+async function sendInquiryWithDetails(formData) {
     const token = localStorage.getItem("token");
+    const cart = JSON.parse(localStorage.getItem('ae_cart')) || [];
 
     if (!token) {
-        alert("Please sign in to submit your selection.");
+        alert("Please sign in first.");
         window.location.href = "login.html";
         return;
     }
 
-    if (cart.length === 0) {
-        alert("Selection is empty.");
-        return;
-    }
-
-    // Convert selection array into a single clean text block
-    const itemListString = cart.map(i => `• ${i.title} (${i.price})`).join('\n');
-    const finalInquiry = `CONCIERGE SELECTION INQUIRY:\n\n${itemListString}\n\nI would like more information on these pieces.`;
-
-    try {
-        const res = await fetch(`${API_BASE_URL}/api/messages/send`, {
-            method: "POST",
-            headers: { 
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
-            },
-            body: JSON.stringify({ 
-                message: finalInquiry 
-            })
-        });
-
-        if (res.ok) {
-            alert("Inquiry sent to our concierge team.");
-            clearCart();
-            window.location.href = "user-messages.html";
-        } else {
-            throw new Error("Failed to send");
-        }
-    } catch (err) {
-        console.error(err);
-        alert("Failed to send inquiry. Please try again.");
-    }
-}
-
-/**
- * Helper to open/close drawer
- */
-function toggleCartDrawer(isOpen) {
-    const drawer = document.getElementById('cartDrawer');
-    const overlay = document.getElementById('cartOverlay');
-    if (isOpen) {
-        drawer?.classList.add('open');
-        overlay?.classList.add('show');
-    } else {
-        drawer?.classList.remove('open');
-        overlay?.classList.remove('show');
-    }
-}
-// Function to show the modal instead of sending immediately
-export function openCheckoutModal() {
-    document.getElementById('checkoutModal').style.display = 'flex';
-}
-
-// Handle the final form submission
-document.getElementById('checkoutForm')?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const token = localStorage.getItem("token");
-    const cart = JSON.parse(localStorage.getItem('ae_cart')) || [];
-    const formData = new FormData(e.target);
-    
-    // 1. Gather form data into a readable string
-    let clientInfo = "--- LEVERINGSGEGEVENS ---\n";
-    formData.forEach((value, key) => {
-        clientInfo += `${key.charAt(0).toUpperCase() + key.slice(1)}: ${value}\n`;
-    });
-
-    // 2. Format cart items
-    const itemList = cart.map(i => `• ${i.title} (${i.price})`).join('\n');
-
-    // 3. Combine everything
-    const finalMessage = `NIEUWE BESTELLING INQUIRY:\n\n${clientInfo}\n\nGEKOZEN PRODUCTEN:\n${itemList}\n\nOvereengekomen: Akkoord met verzendvoorwaarden.`;
+    // Prepare the text block exactly as requested
+    const details = `Authentic Edge NL\nNL15 REVO 9415 3189 96\n\n` +
+        `Voornaam: ${formData.get('voornaam')}\n` +
+        `Achternaam: ${formData.get('achternaam')}\n` +
+        `Adres: ${formData.get('adres')}\n` +
+        `Maat: ${formData.get('maat')}\n\n` +
+        `SELECTION:\n` + cart.map(i => `- ${i.title} (${i.price})`).join('\n') +
+        `\n\nShipping: Akkoord met voorwaarden (+€7,25 per product).`;
 
     try {
         const res = await fetch(`${API_BASE_URL}/api/messages/send`, {
@@ -170,18 +119,15 @@ document.getElementById('checkoutForm')?.addEventListener('submit', async (e) =>
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${token}` 
             },
-            body: JSON.stringify({ message: finalMessage })
+            body: JSON.stringify({ message: details })
         });
 
         if (res.ok) {
-            alert("Bestelling succesvol verzonden! We nemen contact met u op via de chat.");
+            alert("Inquiry successfully sent!");
             localStorage.removeItem('ae_cart');
             window.location.href = "user-messages.html";
         }
     } catch (err) {
-        alert("Fout bij verzenden. Probeer het opnieuw.");
+        alert("Failed to send.");
     }
-});
-
-// Make remove function globally accessible for the inline HTML buttons
-window.handleRemove = (index) => removeFromCart(index);
+}
