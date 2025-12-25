@@ -168,5 +168,87 @@ document.getElementById("add-product-form")?.addEventListener("submit", async (e
         console.error("Add failed:", error);
     }
 });
+/* -------------------------------------------------------
+   EDIT MODAL IMAGE SWITCHER
+------------------------------------------------------- */
+const editRadioGroup = document.querySelectorAll('input[name="editImageType"]');
+const editUrlRow = document.getElementById('edit-image-url-row');
+const editUploadRow = document.getElementById('edit-image-upload-row');
+
+editRadioGroup.forEach(radio => {
+    radio.addEventListener('change', () => {
+        const isUrl = radio.value === "url";
+        if (editUrlRow) editUrlRow.style.display = isUrl ? 'block' : 'none';
+        if (editUploadRow) editUploadRow.style.display = isUrl ? 'none' : 'block';
+    });
+});
+
+/* -------------------------------------------------------
+   OPEN EDIT MODAL (Populate fields)
+------------------------------------------------------- */
+function openEditModal(p) {
+    document.getElementById("edit-product-id").value = p.id;
+    document.getElementById("edit-name").value = p.name || "";
+    document.getElementById("edit-description").value = p.description || "";
+    document.getElementById("edit-image").value = p.image || "";
+    document.getElementById("edit-gender").value = p.gender || "";
+    document.getElementById("edit-quality").value = p.quality || "";
+    document.getElementById("edit-availability").value = p.availability || "";
+
+    // Reset image rows to URL by default when opening
+    document.querySelector('input[name="editImageType"][value="url"]').checked = true;
+    if (editUrlRow) editUrlRow.style.display = 'block';
+    if (editUploadRow) editUploadRow.style.display = 'none';
+
+    const modal = document.getElementById("edit-modal");
+    if (modal) modal.style.display = "flex";
+}
+
+/* -------------------------------------------------------
+   SUBMIT EDIT PRODUCT
+------------------------------------------------------- */
+document.getElementById("edit-product-form")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const token = localStorage.getItem("token");
+    const id = document.getElementById("edit-product-id").value;
+
+    const fd = new FormData();
+    fd.append("name", document.getElementById("edit-name").value.trim());
+    fd.append("description", document.getElementById("edit-description").value.trim());
+    fd.append("gender", document.getElementById("edit-gender").value.trim());
+    fd.append("quality", document.getElementById("edit-quality").value.trim());
+    fd.append("availability", document.getElementById("edit-availability").value.trim());
+
+    const imageType = document.querySelector('input[name="editImageType"]:checked').value;
+    
+    if (imageType === "upload") {
+        const fileIn = document.getElementById('edit-image-upload');
+        if (fileIn.files[0]) {
+            fd.append("imageFile", fileIn.files[0]);
+        }
+    } else {
+        const imageUrl = document.getElementById("edit-image").value.trim();
+        fd.append("image", imageUrl);
+    }
+
+    try {
+        const res = await fetch(`${API_BASE_URL}/api/products/${id}`, {
+            method: "PUT",
+            headers: { Authorization: `Bearer ${token}` },
+            body: fd // Browser handles boundary for FormData automatically
+        });
+
+        if (res.ok) {
+            alert("Product updated successfully.");
+            closeEditModal();
+            loadProducts();
+        } else {
+            const err = await res.text();
+            alert("Update failed: " + err);
+        }
+    } catch (error) {
+        console.error("Update error:", error);
+    }
+});
 
 document.addEventListener("DOMContentLoaded", loadProducts);

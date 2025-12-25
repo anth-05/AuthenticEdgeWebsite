@@ -112,13 +112,13 @@
       </div>
     </section>
   </main>
-<div id="edit-modal" class="modal" style="display:none; position: fixed; inset: 0; z-index: 9999; justify-content: center; align-items: center;">
-    <div class="modal-content">
+<div id="edit-modal" class="modal" style="display:none; position: fixed; inset: 0; z-index: 9999; justify-content: center; align-items: center; background: rgba(0,0,0,0.5);">
+    <div class="modal-content" style="background: white; padding: 30px; border-radius: 12px; width: 500px; max-height: 90vh; overflow-y: auto;">
         <div class="section-header">
             <span class="eyebrow">Inventory Control</span>
             <h2>Update Product</h2>
         </div>
-        <form id="edit-product-form" class="editorial-admin-form">
+        <form id="edit-product-form" class="editorial-admin-form" enctype="multipart/form-data">
             <input type="hidden" id="edit-product-id" />
             
             <div class="form-group">
@@ -126,9 +126,23 @@
                 <input type="text" id="edit-name" required />
             </div>
 
-            <div class="form-group">
-                <label>Image URL</label>
+            <div class="form-row type-selector" style="margin: 15px 0;">
+                <label class="radio-label">
+                    <input type="radio" name="editImageType" value="url" checked> <span>Use URL</span>
+                </label>
+                <label class="radio-label">
+                    <input type="radio" name="editImageType" value="upload"> <span>Upload New File</span>
+                </label>
+            </div>
+
+            <div class="form-group" id="edit-image-url-row">
+                <label>Current/New Image URL</label>
                 <input type="url" id="edit-image" />
+            </div>
+
+            <div class="form-group" id="edit-image-upload-row" style="display:none;">
+                <label>Upload New Image (Replaces current)</label>
+                <input type="file" id="edit-image-upload" accept="image/*" />
             </div>
 
             <div class="form-row" style="display: flex; gap: 20px;">
@@ -140,15 +154,11 @@
                     <label>Quality</label>
                     <input type="text" id="edit-quality" />
                 </div>
-                <div class="form-group">
-                  <label>Availability Status</label>
-                  <input type="text" name="availability" placeholder="In Stock / Coming Soon" />
-              </div>
             </div>
 
             <div class="form-group">
-                <label>Status</label>
-                <input type="text" id="edit-availability" />
+                <label>Availability Status</label>
+                <input type="text" id="edit-availability" placeholder="In Stock / Coming Soon" />
             </div>
 
             <div class="form-group">
@@ -156,7 +166,7 @@
                 <textarea id="edit-description" rows="3"></textarea>
             </div>
 
-            <div style="display: flex; gap: 15px; margin-top: 10px;">
+            <div style="display: flex; gap: 15px; margin-top: 20px;">
                 <button type="submit" class="btn-black">Save Changes</button>
                 <button type="button" class="btn-black" style="background: #fff; color: #000; border: 1px solid #000;" onclick="closeEditModal()">Cancel</button>
             </div>
