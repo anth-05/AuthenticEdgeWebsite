@@ -96,7 +96,9 @@ async function deleteProduct(id) {
         if (res.ok) loadProducts();
     } catch (e) { console.error(e); }
 }
-
+/* -------------------------------------------------------
+   OPEN EDIT MODAL (Populate fields)
+------------------------------------------------------- */
 function openEditModal(p) {
     document.getElementById("edit-product-id").value = p.id;
     document.getElementById("edit-name").value = p.name || "";
@@ -106,10 +108,14 @@ function openEditModal(p) {
     document.getElementById("edit-quality").value = p.quality || "";
     document.getElementById("edit-availability").value = p.availability || "";
 
+    // Reset image rows to URL by default when opening
+    document.querySelector('input[name="editImageType"][value="url"]').checked = true;
+    if (editUrlRow) editUrlRow.style.display = 'block';
+    if (editUploadRow) editUploadRow.style.display = 'none';
+
     const modal = document.getElementById("edit-modal");
     if (modal) modal.style.display = "flex";
 }
-
 window.closeEditModal = () => {
     const modal = document.getElementById("edit-modal");
     if (modal) modal.style.display = "none";
@@ -183,26 +189,6 @@ editRadioGroup.forEach(radio => {
     });
 });
 
-/* -------------------------------------------------------
-   OPEN EDIT MODAL (Populate fields)
-------------------------------------------------------- */
-function openEditModal(p) {
-    document.getElementById("edit-product-id").value = p.id;
-    document.getElementById("edit-name").value = p.name || "";
-    document.getElementById("edit-description").value = p.description || "";
-    document.getElementById("edit-image").value = p.image || "";
-    document.getElementById("edit-gender").value = p.gender || "";
-    document.getElementById("edit-quality").value = p.quality || "";
-    document.getElementById("edit-availability").value = p.availability || "";
-
-    // Reset image rows to URL by default when opening
-    document.querySelector('input[name="editImageType"][value="url"]').checked = true;
-    if (editUrlRow) editUrlRow.style.display = 'block';
-    if (editUploadRow) editUploadRow.style.display = 'none';
-
-    const modal = document.getElementById("edit-modal");
-    if (modal) modal.style.display = "flex";
-}
 
 /* -------------------------------------------------------
    SUBMIT EDIT PRODUCT
