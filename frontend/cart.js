@@ -76,27 +76,36 @@ function initModalLogic() {
 
 export function refreshCartDisplay() {
     const cart = JSON.parse(localStorage.getItem('ae_cart')) || [];
-    const list = document.getElementById('cartItemsList');
+    
+    // 1. Update the Badge (The total number)
     const badge = document.getElementById('cartBadge');
-
-    if (badge) badge.innerText = cart.length;
-    if (!list) return;
-
-    if (cart.length === 0) {
-        list.innerHTML = '<p style="padding: 20px; color: #888;">No items selected.</p>';
-        return;
+    if (badge) {
+        badge.innerText = cart.length;
+        
+        // Optional: Add a visual "thump" effect so the user knows it updated
+        if (cart.length > 0) {
+            badge.style.display = 'flex'; // Ensure it's visible
+        }
     }
 
-    list.innerHTML = cart.map((item, index) => `
-        <div class="cart-item">
-            <img src="${item.image}" alt="${item.title}" style="width:50px; height:50px; object-fit:cover;">
-            <div class="cart-item-info">
-                <h4>${item.title}</h4>
-                <p>${item.price}</p>
-                <button class="remove-link" onclick="removeFromSelection(${index})">Remove</button>
-            </div>
-        </div>
-    `).join('');
+    // 2. Update the Drawer List (for when they do eventually open it)
+    const list = document.getElementById('cartItemsList');
+    if (list) {
+        if (cart.length === 0) {
+            list.innerHTML = '<p style="padding: 20px; color: #888; text-align:center;">No items selected.</p>';
+        } else {
+            list.innerHTML = cart.map((item, index) => `
+                <div class="cart-item">
+                    <img src="${item.image}" alt="${item.title}">
+                    <div class="cart-item-info">
+                        <h4>${item.title}</h4>
+                        <p>${item.price}</p>
+                        <button class="remove-link" onclick="removeFromSelection(${index})">Remove</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+    }
 }
 
 window.removeFromSelection = (index) => {
