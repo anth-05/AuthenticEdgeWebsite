@@ -158,21 +158,36 @@ app.put("/api/products/:id", authenticateToken, verifyAdmin, upload.single("imag
     const existing = await pool.query("SELECT * FROM products WHERE id=$1", [id]);
     if (existing.rowCount === 0) return res.status(404).json({ error: "Product not found" });
     
-    const { name, description, image: imageUrl, gender, quality, availability } = req.body;
+    // 1. Added sort_index to the destructuring
+    const { name, description, image: imageUrl, gender, quality, availability, sort_index } = req.body;
     let finalImage = imageUrl || existing.rows[0].image;
 
     if (req.file) {
       finalImage = req.file.path || req.file.secure_url || `/uploads/products/${req.file.filename}`;
-      // Logic to delete old local file could go here
     }
 
+    // 2. Updated SQL query to include sort_index=$7
+    // 3. Updated parameter array to include the value and shifted 'id' to index $8
     const result = await pool.query(
-      `UPDATE products SET name=$1, description=$2, image=$3, gender=$4, quality=$5, availability=$6
-       WHERE id=$7 RETURNING *`,
-      [sanitize(name), sanitize(description), finalImage, sanitize(gender), sanitize(quality), sanitize(availability), id]
+      `UPDATE products 
+       SET name=$1, description=$2, image=$3, gender=$4, quality=$5, availability=$6, sort_index=$7
+       WHERE id=$8 RETURNING *`,
+      [
+        sanitize(name), 
+        sanitize(description), 
+        finalImage, 
+        sanitize(gender), 
+        sanitize(quality), 
+        sanitize(availability), 
+        parseInt(sort_index) || 0, // Ensure it's saved as a number
+        id
+      ]
     );
+    
     res.json(result.rows[0]);
-  } catch (err) { respondServerError(res, err, "Failed to update product"); }
+  } catch (err) { 
+    respondServerError(res, err, "Failed to update product"); 
+  }
 });
 
 // Use the same 'upload' middleware you used for products
@@ -594,7 +609,6 @@ app.post('/api/messages/bulk-inquiry', authenticateToken, async (req, res) => {
     }
 });
 async function runMigration() {
-    const connection = await mysql.createConnection(dbConfig);
     console.log("Connecting to database...");
 
     try {
