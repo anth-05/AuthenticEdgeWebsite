@@ -44,7 +44,8 @@ async function loadProducts() {
         let products = await res.json();
         
         // --- ADDED: SORT LOGIC FOR ADMIN TABLE ---
-        products.sort((a, b) => (a.sort_index || 0) - (b.sort_index || 0));
+        // High to Low: Highest sort_index appears first
+        products.sort((a, b) => (b.sort_index || 0) - (a.sort_index || 0));
 
         if (!products.length) {
             tbody.innerHTML = "<tr><td colspan='7'>No inventory recorded.</td></tr>";
