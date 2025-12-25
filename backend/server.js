@@ -593,5 +593,27 @@ app.post('/api/messages/bulk-inquiry', authenticateToken, async (req, res) => {
         res.status(500).json({ error: "Failed to send inquiry" });
     }
 });
+async function runMigration() {
+    const connection = await mysql.createConnection(dbConfig);
+    console.log("Connecting to database...");
 
+    try {
+        // The command to update your table structure
+        const sql = `ALTER TABLE products ADD COLUMN sort_index INT DEFAULT 0;`;
+        
+        await pool.query(sql);
+        console.log("✅ Success: 'sort_index' column added to 'products' table.");
+    } catch (err) {
+        if (err.errno === 1060) {
+            console.log("⚠️ Notice: Column 'sort_index' already exists.");
+        } else {
+            console.error("❌ Error running migration:", err.message);
+        }
+    } finally {
+        await connection.end();
+        process.exit();
+    }
+}
+
+runMigration();
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
