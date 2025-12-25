@@ -27,10 +27,6 @@ const contactLimiter = rateLimit({
   max: 5, // Limit each IP to 5 contact requests per window
   message: { success: false, error: "Too many requests. Please try again later." }
 });
-const verifyUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.RECAPTCHA_SECRET}&response=${req.body.recaptchaToken}`;
-const recaptchaRes = await fetch(verifyUrl, { method: 'POST' });
-const recaptchaData = await recaptchaRes.json();
-
 
 /* ---------------- DIRECTORY SETUP ---------------- */
 const UPLOADS_DIR = path.join(process.cwd(), "uploads");
