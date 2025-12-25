@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap">
   <link rel="stylesheet" href="theme.css">
   <link rel="stylesheet" href="product.css">
+  <link rel="stylesheet" href="cart.css">
 </head>
 <body class="products-page">
 
@@ -35,7 +36,67 @@
     </div>
   </section>
 </main>
+<div id="cartOverlay" class="cart-overlay"></div>
+<div id="cartDrawer" class="cart-drawer">
+    <div class="cart-header">
+        <h3>Concierge Selection</h3>
+        <button id="closeCart" class="close-btn">&times;</button>
+    </div>
 
+    <div id="cartItemsList" class="cart-items">
+        <p class="empty-msg">Your selection is empty.</p>
+    </div>
+
+    <div class="cart-footer">
+        <div class="cart-total">
+            <span>Total Items:</span>
+            <span id="cartCountDisplay">0</span>
+        </div>
+        <button id="checkoutBtn" class="btn-checkout">Submit Inquiry</button>
+    </div>
+</div>
+
+<div id="cartTrigger" class="cart-trigger">
+    <span>Selection</span>
+    <span id="cartBadge" class="badge">0</span>
+</div>
+<div id="checkoutModal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Leveringsgegevens</h2>
+            <button id="closeModal" class="close-modal">&times;</button>
+        </div>
+        
+        <div class="bank-info">
+            <strong>Authentic Edge NL</strong><br>
+            NL15 REVO 9415 3189 96
+        </div>
+
+        <form id="checkoutForm">
+            <div class="form-grid">
+                <input type="text" name="voornaam" placeholder="Voornaam" required>
+                <input type="text" name="achternaam" placeholder="Achternaam" required>
+                <input type="text" name="adres" placeholder="Adres" required>
+                <input type="text" name="stad" placeholder="Stad" required>
+                <input type="text" name="postcode" placeholder="Postcode" required>
+                <input type="text" name="land" placeholder="Land" required>
+                <input type="text" name="regio" placeholder="Regio" required>
+                <input type="text" name="maat" placeholder="Maat (Size)" required>
+                <input type="email" name="email" placeholder="E-Mail" required>
+            </div>
+
+            <div class="shipping-info">
+                <h4>Hoe werkt de verzending?</h4>
+                <p>U krijgt met 2-5 Dagen tijd foto’s met uw product na dat u het product goedkeurt voor verzending zal het naar u opgestuurd worden en dat kan 10-15 werkdagen duren.</p>
+                <p>Heeft u het goedgekeurd krijgt u 2-3 dagen later een track & trace code van MijnDhl.</p>
+                <p class="warning-text"><strong>LET OP:</strong> Bij een foute maatkeuze na de Quality Check is retourneren/refunden niet mogelijk. Alleen als u een verkeerd item ontvangt ‼️</p>
+                <p class="payment-note">Afgesproken Bedrag + €7,25 verzendkosten (Per product). VIA TIKKIE +€1 ‼️</p>
+            </div>
+
+            <button type="submit" class="final-submit-btn">Bevestig & Verstuur Selectie</button>
+        </form>
+    </div>
+</div>
 <footer class="site-footer">
     <p class="brand">the authentic edge</p>
     <div class="footer-right">

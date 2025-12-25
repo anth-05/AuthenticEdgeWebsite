@@ -1,5 +1,13 @@
 import { API_BASE_URL } from "./config.js";
+import { addToCart, submitCartInquiry } from "./cart.js";
 
+// Inside your renderProductDetails function, update the button:
+const msgBtn = document.getElementById('messageBtn');
+msgBtn.onclick = () => addToCart(product);
+
+// Inside your setupCartUI function:
+const checkoutBtn = document.getElementById('checkoutBtn');
+checkoutBtn.onclick = submitCartInquiry;
 document.addEventListener('DOMContentLoaded', async () => {
     const urlParams = new URLSearchParams(window.location.search);
     const productId = urlParams.get('id');
@@ -11,14 +19,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     try {
         const response = await fetch(`${API_BASE_URL}/api/products`);
-        
-        if (!response.ok) {
-            throw new Error(`Server responded with ${response.status}`);
-        }
-
         const products = await response.json();
-        
-        // Use loose equality (==) or String conversion to ensure IDs match correctly
         const product = products.find(p => String(p.id) === String(productId));
 
         if (product) {
@@ -27,90 +28,140 @@ document.addEventListener('DOMContentLoaded', async () => {
             showError("Product Not Found");
         }
     } catch (err) {
-        console.error("Connection Error:", err);
         showError("Unable to connect to archive");
     }
+
+    setupCartUI();
 });
 
-function showError(msg) {
-    const titleElement = document.getElementById('productTitle');
-    if (titleElement) titleElement.innerText = msg;
+/**
+ * Basic Cart UI Toggle
+ */
+function setupCartUI() {
+    const cartDrawer = document.getElementById('cartDrawer');
+    const cartOverlay = document.getElementById('cartOverlay');
+    const closeCart = document.getElementById('closeCart');
+    const checkoutBtn = document.getElementById('checkoutBtn');
+
+    const toggle = () => {
+        cartDrawer.classList.toggle('open');
+        cartOverlay.classList.toggle('show');
+        renderCartItems(); 
+    };
+
+    if (closeCart) closeCart.onclick = toggle;
+    if (cartOverlay) cartOverlay.onclick = toggle;
+    if (checkoutBtn) checkoutBtn.onclick = sendInquiry;
 }
 
-/**
- * Injects product data and sets up button listeners
- */
 function renderProductDetails(product) {
-    // 1. Update Image (Check for both possible property names)
-    const imgElement = document.getElementById('productImage');
-    if (imgElement) {
-        imgElement.src = product.image_url || product.image || '';
-        imgElement.alt = product.title || product.name || "Product Image";
-    }
-
-    // 2. Update Text Content (Handle potential 'undefined' by providing fallbacks)
     const title = product.title || product.name || "Untitled Product";
     const price = product.price || "Contact for Price";
     
+    // Update labels
     document.getElementById('productTitle').innerText = title;
     document.getElementById('productPrice').innerText = price;
-    document.getElementById('productDescription').innerText = product.description || "No description available.";
-    document.getElementById('productCategory').innerText = product.category || "";
+    document.getElementById('productDescription').innerText = product.description || "";
     
-    // 3. Update Status Tag
-    const statusTag = document.getElementById('productStatus');
-    const status = product.status || "Premium";
-    statusTag.innerText = status;
-    
-    // 4. Handle Sold Out state
+    const imgElement = document.getElementById('productImage');
+    if (imgElement) imgElement.src = product.image_url || product.image || '';
+
     const msgBtn = document.getElementById('messageBtn');
-    if (status.toLowerCase() === 'sold out') {
-        msgBtn.innerText = "Archive Only (Sold Out)";
-        msgBtn.style.backgroundColor = "#ccc";
-        msgBtn.style.cursor = "not-allowed";
+    if ((product.status || "").toLowerCase() === 'sold out') {
+        msgBtn.innerText = "Sold Out";
         msgBtn.disabled = true;
     } else {
-        // Set up Inquiry click listener only if item is available
-        msgBtn.onclick = () => handleInquiry(title, price, product.id);
+        msgBtn.innerText = "Add to Selection";
+        msgBtn.onclick = () => {
+            addToSelection(product);
+            // Open the drawer automatically
+            document.getElementById('cartDrawer').classList.add('open');
+            document.getElementById('cartOverlay').classList.add('show');
+        };
     }
-
-    document.title = `${title} | Authentic Edge`;
 }
 
-/**
- * Sends inquiry message to admin
- */
-async function handleInquiry(title, price, id) {
-    const token = localStorage.getItem("token");
+// --- CORE CART LOGIC ---
+
+function addToSelection(product) {
+    let cart = JSON.parse(localStorage.getItem('ae_cart')) || [];
+    if (!cart.some(item => item.id === product.id)) {
+        cart.push({
+            id: product.id,
+            title: product.title || product.name,
+            price: product.price,
+            image: product.image_url || product.image
+        });
+        localStorage.setItem('ae_cart', JSON.stringify(cart));
+        renderCartItems();
+    }
+}
+
+function renderCartItems() {
+    const cart = JSON.parse(localStorage.getItem('ae_cart')) || [];
+    const list = document.getElementById('cartItemsList');
     
+    if (!list) return;
+
+    if (cart.length === 0) {
+        list.innerHTML = '<p class="empty-msg">No items selected.</p>';
+        return;
+    }
+
+    list.innerHTML = cart.map((item, index) => `
+        <div class="cart-item">
+            <img src="${item.image}" alt="${item.title}" style="width:50px; height:50px; object-fit:cover;">
+            <div class="cart-item-info">
+                <h4>${item.title}</h4>
+                <p>${item.price}</p>
+                <button class="remove-link" onclick="removeFromCart(${index})">Remove</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+window.removeFromCart = (index) => {
+    let cart = JSON.parse(localStorage.getItem('ae_cart')) || [];
+    cart.splice(index, 1);
+    localStorage.setItem('ae_cart', JSON.stringify(cart));
+    renderCartItems();
+};
+
+/**
+ * Sends whatever is in the cart to the internal messages table
+ */
+async function sendInquiry() {
+    const token = localStorage.getItem("token");
+    const cart = JSON.parse(localStorage.getItem('ae_cart')) || [];
+
     if (!token) {
         alert("Please sign in to send an inquiry.");
         window.location.href = "login.html";
         return;
     }
 
-    const inquiryMessage = `INQUIRY: ${title} (${price}). I would like more information regarding this piece.`;
+    if (cart.length === 0) return;
+
+    // Convert selection array into one text message
+    const listString = cart.map(i => `- ${i.title} (${i.price})`).join('\n');
+    const finalMessage = `I am interested in the following selection:\n\n${listString}`;
 
     try {
         const res = await fetch(`${API_BASE_URL}/api/messages/send`, {
             method: "POST",
-            headers: {
+            headers: { 
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
+                "Authorization": `Bearer ${token}` 
             },
-            body: JSON.stringify({ 
-                message: inquiryMessage,
-                productId: id 
-            })
+            body: JSON.stringify({ message: finalMessage })
         });
 
         if (res.ok) {
-    alert("Inquiry sent to our concierge team.");
-    // Redirect to the chat page so they can see the message in the stream
-    window.location.href = "user-messages.html"; 
-    }
+            alert("Selection sent to concierge.");
+            localStorage.removeItem('ae_cart');
+            window.location.href = "user-messages.html";
+        }
     } catch (err) {
-        console.error("Inquiry failed", err);
-        alert("Server error. Please try again later.");
+        alert("Server error. Please try again.");
     }
 }

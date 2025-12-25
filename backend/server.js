@@ -552,7 +552,46 @@ app.post("/api/contact", contactLimiter, async (req, res) => {
     }
 });
 
+app.post('/api/messages/bulk-inquiry', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.id; 
+        const { items, customNote } = req.body;
 
+        if (!items || items.length === 0) {
+            return res.status(400).json({ error: "Cart is empty" });
+        }
 
+        // 1. Format the cart items for DB and Email
+        const itemList = items.map(item => `• ${item.title} (${item.price || 'Price on Request'})`).join('\n');
+        const finalMessage = `NEW CONCIERGE SELECTION:\n${itemList}\n\nClient Note: ${customNote || 'No additional notes.'}`;
+
+        // 2. Insert into Database for Chat History
+        const result = await pool.query(
+            "INSERT INTO messages (user_id, sender, message, status) VALUES ($1, $2, $3, $4) RETURNING *",
+            [userId, 'user', finalMessage, 'unread']
+        );
+
+        // 3. ALERT THE ADMIN (Optional but Highly Recommended)
+        const mailOptions = {
+            from: `"Concierge Alert" <${process.env.CONTACT_EMAIL}>`,
+            to: "anthilori25@gmail.com", // Your personal email
+            subject: `New Selection from User #${userId}`,
+            text: `A user has submitted a new selection:\n\n${finalMessage}`
+        };
+        
+        // Use a non-blocking await or handle error silently so message still sends to DB
+        transporter.sendMail(mailOptions).catch(e => console.error("Admin Email Alert Failed", e));
+
+        res.json({ 
+            success: true, 
+            message: "Your selection has been sent to our concierge.",
+            data: result.rows[0] 
+        });
+
+    } catch (err) {
+        console.error("Bulk Message Error:", err);
+        res.status(500).json({ error: "Failed to send inquiry" });
+    }
+});
 
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));

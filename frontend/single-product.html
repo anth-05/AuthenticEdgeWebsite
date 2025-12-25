@@ -6,7 +6,7 @@
     <title>Product Details | Authentic Edge</title>
     <link rel="stylesheet" href="theme.css">
     <link rel="stylesheet" href="single-product.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="cart.css"> <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
@@ -16,78 +16,88 @@
   <div class="header-container">
     <h1 class="logo"><a href="index.html">Authentic Edge</a></h1>
     <nav class="nav-menu" id="header-buttons"></nav>
+    
+    <div id="cartTrigger" class="cart-icon-container" style="cursor:pointer; position: relative;">
+        <span>Selection</span>
+        <span id="cartBadge" class="badge">0</span>
+    </div>
   </div>
 </header>
 
-    <main class="product-main">
-        <div class="navigation-header">
-            <a href="/product" class="return-btn">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-                Back to Products
-            </a>
+<main class="product-main">
+    <div class="navigation-header">
+        <a href="collection.html" class="return-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            Back to Products
+        </a>
+    </div>
+
+    <div class="product-page-container">
+        <div class="product-gallery">
+            <div class="main-image-container">
+                <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" 
+                    alt="Loading..." 
+                    id="productImage" 
+                    class="main-product-image">
+            </div>
         </div>
 
-        <div class="product-page-container">
-            <div class="product-gallery">
-                <div class="main-image-container">
-                    <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" 
-                        alt="Loading..." 
-                        id="productImage" 
-                        class="main-product-image">
-                </div>
+        <div class="product-info-column">
+            <div class="info-header">
+                <span id="productStatus" class="product-status-tag">Premium</span>
+                <h1 id="productTitle" class="product-name">Loading Product...</h1>
+                <p id="productPrice" class="product-price">--</p>
             </div>
 
-            <div class="product-info-column">
-                <div class="info-header">
-                    <span id="productStatus" class="product-status-tag">Premium</span>
-                    <h1 id="productTitle" class="product-name">Loading Product...</h1>
-                    <p id="productPrice" class="product-price">--</p>
+            <div class="product-description-section">
+                <h3 class="section-label">Description & Fit</h3>
+                <p id="productDescription" class="description-text">
+                    Please wait while we retrieve the product details...
+                </p>
+            </div>
+
+            <button id="messageBtn" class="primary-btn">Add to Selection</button>
+
+            <div class="product-meta-grid">
+                <div class="meta-item">
+                    <span class="meta-label">Category</span>
+                    <span id="productCategory" class="meta-value">--</span>
                 </div>
-
-                <div class="product-description-section">
-                    <h3 class="section-label">Description & Fit</h3>
-                    <p id="productDescription" class="description-text">
-                        Please wait while we retrieve the product details from the archive.
-                    </p>
-                </div>
-
-                <button class="send-message-btn" id="messageBtn">
-                    Send Message
-                </button>
-
-                <div class="product-meta-grid">
-                    <div class="meta-item">
-                        <span class="meta-label">Category</span>
-                        <span id="productCategory" class="meta-value">--</span>
-                    </div>
-                    <div class="meta-item">
-                        <span class="meta-label">Shipping</span>
-                        <span class="meta-value">Standard (7 - 12 werkdagen)</span>
-                    </div>
+                <div class="meta-item">
+                    <span class="meta-label">Shipping</span>
+                    <span class="meta-value">Standard (7 - 12 werkdagen)</span>
                 </div>
             </div>
         </div>
-    </main>
+    </div>
+</main>
 
-    <footer class="site-footer">
-        <div class="footer-left">
-            <h2 class="brand">AUTHENTIC EDGE</h2>
+<div id="cartOverlay" class="cart-overlay"></div>
+<div id="cartDrawer" class="cart-drawer">
+    <div class="cart-header">
+        <h3>Concierge Selection</h3>
+        <button id="closeCart" class="close-btn">&times;</button>
+    </div>
+    <div id="cartItemsList" class="cart-items">
         </div>
-        <div class="footer-right">
-            <a href="#">Privacy</a>
-            <a href="#">Terms</a>
-            <a href="#">Contact</a>
-            <a href="#">Instagram</a>
-        </div>
-    </footer>
+    <div class="cart-footer">
+        <button id="checkoutBtn" class="btn-checkout">Submit Inquiry</button>
+    </div>
+</div>
 
-    <script>
-        document.getElementById('messageBtn').addEventListener('click', function() {
-            const title = document.getElementById('productTitle').innerText;
-            alert('Opening message console for: ' + title);
-        });
-    </script>
-    <script src="header.js"></script>
-    <script type="module" src="single-product.js"></script>
+<footer class="site-footer">
+    <div class="footer-left">
+        <h2 class="brand">AUTHENTIC EDGE</h2>
+    </div>
+    <div class="footer-right">
+        <a href="#">Privacy</a>
+        <a href="#">Terms</a>
+        <a href="#">Contact</a>
+        <a href="https://instagram.com/authenticedge">Instagram</a>
+    </div>
+</footer>
+
+<script src="header.js"></script>
+<script type="module" src="single-product.js"></script>
 </body>
 </html>
