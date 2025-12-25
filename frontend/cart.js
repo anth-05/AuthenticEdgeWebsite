@@ -118,46 +118,39 @@ async function processInquiry(formData) {
     const token = localStorage.getItem("token");
     const cart = JSON.parse(localStorage.getItem('ae_cart')) || [];
 
-    if (!token) {
-        alert("Please sign in to complete your inquiry.");
-        window.location.href = "login.html";
-        return;
-    }
+    if (!token) return (window.location.href = "login.html");
 
-    if (cart.length === 0) {
-        alert("Your selection is empty.");
-        return;
-    }
+    // Format the product list with numbering and clear spacing
+    const productList = cart.map((item, index) => 
+        `${index + 1}. PRODUCT: ${item.title.toUpperCase()}\n   PRICE: ${item.price || 'Contact for Price'}`
+    ).join('\n\n');
 
-    // 1. Collect ALL delivery info from the modal fields
-    // Ensure the 'name' attributes in your HTML match these strings
-    const deliveryInfo = `
---- GEGEVENS VOOR LEVERING ---
-Naam: ${formData.get('voornaam')} ${formData.get('achternaam')}
-Adres: ${formData.get('adres')}
-Postcode/Stad: ${formData.get('postcode')} ${formData.get('stad')}
-Land/Regio: ${formData.get('land')}, ${formData.get('regio')}
-Maat: ${formData.get('maat')}
-E-mail: ${formData.get('email')}
-`;
+    // The structured template for the producer
+    const message = `
+📦 NEW SELECTION INQUIRY: AUTHENTIC EDGE
+------------------------------------------
 
-    // 2. Collect ALL items currently in the selection
-    const itemDetails = cart.map(item => 
-        `- ${item.title} (${item.price || 'Contact for Price'})`
-    ).join('\n');
+👤 CUSTOMER DETAILS
+Name:       ${formData.get('voornaam')} ${formData.get('achternaam')}
+Email:      ${formData.get('email') || 'Not provided'}
+Size:       ${formData.get('maat')}
 
-    // 3. Combine everything into the final message block
-    const finalMessage = `
-Authentic Edge NL
-NL15 REVO 9415 3189 96
+📍 SHIPPING ADDRESS
+Address:    ${formData.get('adres')}
+Postcode:   ${formData.get('postcode')}
+City:       ${formData.get('stad')}
+Country:    ${formData.get('land')}
 
-${deliveryInfo}
+🛒 SELECTED ITEMS (${cart.length} total)
+------------------------------------------
+${productList}
 
---- GEKOZEN PRODUCTEN ---
-${itemDetails}
+------------------------------------------
+BANKING: AUTHENTIC EDGE NL
+IBAN:    NL15 REVO 9415 3189 96
 
-Totaal aantal items: ${cart.length}
-Overeengekomen: Afgesproken Bedrag + €7,25 verzendkosten per product + €1 Tikkie kosten.
+TOTAL: Agreed Price + Shipping (€7.25 p.p.) + €1 Tikkie fee.
+------------------------------------------
 `.trim();
 
     try {
@@ -167,18 +160,16 @@ Overeengekomen: Afgesproken Bedrag + €7,25 verzendkosten per product + €1 Ti
                 "Content-Type": "application/json", 
                 "Authorization": `Bearer ${token}` 
             },
-            body: JSON.stringify({ message: finalMessage })
+            body: JSON.stringify({ message })
         });
 
         if (res.ok) {
-            alert("Uw aanvraag is succesvol verzonden.");
+            alert("Inquiry successfully sent!");
             localStorage.removeItem('ae_cart');
             window.location.href = "user-messages.html";
-        } else {
-            throw new Error("Failed to send");
         }
     } catch (e) { 
-        alert("Er is een fout opgetreden bij het verzenden. Probeer het later opnieuw."); 
+        alert("Error sending inquiry."); 
     }
 }
 
