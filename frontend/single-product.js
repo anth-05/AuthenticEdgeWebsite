@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const productId = urlParams.get('id');
 
     if (!productId) {
-        window.location.href = 'collection.html';
+        window.location.href = 'product.html';
         return;
     }
 

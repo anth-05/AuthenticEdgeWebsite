@@ -95,7 +95,6 @@ if (document.readyState === "loading") {
 const cartDrawer = document.getElementById('cartDrawer');
 const cartOverlay = document.getElementById('cartOverlay');
 const cartTrigger = document.getElementById('cartTrigger');
-const closeCart = document.getElementById('closeCart');
 
 function toggleCart() {
     cartDrawer.classList.toggle('open');
@@ -103,5 +102,4 @@ function toggleCart() {
 }
 
 cartTrigger.addEventListener('click', toggleCart);
-closeCart.addEventListener('click', toggleCart);
 cartOverlay.addEventListener('click', toggleCart);
