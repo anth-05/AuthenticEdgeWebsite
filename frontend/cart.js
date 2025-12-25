@@ -118,15 +118,47 @@ async function processInquiry(formData) {
     const token = localStorage.getItem("token");
     const cart = JSON.parse(localStorage.getItem('ae_cart')) || [];
 
-    if (!token) return (window.location.href = "login.html");
+    if (!token) {
+        alert("Please sign in to complete your inquiry.");
+        window.location.href = "login.html";
+        return;
+    }
 
-    const message = `Authentic Edge NL\nNL15 REVO 9415 3189 96\n\n` +
-        `Voornaam: ${formData.get('voornaam')}\n` +
-        `Achternaam: ${formData.get('achternaam')}\n` +
-        `Adres: ${formData.get('adres')}\n` +
-        `Maat: ${formData.get('maat')}\n\n` +
-        `GEKOZEN PRODUCTEN:\n` + cart.map(i => `• ${i.title} (${i.price})`).join('\n') +
-        `\n\nVerzendkosten: €7,25 per product. Tikkie: +€1.`;
+    if (cart.length === 0) {
+        alert("Your selection is empty.");
+        return;
+    }
+
+    // 1. Collect ALL delivery info from the modal fields
+    // Ensure the 'name' attributes in your HTML match these strings
+    const deliveryInfo = `
+--- GEGEVENS VOOR LEVERING ---
+Naam: ${formData.get('voornaam')} ${formData.get('achternaam')}
+Adres: ${formData.get('adres')}
+Postcode/Stad: ${formData.get('postcode')} ${formData.get('stad')}
+Land/Regio: ${formData.get('land')}, ${formData.get('regio')}
+Maat: ${formData.get('maat')}
+E-mail: ${formData.get('email')}
+`;
+
+    // 2. Collect ALL items currently in the selection
+    const itemDetails = cart.map(item => 
+        `- ${item.title} (${item.price || 'Contact for Price'})`
+    ).join('\n');
+
+    // 3. Combine everything into the final message block
+    const finalMessage = `
+Authentic Edge NL
+NL15 REVO 9415 3189 96
+
+${deliveryInfo}
+
+--- GEKOZEN PRODUCTEN ---
+${itemDetails}
+
+Totaal aantal items: ${cart.length}
+Overeengekomen: Afgesproken Bedrag + €7,25 verzendkosten per product + €1 Tikkie kosten.
+`.trim();
 
     try {
         const res = await fetch(`${API_BASE_URL}/api/messages/send`, {
@@ -135,14 +167,19 @@ async function processInquiry(formData) {
                 "Content-Type": "application/json", 
                 "Authorization": `Bearer ${token}` 
             },
-            body: JSON.stringify({ message })
+            body: JSON.stringify({ message: finalMessage })
         });
 
         if (res.ok) {
+            alert("Uw aanvraag is succesvol verzonden.");
             localStorage.removeItem('ae_cart');
             window.location.href = "user-messages.html";
+        } else {
+            throw new Error("Failed to send");
         }
-    } catch (e) { alert("Submission error."); }
+    } catch (e) { 
+        alert("Er is een fout opgetreden bij het verzenden. Probeer het later opnieuw."); 
+    }
 }
 
 function openCartDrawer() {
