@@ -27,16 +27,17 @@ export function addToCart(product) {
 function initCartUI() {
     const drawer = document.getElementById('cartDrawer');
     const overlay = document.getElementById('cartOverlay');
-    const closeBtn = document.getElementById('closeCart'); // The "X" Button
+    const closeBtn = document.getElementById('closeCart');
     const trigger = document.getElementById('cartTrigger');
     const checkoutBtn = document.getElementById('checkoutBtn');
 
-    // Define specific Close function to ensure "X" works
+    // Add this guard clause
+    if (!drawer || !overlay) return; 
+
     const closeDrawer = () => {
         drawer.classList.remove('open');
         overlay.classList.remove('show');
     };
-
     const openDrawer = () => {
         drawer.classList.add('open');
         overlay.classList.add('show');
