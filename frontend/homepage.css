@@ -9,6 +9,10 @@
   padding: 0 10%; 
   background: #000;
 }
+a {
+  text-decoration: none;
+  color: inherit;
+}
 
 /* THE IMAGE & GRADIENT OVERLAY */
 .hero-bg-overlay {
