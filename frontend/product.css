@@ -192,3 +192,51 @@
     text-decoration: none;
     color: inherit;
 }
+/* Lower the filters so they don't hide behind the logo/menu */
+.filter-nav {
+    border-bottom: 1px solid #eee;
+    padding: 15px 0;
+    position: sticky;
+    top: 70px; /* Adjust this to your header's actual height */
+    background: #fff;
+    z-index: 100;
+}
+
+.filter-list {
+    display: flex;
+    list-style: none;
+    gap: 25px;
+    justify-content: center;
+    padding: 0 20px;
+    margin: 0;
+}
+
+/* Mobile swipeable tabs */
+@media (max-width: 768px) {
+    .filter-list {
+        justify-content: flex-start;
+        overflow-x: auto; /* Allows swiping left/right on phone */
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none; /* Hides scrollbar on Firefox */
+    }
+    
+    .filter-list::-webkit-scrollbar {
+        display: none; /* Hides scrollbar on Chrome/Safari */
+    }
+
+    .filter-btn {
+        white-space: nowrap; /* Prevents text wrapping */
+        padding: 8px 12px;
+        background: #f9f9f9;
+        border-radius: 50px; /* Pills look better on mobile */
+    }
+    
+    .filter-btn.active {
+        background: #000;
+        color: #fff;
+    }
+    
+    .filter-btn.active::after {
+        display: none; /* Remove underline on mobile pill version */
+    }
+}
