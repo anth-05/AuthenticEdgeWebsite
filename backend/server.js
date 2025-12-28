@@ -283,20 +283,35 @@ app.put("/api/users/:id", authenticateToken, verifyAdmin, async (req, res) => {
 
 // DELETE User
 app.delete("/api/users/:id", authenticateToken, verifyAdmin, async (req, res) => {
-    try {
-        const { id } = req.params;
+    const { id } = req.params;
+    const client = await pool.connect(); // Use a client for a transaction
 
-        // The database schema uses ON DELETE CASCADE, 
-        // so deleting the user will automatically remove their subscriptions and messages.
-        const result = await pool.query("DELETE FROM users WHERE id = $1 RETURNING id", [id]);
+    try {
+        await client.query('BEGIN');
+
+        // 1. Delete subscriptions first (Manual Cascade)
+        await client.query("DELETE FROM subscriptions WHERE user_id = $1", [id]);
+
+        // 2. Delete messages (if any)
+        await client.query("DELETE FROM messages WHERE user_id = $1", [id]);
+
+        // 3. Delete the actual user
+        const result = await client.query("DELETE FROM users WHERE id = $1 RETURNING id", [id]);
 
         if (result.rowCount === 0) {
+            await client.query('ROLLBACK');
             return res.status(404).json({ error: "User not found" });
         }
 
-        res.json({ message: "User permanently removed" });
+        await client.query('COMMIT');
+        res.json({ message: "User and all related data permanently removed" });
+
     } catch (err) {
-        respondServerError(res, err, "Failed to delete user");
+        await client.query('ROLLBACK');
+        console.error("Delete Error:", err);
+        res.status(500).json({ error: "Database conflict: Could not delete user." });
+    } finally {
+        client.release();
     }
 });
 // subscription route
