@@ -1,64 +1,83 @@
 import { API_BASE_URL } from "./config.js";
 
 document.addEventListener("DOMContentLoaded", () => {
-  const registerForm = document.getElementById("registerForm");
-  if (registerForm) {
-    registerForm.addEventListener("submit", handleRegister);
-  }
+    // MATCHED ID: register-form (dash-case to match HTML)
+    const registerForm = document.getElementById("register-form");
+    if (registerForm) {
+        registerForm.addEventListener("submit", handleRegister);
+    }
 });
 
 async function handleRegister(e) {
-  e.preventDefault();
+    e.preventDefault();
 
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value.trim();
-  const submitBtn = document.getElementById("registerBtn");
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value.trim();
+    const submitBtn = document.getElementById("registerBtn");
+    const feedback = document.getElementById("register-feedback");
 
-  // 1. Enhanced Validation
-  if (!email || !password) {
-    alert("Please provide both email and password.");
-    return;
-  }
+    // Clear previous feedback
+    if (feedback) feedback.textContent = "";
 
-  if (password.length < 6) {
-    alert("Security requirement: Password must be at least 6 characters.");
-    return;
-  }
-
-  try {
-    // UI Feedback
-    if (submitBtn) {
-      submitBtn.disabled = true;
-      submitBtn.innerText = "Processing Application...";
+    // 1. Validation
+    if (!email || !password) {
+        showFeedback("Please provide both email and password.");
+        return;
     }
 
-    // 2. API Call
-    const res = await fetch(`${API_BASE_URL}/api/register`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ 
-        email, 
-        password, 
-        role: "user" // Default role
-      })
-    });
+    if (password.length < 6) {
+        showFeedback("Security requirement: Password must be at least 6 characters.");
+        return;
+    }
 
-    const data = await res.json();
+    try {
+        // UI Feedback
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerText = "Processing Application...";
+        }
 
-    if (res.ok) {
-      alert("Membership created successfully. Welcome to Authentic Edge.");
-      window.location.replace("login.html");
+        // 2. API Call
+        const res = await fetch(`${API_BASE_URL}/api/register`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ 
+                email, 
+                password, 
+                role: "user" 
+            })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+            // Success
+            showFeedback("Membership created. Welcome.", "success");
+            setTimeout(() => {
+                window.location.replace("login.html");
+            }, 1500);
+        } else {
+            // Server Error
+            showFeedback(data.error || "Registration encountered an issue.");
+        }
+    } catch (err) {
+        console.error("Registration Error:", err);
+        showFeedback("Connection error. Please try again.");
+    } finally {
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerText = "Create Account";
+        }
+    }
+}
+
+// Helper function to handle the UI feedback div
+function showFeedback(message, type = "error") {
+    const feedback = document.getElementById("register-feedback");
+    if (feedback) {
+        feedback.style.color = type === "success" ? "#155724" : "#d00000";
+        feedback.textContent = message;
     } else {
-      alert(data.error || "Registration encountered an issue.");
+        alert(message); // Fallback if div is missing
     }
-  } catch (err) {
-    console.error("Registration Error:", err);
-    alert("Connection error. Please check your internet and try again.");
-  } finally {
-    // Reset UI state
-    if (submitBtn) {
-      submitBtn.disabled = false;
-      submitBtn.innerText = "Register";
-    }
-  }
 }
