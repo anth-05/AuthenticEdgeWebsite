@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
             console.log("Admin session terminated.");
             
             // 3. Redirect
-            window.location.replace(".login.html"); 
+            window.location.replace("./login.html"); 
             // .replace is better for logout as it prevents the user 
             // from clicking the "Back" button to see the admin panel.
         });
