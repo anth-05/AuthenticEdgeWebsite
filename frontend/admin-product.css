@@ -218,3 +218,127 @@
     font-weight: 800;
     border-bottom-color: #000;
 }
+/* FORM STYLING */
+.editorial-admin-form {
+    background: #fff;
+    border: 1px solid #eee;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    margin-bottom: 50px;
+}
+
+/* ... (Include all your existing desktop styles here) ... */
+
+/* ========== MOBILE RESPONSIVE OVERRIDES ========== */
+
+@media screen and (max-width: 768px) {
+    
+    /* 1. MODAL ADJUSTMENTS */
+    .modal {
+        padding: 0; /* Full screen on mobile */
+        align-items: flex-end; /* Slides up from bottom feel */
+    }
+
+    .modal-content {
+        max-width: 100%;
+        height: 100%; /* Take up full screen or most of it */
+        max-height: 100vh;
+        border: none;
+        border-radius: 0;
+        padding: 30px 20px 100px 20px; /* Extra bottom padding for mobile tabs */
+    }
+
+    .modal-content h2 {
+        font-size: 1.25rem;
+        margin-bottom: 20px;
+    }
+
+    /* 2. FORM LAYOUT */
+    .editorial-admin-form {
+        padding: 20px;
+        gap: 20px;
+    }
+
+    /* Force grid columns (like Sort Index) to stack */
+    .form-row {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 20px;
+    }
+
+    .btn-black {
+        width: 100%; /* Full width buttons for easier tapping */
+        align-self: stretch;
+        text-align: center;
+    }
+
+    .modal-actions {
+        flex-direction: column; /* Stack Save/Cancel buttons */
+    }
+
+    /* 3. RESPONSIVE TABLE (CARD VIEW) */
+    /* This transforms the table into a list of cards so it doesn't overflow */
+    #product-table, 
+    #product-table thead, 
+    #product-table tbody, 
+    #product-table th, 
+    #product-table td, 
+    #product-table tr { 
+        display: block; 
+    }
+
+    #product-table thead tr { 
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+    }
+
+    #product-table tr {
+        border-bottom: 1px solid #eee;
+        padding: 20px 0;
+        position: relative;
+    }
+
+    #product-table td { 
+        border: none;
+        padding: 5px 0 5px 120px; /* Make room for labels */
+        position: relative;
+        min-height: 30px;
+        font-size: 0.85rem;
+    }
+
+    #product-table td:before { 
+        position: absolute;
+        left: 0;
+        width: 100px; 
+        font-size: 0.6rem;
+        text-transform: uppercase;
+        font-weight: 700;
+        color: #999;
+        content: attr(data-label); /* Requires adding data-label to JS */
+    }
+
+    /* Adjust thumbnail in card view */
+    #product-table td:nth-of-type(2) {
+        padding-left: 0;
+        margin-bottom: 10px;
+    }
+
+    #product-table td img {
+        width: 80px;
+        height: 80px;
+    }
+
+    /* 4. PAGINATION MOBILE */
+    .pagination-container {
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .btn-pagination {
+        padding: 8px 12px;
+        font-size: 0.6rem;
+    }
+}

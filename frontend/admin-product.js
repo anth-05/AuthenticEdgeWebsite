@@ -96,15 +96,16 @@ function renderTablePage() {
     const endIndex = startIndex + itemsPerPage;
     const pagedProducts = allProducts.slice(startIndex, endIndex);
 
+    // Inside renderTablePage pagedProducts.map:
     tbody.innerHTML = pagedProducts.map(p => `
         <tr>
-            <td>#${p.id} <br><small style="color:#888">Order: ${p.sort_index || 0}</small></td>
-            <td><img src="${p.image}" alt="${p.name}" class="product-thumb"></td>
-            <td><strong>${p.name}</strong></td>
-            <td>${p.gender || "—"}</td>
-            <td><span class="quality-tag">${p.quality || "Standard"}</span></td>
-            <td>${p.availability || "In Stock"}</td>
-            <td>
+            <td data-label="ID/Sort">#${p.id} <br><small>Order: ${p.sort_index || 0}</small></td>
+            <td data-label="Preview"><img src="${p.image}" alt="${p.name}" class="product-thumb"></td>
+            <td data-label="Product"><strong>${p.name}</strong></td>
+            <td data-label="Gender">${p.gender || "—"}</td>
+            <td data-label="Quality">${p.quality || "Standard"}</td>
+            <td data-label="Status">${p.availability || "In Stock"}</td>
+            <td data-label="Actions">
                 <div class="action-cell">
                     <button class="text-link-btn edit-btn" data-id="${p.id}">Edit</button>
                     <button class="text-link-btn delete-btn" data-id="${p.id}" style="color: #d00000;">Remove</button>
