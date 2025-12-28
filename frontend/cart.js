@@ -121,7 +121,75 @@ function initConciergeUI() {
         }
     };
 }
+/**
+ * Processes the final inquiry after the user fills out the modal form.
+ */
+async function processInquiry(formData) {
+    const token = localStorage.getItem("token");
+    const cart = JSON.parse(localStorage.getItem('ae_cart')) || [];
 
+    if (!token) {
+        alert("Please sign in to submit your selection.");
+        window.location.href = "login.html";
+        return;
+    }
+
+    // Format the product list for the message
+    const productList = cart.map((item, index) => 
+        `${index + 1}. ${item.title.toUpperCase()} - ${item.price || 'Contact for Price'}`
+    ).join('\n');
+
+    const message = `
+📦 NEW SELECTION INQUIRY
+-------------------------
+👤 CUSTOMER
+Name: ${formData.get('voornaam')} ${formData.get('achternaam')}
+Email: ${formData.get('email')}
+Size: ${formData.get('maat')}
+Budget: ${formData.get('budget')}
+
+📍 SHIPPING
+Address: ${formData.get('adres')}, ${formData.get('postcode')} ${formData.get('stad')}
+Region/Country: ${formData.get('regio')}, ${formData.get('land')}
+
+🛒 ITEMS
+${productList}
+-------------------------
+TOTAL ITEMS: ${cart.length}
+`.trim();
+
+    try {
+        const res = await fetch(`${API_BASE_URL}/api/messages/send`, {
+            method: "POST",
+            headers: { 
+                "Content-Type": "application/json", 
+                "Authorization": `Bearer ${token}` 
+            },
+            body: JSON.stringify({ message })
+        });
+
+        if (res.ok) {
+            alert("Selection sent! We will contact you soon.");
+            localStorage.removeItem('ae_cart');
+            window.location.href = "user-messages.html";
+        } else {
+            const err = await res.json();
+            alert(`Error: ${err.error || "Could not send inquiry."}`);
+        }
+    } catch (e) { 
+        alert("Server error. Please try again later."); 
+    }
+}
+
+// Attach to the form inside initConciergeUI
+const form = document.getElementById('checkoutForm');
+if (form) {
+    form.onsubmit = async (e) => {
+        e.preventDefault();
+        const data = new FormData(form);
+        await processInquiry(data);
+    };
+}
 /**
  * Handles the checkout modal visibility and submission.
  */
