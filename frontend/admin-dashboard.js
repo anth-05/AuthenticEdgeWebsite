@@ -6,7 +6,6 @@ let allUsersData = [];
 document.addEventListener("DOMContentLoaded", () => {
   checkAdminAuth();
   loadDashboardData();
-  setupLogout();
   setupSearch(); // Initialize the search listener
 });
 
