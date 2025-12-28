@@ -65,29 +65,37 @@ function renderUserTables(users) {
   const recent = document.querySelector("#recent-users tbody");
   const all = document.querySelector("#all-users tbody");
 
+  // 1. Recent Users Table (Last 5)
   recent.innerHTML = users
     .slice(-5)
     .reverse()
     .map(u => `
       <tr>
-        <td>${u.email}</td>
-        <td>${u.role}</td>
-        <td>${new Date(u.created_at).toLocaleDateString()}</td>
+        <td data-label="Email">${u.email}</td>
+        <td data-label="Role"><span class="admin-badge">${u.role}</span></td>
+        <td data-label="Registered At">${new Date(u.created_at).toLocaleDateString()}</td>
       </tr>
     `).join("");
 
+  // 2. Manage Users Table (All)
   all.innerHTML = users.map(u => `
     <tr>
-      <td>#${u.id}</td>
-      <td>${u.email}</td>
-      <td>
-        <select onchange="updateUserRole(${u.id}, this.value)">
+      <td data-label="User ID">#${u.id}</td>
+      <td data-label="Email"><strong>${u.email}</strong></td>
+      <td data-label="Plan">
+        <span class="status ${u.plan_name ? u.plan_name.toLowerCase() : 'none'}" 
+              style="background: #000; color: #fff; border: none; padding: 4px 8px; font-size: 0.65rem; border-radius: 2px;">
+          ${u.plan_name || 'FREE TIER'}
+        </span>
+      </td>
+      <td data-label="Role">
+        <select onchange="updateUserRole(${u.id}, this.value)" style="padding: 4px; font-size: 0.75rem;">
           <option value="user" ${u.role === "user" ? "selected" : ""}>User</option>
           <option value="admin" ${u.role === "admin" ? "selected" : ""}>Admin</option>
         </select>
       </td>
-      <td>
-        <button onclick="deleteUser(${u.id})" style="color:red;">Remove</button>
+      <td data-label="Actions">
+        <button onclick="deleteUser(${u.id})" class="delete-x" style="color:red; background:none; border:none; font-size:1.2rem; cursor:pointer;">×</button>
       </td>
     </tr>
   `).join("");
@@ -99,28 +107,41 @@ function renderUserTables(users) {
 window.updateUserRole = async (id, role) => {
   const token = localStorage.getItem("token");
 
-  await fetch(`${API_BASE_URL}/api/users/${id}`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`
-    },
-    body: JSON.stringify({ role })
-  });
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/users/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({ role })
+    });
 
-  loadDashboardData();
+    if (res.ok) {
+        console.log(`User ${id} updated to ${role}`);
+        loadDashboardData();
+    }
+  } catch (err) {
+    console.error("Failed to update role:", err);
+  }
 };
 
 window.deleteUser = async (id) => {
-  if (!confirm("Delete this user permanently?")) return;
+  if (!confirm("Permanently remove this user? This cannot be undone.")) return;
   const token = localStorage.getItem("token");
 
-  await fetch(`${API_BASE_URL}/api/users/${id}`, {
-    method: "DELETE",
-    headers: { Authorization: `Bearer ${token}` }
-  });
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/users/${id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` }
+    });
 
-  loadDashboardData();
+    if (res.ok) {
+        loadDashboardData();
+    }
+  } catch (err) {
+    console.error("Failed to delete user:", err);
+  }
 };
 
 /* =========================
@@ -128,7 +149,10 @@ window.deleteUser = async (id) => {
 ========================= */
 function setupLogout() {
   document.querySelectorAll("#logout-btn").forEach(btn =>
-    btn.addEventListener("click", logout)
+    btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        logout();
+    })
   );
 }
 

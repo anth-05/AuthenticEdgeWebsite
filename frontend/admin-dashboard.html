@@ -2,11 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-  <title>Admin | Authentic Edge</title> 
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>Admin Dashboard | Authentic Edge</title> 
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap">
   <link rel="stylesheet" href="theme.css" />
   <link rel="stylesheet" href="admin-base.css" />
+  <link rel="stylesheet" href="admin-dashboard.css" />
   <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
 </head>
 
@@ -30,8 +31,9 @@
   <main class="dashboard-main">
     <header class="main-header">
        <div class="header-left">
+         <span class="eyebrow">Overview</span>
          <h1>Dashboard</h1>
-         <p id="welcome-message"></p>
+         <p id="welcome-message">System overview and user management.</p>
        </div>
     </header>
 
@@ -52,7 +54,7 @@
 
     <section class="admin-section">
       <div class="section-header">
-        <h2>Recent Users</h2>
+        <h2>Recent Registration</h2>
       </div>
       <div class="table-container">
         <table id="recent-users">
@@ -63,7 +65,8 @@
               <th>Registered At</th>
             </tr>
           </thead>
-          <tbody></tbody>
+          <tbody>
+            </tbody>
         </table>
       </div>
     </section>
@@ -78,11 +81,12 @@
             <tr>
               <th>User ID</th>
               <th>Email</th>
-              <th>Role</th>
+              <th>Plan</th> <th>Role</th>
               <th>Actions</th>
             </tr>
           </thead>
-          <tbody></tbody>
+          <tbody id="all-users-body">
+            </tbody>
         </table>
       </div>
     </section>
@@ -93,7 +97,6 @@
     <a href="admin-products.html"><i class="ri-box-3-line"></i></a>
     <a href="admin-messages.html"><i class="ri-message-3-line"></i></a>
     <a href="admin-subscriptions.html"><i class="ri-vip-crown-line"></i></a>
-    <a href="#" id="logout-btn"><i class="ri-logout-circle-line"></i></a>
   </div>
 
   <script type="module" src="admin-dashboard.js" defer></script>
