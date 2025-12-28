@@ -229,8 +229,6 @@
     cursor: pointer;
     color: #000;
 }
-
-/* RESPONSIVE */
 /* ========== MOBILE RESPONSIVE OPTIMIZATIONS ========== */
 
 @media (max-width: 900px) {
@@ -238,75 +236,60 @@
     .messages-layout {
         grid-template-columns: 1fr;
         position: relative;
-    }
-
-    /* 2. Inbox Sidebar as a Full-Width View */
-    .inbox-sidebar {
-        width: 100%;
-        display: flex; /* Re-enable display */
-        position: absolute;
-        left: 0;
-        top: 0;
-        z-index: 10;
-        transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-    }
-
-    /* Slide sidebar away when a chat is active */
-    .messages-layout.chat-open .inbox-sidebar {
-        transform: translateX(-100%);
-    }
-
-    /* 3. Chat Panel as a Full-Width View */
-    .chat-panel {
-        width: 100%;
-        position: absolute;
-        left: 0;
-        top: 0;
-        background: #fff;
-        z-index: 5;
-        transform: translateX(100%);
-        transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-    }
-
-    /* Slide chat in when active */
-    .messages-layout.chat-open .chat-panel {
-        transform: translateX(0);
-        z-index: 15;
-    }
-
-    /* 4. Mobile Header Adjustments */
-    .chat-header {
-        padding: 0 20px;
-        justify-content: space-between;
-    }
-
-    /* Back button for mobile (Add this element via JS/HTML) */
-    .mobile-back-btn {
-        display: block !important;
-        font-size: 0.7rem;
-        font-weight: 800;
-        text-transform: uppercase;
-        letter-spacing: 0.1em;
-        padding: 10px 0;
-        cursor: pointer;
-    }
-
-    /* 5. Bubbles & Input Spacing */
-    .bubble {
-        max-width: 85%; /* Wider bubbles on small screens */
-    }
-
-    .chat-body {
-        padding: 20px;
-    }
-
-    .chat-footer {
-        padding: 20px;
+        /* Force height to account for tabs */
+        height: calc(100vh - 65px); 
     }
 
     .dashboard-body {
-        height: calc(100vh - 65px); /* Adjusted for your bottom tabs */
+        /* Ensure the body doesn't allow content to hide behind tabs */
+        height: calc(100vh - 65px);
+        overflow: hidden;
     }
+
+    /* 2. Inbox Sidebar & Chat Panel */
+    .inbox-sidebar, .chat-panel {
+        /* Fill the container exactly, stopping above the tabs */
+        height: 100%; 
+    }
+
+    /* 3. THE FIX: Chat Footer adjustment */
+    .chat-footer {
+        padding: 15px 20px;
+        background: #fff;
+        /* Ensure footer stays above the bottom tabs */
+        border-bottom: 1px solid #eeeeee; 
+        position: sticky;
+        bottom: 0;
+        z-index: 20;
+    }
+
+    /* Add extra padding to the very bottom of the footer 
+       so the input field isn't "touching" the tabs */
+    .input-wrapper {
+        margin-bottom: 5px; 
+    }
+
+    /* 4. Chat Body Adjustment */
+    .chat-body {
+        padding: 20px;
+        /* Ensure the body scrolls properly within the new height */
+        flex: 1;
+        overflow-y: auto;
+    }
+
+    /* 5. Mobile Header */
+    .chat-header {
+        height: 70px;
+        padding: 0 20px;
+    }
+    @media (max-height: 450px) {
+    .bottom-tabs {
+        display: none; /* Hide tabs when keyboard is likely open */
+    }
+    .messages-layout, .dashboard-body {
+        height: 100vh; /* Fill whole screen when keyboard is up */
+    }
+}
 }
 
 /* Helper to hide back button on PC */
