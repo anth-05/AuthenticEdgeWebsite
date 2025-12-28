@@ -102,5 +102,11 @@ function toggleCart() {
     cartOverlay.classList.toggle('show');
 }
 
-cartTrigger.addEventListener('click', toggleCart);
-cartOverlay.addEventListener('click', toggleCart);
+// Check if the cart elements exist before adding listeners
+if (cartTrigger) {
+    cartTrigger.addEventListener('click', toggleCart);
+}
+
+if (cartOverlay) {
+    cartOverlay.addEventListener('click', toggleCart);
+}

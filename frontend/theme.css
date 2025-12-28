@@ -61,31 +61,41 @@ header {
 /* ========== EDITORIAL FOOTER ========== */
 .site-footer {
   width: 100%;
-  background-color: #ffffff; /* Pure white background like the image */
-  padding: 40px 1% 20px 1%; /* Large top padding for a premium feel */
+  background-color: #ffffff;
+  padding: 60px 0 40px 0; /* Balanced padding */
   display: flex;
-  /* centerlize */
+  flex-direction: column;
+  align-items: center; /* Centers flex items horizontally */
   justify-content: center;
-  flex-direction: column; /* Stacked layout for modern branding */
-  align-items: center;
-  gap: 40px;
-  border-top: 1px solid #eeeeee; /* Very faint line */
+  text-align: center; /* Forces all text inside to be centered */
+  gap: 30px;
+  border-top: 1px solid #eeeeee;
+  box-sizing: border-box;
+}
+
+.footer-left {
+  width: 100%;
+  display: flex;
+  justify-content: center;
 }
 
 .footer-left .brand {
   font-size: 1.2rem;
   font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.2em; /* Extra spacing for luxury look */
+  letter-spacing: 0.2em;
   color: #000000;
   margin: 0;
+  display: block;
+  width: 100%; /* Ensures text-align: center works */
 }
 
 .footer-right {
   display: flex;
-  gap: 30px;
-  justify-content: center;
-  flex-wrap: wrap;
+  flex-direction: column; /* Stack vertically for a cleaner look like your image */
+  align-items: center;
+  gap: 15px;
+  width: 100%;
 }
 
 .footer-right a {
@@ -97,16 +107,18 @@ header {
   letter-spacing: 0.1em;
   position: relative;
   transition: opacity 0.3s ease;
+  display: inline-block;
 }
 
-/* Subtle underline effect on hover */
+/* Updated underline effect to center itself */
 .footer-right a::after {
   content: '';
   position: absolute;
   width: 0;
   height: 1px;
   bottom: -4px;
-  left: 0;
+  left: 50%;
+  transform: translateX(-50%); /* Centers the underline */
   background-color: #000;
   transition: width 0.3s ease;
 }
@@ -115,19 +127,14 @@ header {
   width: 100%;
 }
 
-.footer-right a:hover {
-  opacity: 0.7;
-}
-
-/* Responsive: Stack vertically on mobile */
+/* Simplified Mobile Footer */
 @media (max-width: 768px) {
   .site-footer {
-    padding: 60px 10%;
-    gap: 30px;
+    padding: 60px 5% 100px 5%; /* Extra bottom padding for the bottom-tabs/selection badge */
+    gap: 25px;
   }
+  
   .footer-right {
-    flex-direction: column;
-    align-items: center;
     gap: 20px;
   }
 }
