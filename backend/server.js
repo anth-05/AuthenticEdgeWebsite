@@ -366,6 +366,23 @@ app.post("/api/subscription/request", authenticateToken, async (req, res) => {
         res.status(500).json({ error: "Failed to process subscription request" });
     }
 });
+/* ---------------- GET SINGLE PRODUCT BY ID ---------------- */
+app.get("/api/products/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        // Ensure ID is a number to prevent basic SQL injection or errors
+        const result = await pool.query("SELECT * FROM products WHERE id = $1", [id]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: "Product not found in archives." });
+        }
+
+        res.json(result.rows[0]);
+    } catch (err) {
+        respondServerError(res, err, "Failed to fetch single product");
+    }
+});
 // GET all pending or active subscription requests for Admin
 app.get("/api/admin/subscriptions", authenticateToken, async (req, res) => {
     // Basic security check
