@@ -630,8 +630,8 @@ app.post('/api/messages/bulk-inquiry', authenticateToken, async (req, res) => {
         // 3. ALERT THE ADMIN (Optional but Highly Recommended)
         const mailOptions = {
             from: `"Concierge Alert" <${process.env.CONTACT_EMAIL}>`,
-            to: "anthilori25@gmail.com", // Your personal email
-            subject: `New Selection from User #${userId}`,
+            to: "authenticedge@gmail.com", // Your personal email
+            subject: `New Mail from User #${userId}`,
             text: `A user has submitted a new selection:\n\n${finalMessage}`
         };
         
@@ -640,7 +640,7 @@ app.post('/api/messages/bulk-inquiry', authenticateToken, async (req, res) => {
 
         res.json({ 
             success: true, 
-            message: "Your selection has been sent to our concierge.",
+            message: "Your selection has been sent! We will get back to you shortly.",
             data: result.rows[0] 
         });
 
