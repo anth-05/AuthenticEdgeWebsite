@@ -5,7 +5,7 @@ import { API_BASE_URL } from "./config.js";
 ------------------------------------------------------- */
 let allProducts = [];
 let currentPage = 1;
-const itemsPerPage = 5;
+const itemsPerPage = 10;
 
 /* -------------------------------------------------------
    IMAGE TYPE SWITCHER (URL ↔ FILE)
