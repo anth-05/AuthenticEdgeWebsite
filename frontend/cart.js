@@ -36,23 +36,35 @@ function initCartEvents() {
         document.body.style.overflow = '';
     };
 
-    if (els.trigger) els.trigger.onclick = openCart;
+    const openCartInternal = () => {
+        els.drawer.classList.add('open');
+        els.overlay.classList.add('show');
+        document.body.style.overflow = 'hidden';
+    };
+
+    if (els.trigger) els.trigger.onclick = openCartInternal;
     if (els.close) els.close.onclick = closeCart;
     if (els.overlay) els.overlay.onclick = closeCart;
 
     if (els.checkout) {
         els.checkout.onclick = () => {
             const cart = JSON.parse(localStorage.getItem('ae_cart')) || [];
-            if (cart.length === 0) return;
-            closeCart();
+            if (cart.length === 0) {
+                alert("Your selection is empty.");
+                return;
+            }
+            closeCart(); // Close sidebar first
+            // Only now show the modal
             document.getElementById('checkoutModal').style.display = 'flex';
         };
     }
 }
 
 export function openCart() {
-    document.getElementById('cartDrawer').classList.add('open');
-    document.getElementById('cartOverlay').classList.add('show');
+    const drawer = document.getElementById('cartDrawer');
+    const overlay = document.getElementById('cartOverlay');
+    if (drawer) drawer.classList.add('open');
+    if (overlay) overlay.classList.add('show');
     document.body.style.overflow = 'hidden';
 }
 
@@ -64,6 +76,13 @@ export function refreshCartUI() {
 
     if (badge) badge.innerText = cart.length;
     if (totalCount) totalCount.innerText = `Total Selection: ${cart.length}`;
+    
+    // Hide or show the selection trigger button based on items
+    const trigger = document.getElementById('cartTrigger');
+    if (trigger) {
+        trigger.style.display = cart.length > 0 ? 'flex' : 'none';
+    }
+
     if (!list) return;
 
     if (cart.length === 0) {
@@ -82,48 +101,35 @@ export function refreshCartUI() {
         </div>
     `).join('');
 }
-function initConciergeUI() {
-    const drawer = document.getElementById('cartDrawer');
-    const overlay = document.getElementById('cartOverlay');
-    const trigger = document.getElementById('cartTrigger');
-    const closeBtn = document.getElementById('closeCart');
-    const checkoutBtn = document.getElementById('checkoutBtn');
+
+function initModalLogic() {
     const modal = document.getElementById('checkoutModal');
-    const closeModal = document.getElementById('closeModal');
+    const form = document.getElementById('checkoutForm');
+    const closeBtn = document.getElementById('closeModal');
 
-    // Drawer Controls
-    if (trigger) trigger.onclick = openDrawer;
-    if (closeBtn) closeBtn.onclick = closeDrawer;
-    if (overlay) overlay.onclick = closeDrawer;
+    if (!modal) return;
 
-    // Transition from Drawer to Modal
-    if (checkoutBtn) {
-        checkoutBtn.onclick = () => {
-            const cart = JSON.parse(localStorage.getItem('ae_cart')) || [];
-            if (cart.length === 0) return alert("Your selection is empty.");
-
-            closeDrawer(); // Close the right-side sidebar
-            if (modal) modal.style.display = 'flex'; // Open the centered modal
-        };
-    }
-
-    // Modal Controls
-    if (closeModal) {
-        closeModal.onclick = () => {
+    if (closeBtn) {
+        closeBtn.onclick = () => {
             modal.style.display = 'none';
         };
     }
 
-    // Close modal if user clicks outside the content box
     window.onclick = (event) => {
         if (event.target == modal) {
             modal.style.display = 'none';
         }
     };
+
+    if (form) {
+        form.onsubmit = async (e) => {
+            e.preventDefault();
+            const formData = new FormData(form);
+            await processInquiry(formData);
+        };
+    }
 }
-/**
- * Processes the final inquiry after the user fills out the modal form.
- */
+
 async function processInquiry(formData) {
     const token = localStorage.getItem("token");
     const cart = JSON.parse(localStorage.getItem('ae_cart')) || [];
@@ -134,7 +140,6 @@ async function processInquiry(formData) {
         return;
     }
 
-    // Format the product list for the message
     const productList = cart.map((item, index) => 
         `${index + 1}. ${item.title.toUpperCase()} - ${item.price || 'Contact for Price'}`
     ).join('\n');
@@ -178,47 +183,6 @@ TOTAL ITEMS: ${cart.length}
         }
     } catch (e) { 
         alert("Server error. Please try again later."); 
-    }
-}
-
-// Attach to the form inside initConciergeUI
-const form = document.getElementById('checkoutForm');
-if (form) {
-    form.onsubmit = async (e) => {
-        e.preventDefault();
-        const data = new FormData(form);
-        await processInquiry(data);
-    };
-}
-/**
- * Handles the checkout modal visibility and submission.
- */
-function initModalLogic() {
-    const modal = document.getElementById('checkoutModal');
-    const form = document.getElementById('checkoutForm');
-    const closeBtn = document.getElementById('closeModal');
-
-    if (!modal) return;
-
-    if (closeBtn) {
-        closeBtn.onclick = () => {
-            modal.style.display = 'none';
-        };
-    }
-
-    // Close modal if clicking outside content
-    window.onclick = (event) => {
-        if (event.target == modal) {
-            modal.style.display = 'none';
-        }
-    };
-
-    if (form) {
-        form.onsubmit = async (e) => {
-            e.preventDefault();
-            const formData = new FormData(form);
-            await processInquiry(formData);
-        };
     }
 }
 

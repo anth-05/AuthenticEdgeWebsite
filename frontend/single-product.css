@@ -124,3 +124,25 @@ body { font-family: 'Inter', sans-serif; background: var(--ae-white); color: var
     color: #d00; 
     font-weight: 700;
 }
+/* Update your CSS to include this */
+#checkoutModal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6); /* Dim the background */
+    backdrop-filter: blur(5px);
+    z-index: 3000; /* Ensure it is above the cart drawer */
+    
+    /* HIDE BY DEFAULT */
+    display: none; 
+    
+    justify-content: center;
+    align-items: center;
+}
+
+/* Class to show the modal via JavaScript */
+#checkoutModal.active {
+    display: flex;
+}
