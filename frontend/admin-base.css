@@ -247,3 +247,8 @@ td {
         color: var(--text-muted);
     }
 }
+/* Custom Plan Colors in Admin */
+.status.comfort { background: #666 !important; } /* Neutral */
+.status.edge { background: #000 !important; }    /* Most Popular / Black */
+.status.authentic { background: #000 !important; border: 1px solid #c5a059 !important; color: #c5a059 !important; } /* Premium Look */
+.status.hooper’s { background: #d00000 !important; } /* Sporty Red */
