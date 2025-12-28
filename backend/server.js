@@ -17,8 +17,7 @@ import validator from 'validator';
 // Recreate __dirname for ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-dotenv.config();
+// Using __dirname ensures it looks relative to where server.js is located
 const { Pool } = pkg;
 const app = express();
 
@@ -438,29 +437,33 @@ app.post('/api/register', async (req, res) => {
         if (!email || !password) {
             return res.status(400).json({ error: "Email and password are required." });
         }
+        
+        // 2. Check if user already exists (Correct PostgreSQL syntax)
+        const checkUser = await pool.query("SELECT * FROM users WHERE email = $1", [email.toLowerCase()]);
+        
+        if (checkUser.rows.length > 0) {
+            return res.status(400).json({ error: "Email already registered." });
+        }
 
-        // 2. Check if user already exists (Pseudocode - adapt to your DB)
-        // const existingUser = await db.findUserByEmail(email);
-        // if (existingUser) return res.status(400).json({ error: "Email already registered." });
-
-        // 3. Hash the password (10 salt rounds)
+        // 3. Hash the password
         const saltRounds = 10;
         const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-        // 4. Save to Database (Pseudocode)
-        /*
-        const newUser = await db.users.create({
-            email: email,
-            password: hashedPassword,
-            role: role || 'user',
-            created_at: new Date()
-        });
-        */
-
-        console.log(`New registration request for: ${email}`);
+        // 4. Save to Database
+        const newUser = await pool.query(`
+            INSERT INTO users (email, password, role)
+            VALUES ($1, $2, $3)
+            RETURNING id, email, role, created_at
+        `, [email.toLowerCase(), hashedPassword, role || 'user']);
+        
+        console.log(`New user registered: ${email}`);
 
         // 5. Success Response
-        res.status(201).json({ message: "User created successfully." });
+        res.status(201).json({ 
+            success: true,
+            message: "User created successfully.",
+            user: newUser.rows[0]
+        });
 
     } catch (err) {
         console.error("Server Registration Error:", err);
@@ -571,14 +574,14 @@ app.post("/api/contact", contactLimiter, async (req, res) => {
         }
 
         // 3. Resolve path to your template
-        const templatePath = path.join(process.cwd(), 'backend', 'emailTemplates', 'contact.html');
-        
+        const templatePath = path.join(__dirname, 'emailTemplates', 'contact.html');dotenv.config();
+
         if (!fs.existsSync(templatePath)) {
             throw new Error(`Template not found at ${templatePath}`);
         }
         
-        let htmlContent = fs.readFileSync(templatePath, 'utf8');
 
+        let htmlContent = fs.readFileSync(templatePath, 'utf8');
         // 4. Inject data into the template
         htmlContent = htmlContent
             .replace('{{name}}', name)
