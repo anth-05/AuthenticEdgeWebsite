@@ -13,6 +13,7 @@ import nodemailer from 'nodemailer';
 import { fileURLToPath } from 'url';
 import rateLimit from 'express-rate-limit';
 import validator from 'validator';
+const bcrypt = require('bcrypt');
 
 // Recreate __dirname for ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -427,6 +428,44 @@ app.post("/api/admin/subscriptions/:userId", authenticateToken, async (req, res)
         res.json({ success: true });
     } catch (err) {
         res.status(500).json({ error: "Action failed" });
+    }
+});
+// POST: /api/register
+app.post('/api/register', async (req, res) => {
+    try {
+        const { email, password, role } = req.body;
+
+        // 1. Basic Validation
+        if (!email || !password) {
+            return res.status(400).json({ error: "Email and password are required." });
+        }
+
+        // 2. Check if user already exists (Pseudocode - adapt to your DB)
+        // const existingUser = await db.findUserByEmail(email);
+        // if (existingUser) return res.status(400).json({ error: "Email already registered." });
+
+        // 3. Hash the password (10 salt rounds)
+        const saltRounds = 10;
+        const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+        // 4. Save to Database (Pseudocode)
+        /*
+        const newUser = await db.users.create({
+            email: email,
+            password: hashedPassword,
+            role: role || 'user',
+            created_at: new Date()
+        });
+        */
+
+        console.log(`New registration request for: ${email}`);
+
+        // 5. Success Response
+        res.status(201).json({ message: "User created successfully." });
+
+    } catch (err) {
+        console.error("Server Registration Error:", err);
+        res.status(500).json({ error: "Internal server error." });
     }
 });
 
