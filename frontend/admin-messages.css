@@ -230,68 +230,91 @@
     color: #000;
 }
 /* ========== MOBILE RESPONSIVE OPTIMIZATIONS ========== */
+/* ========== MOBILE RESPONSIVE OPTIMIZATIONS ========== */
 
 @media (max-width: 900px) {
     /* 1. Reset layout for single column */
     .messages-layout {
         grid-template-columns: 1fr;
         position: relative;
-        /* Force height to account for tabs */
-        height: calc(100vh - 65px); 
+        /* Use dvh for "Dynamic Viewport Height" to fix mobile browser bar issues */
+        height: calc(100dvh - 65px); 
     }
 
     .dashboard-body {
-        /* Ensure the body doesn't allow content to hide behind tabs */
-        height: calc(100vh - 65px);
+        height: calc(100dvh - 65px);
         overflow: hidden;
+        display: block; /* Ensure it doesn't conflict with flex layouts */
     }
 
     /* 2. Inbox Sidebar & Chat Panel */
     .inbox-sidebar, .chat-panel {
-        /* Fill the container exactly, stopping above the tabs */
         height: 100%; 
+        width: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
     }
 
     /* 3. THE FIX: Chat Footer adjustment */
     .chat-footer {
-        padding: 15px 20px;
+        padding: 12px 20px;
         background: #fff;
-        /* Ensure footer stays above the bottom tabs */
-        border-bottom: 1px solid #eeeeee; 
-        position: sticky;
-        bottom: 0;
+        border-top: 1px solid #eeeeee;
+        /* Ensures the footer stays locked at the bottom of its container */
+        position: relative; 
         z-index: 20;
     }
 
-    /* Add extra padding to the very bottom of the footer 
-       so the input field isn't "touching" the tabs */
     .input-wrapper {
-        margin-bottom: 5px; 
+        margin-bottom: 0;
+        padding-bottom: 5px;
     }
 
     /* 4. Chat Body Adjustment */
     .chat-body {
         padding: 20px;
-        /* Ensure the body scrolls properly within the new height */
+        /* This makes the message area take up all space EXCEPT header and footer */
         flex: 1;
         overflow-y: auto;
+        -webkit-overflow-scrolling: touch; /* Smooth scrolling for iOS */
     }
 
     /* 5. Mobile Header */
     .chat-header {
-        height: 70px;
+        height: 65px;
         padding: 0 20px;
+        flex-shrink: 0; /* Prevents header from squishing when keyboard opens */
     }
-    @media (max-height: 450px) {
-    .bottom-tabs {
-        display: none; /* Hide tabs when keyboard is likely open */
+
+    /* Sidebar Sliding Logic */
+    .inbox-sidebar {
+        z-index: 10;
+        transition: transform 0.3s ease;
     }
-    .messages-layout, .dashboard-body {
-        height: 100vh; /* Fill whole screen when keyboard is up */
+
+    .messages-layout.chat-open .inbox-sidebar {
+        transform: translateX(-100%);
     }
-}
+
+    .messages-layout.chat-open .chat-panel {
+        z-index: 15;
+        transform: translateX(0);
+    }
 }
 
+/* 6. KEYBOARD FIX: Hide tabs when screen is short (keyboard active) */
+@media (max-width: 900px) and (max-height: 500px) {
+    .bottom-tabs {
+        display: none !important;
+    }
+    .messages-layout, .dashboard-body {
+        height: 100dvh !important;
+    }
+    .chat-footer {
+        padding-bottom: 5px; /* Minimal padding when keyboard is up */
+    }
+}
 /* Helper to hide back button on PC */
 .mobile-back-btn { display: none; }
 /* Bulk Select Bar */
