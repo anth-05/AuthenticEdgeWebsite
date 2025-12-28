@@ -18,34 +18,34 @@ async function loadProducts() {
         grid.innerHTML = `<p>Archive sync unavailable.</p>`;
     }
 }
-// function generateDynamicFilters() {
-//     const filterContainer = document.getElementById("dynamic-filters");
-//     if (!filterContainer) return;
+function generateDynamicFilters() {
+    const filterContainer = document.getElementById("dynamic-filters");
+    if (!filterContainer) return;
 
-//     // 1. Create a set of unique brands found in descriptions
-//     // We split by spaces and take the first word, but we clean it of punctuation
-//     const brandSet = new Set();
+    // 1. Create a set of unique brands found in descriptions
+    // We split by spaces and take the first word, but we clean it of punctuation
+    const brandSet = new Set();
     
-//     allProducts.forEach(p => {
-//         if (p.name) {
-//             // Extract the first word and remove non-alphanumeric chars (like commas)
-//             const firstWord = p.name.trim().split(/\s+/)[0].replace(/[^a-zA-Z0-0]/g, "").toUpperCase();
-//             if (firstWord) brandSet.add(firstWord);
-//         }
-//     });
+    allProducts.forEach(p => {
+        if (p.name) {
+            // Extract the first word and remove non-alphanumeric chars (like commas)
+            const firstWord = p.name.trim().split(/\s+/)[0].replace(/[^a-zA-Z0-0]/g, "").toUpperCase();
+            if (firstWord) brandSet.add(firstWord);
+        }
+    });
 
-//     // 2. Convert Set to Array and Sort
-//     const brands = Array.from(brandSet).sort();
+    // 2. Convert Set to Array and Sort
+    const brands = Array.from(brandSet).sort();
 
-//     // 3. Build the HTML
-//     let filterHTML = `<li><button class="filter-btn active" data-filter="ALL">All</button></li>`;
-//     filterHTML += brands.map(brand => `
-//         <li><button class="filter-btn" data-filter="${brand}">${brand}</button></li>
-//     `).join('');
+    // 3. Build the HTML
+    let filterHTML = `<li><button class="filter-btn active" data-filter="ALL">All</button></li>`;
+    filterHTML += brands.map(brand => `
+        <li><button class="filter-btn" data-filter="${brand}">${brand}</button></li>
+    `).join('');
 
-//     filterContainer.innerHTML = filterHTML;
-//     setupFilterEvents();
-// }
+    filterContainer.innerHTML = filterHTML;
+    setupFilterEvents();
+}
 
 function setupFilterEvents() {
     document.querySelectorAll('.filter-btn').forEach(btn => {
