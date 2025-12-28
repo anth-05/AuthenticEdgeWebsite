@@ -231,11 +231,86 @@
 }
 
 /* RESPONSIVE */
+/* ========== MOBILE RESPONSIVE OPTIMIZATIONS ========== */
+
 @media (max-width: 900px) {
-    .messages-layout { grid-template-columns: 1fr; }
-    .inbox-sidebar { display: none; } 
-    .dashboard-body { flex-direction: column; }
+    /* 1. Reset layout for single column */
+    .messages-layout {
+        grid-template-columns: 1fr;
+        position: relative;
+    }
+
+    /* 2. Inbox Sidebar as a Full-Width View */
+    .inbox-sidebar {
+        width: 100%;
+        display: flex; /* Re-enable display */
+        position: absolute;
+        left: 0;
+        top: 0;
+        z-index: 10;
+        transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    }
+
+    /* Slide sidebar away when a chat is active */
+    .messages-layout.chat-open .inbox-sidebar {
+        transform: translateX(-100%);
+    }
+
+    /* 3. Chat Panel as a Full-Width View */
+    .chat-panel {
+        width: 100%;
+        position: absolute;
+        left: 0;
+        top: 0;
+        background: #fff;
+        z-index: 5;
+        transform: translateX(100%);
+        transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    }
+
+    /* Slide chat in when active */
+    .messages-layout.chat-open .chat-panel {
+        transform: translateX(0);
+        z-index: 15;
+    }
+
+    /* 4. Mobile Header Adjustments */
+    .chat-header {
+        padding: 0 20px;
+        justify-content: space-between;
+    }
+
+    /* Back button for mobile (Add this element via JS/HTML) */
+    .mobile-back-btn {
+        display: block !important;
+        font-size: 0.7rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        padding: 10px 0;
+        cursor: pointer;
+    }
+
+    /* 5. Bubbles & Input Spacing */
+    .bubble {
+        max-width: 85%; /* Wider bubbles on small screens */
+    }
+
+    .chat-body {
+        padding: 20px;
+    }
+
+    .chat-footer {
+        padding: 20px;
+    }
+
+    .dashboard-body {
+        height: calc(100vh - 65px); /* Adjusted for your bottom tabs */
+    }
 }
+
+/* Helper to hide back button on PC */
+.mobile-back-btn { display: none; }
 /* Bulk Select Bar */
 #selectAllContainer {
     padding: 10px 25px;

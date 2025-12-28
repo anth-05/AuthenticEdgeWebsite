@@ -37,6 +37,10 @@ body {
     letter-spacing: 0.1em;
     color: var(--text-muted);
 }
+a{
+    text-decoration: none;
+    color: inherit;
+}
 
 .sidebar-menu {
     margin-top: 50px;

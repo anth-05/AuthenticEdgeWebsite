@@ -27,6 +27,13 @@
       <li class="logout-item"><a href="#" id="logout-btn"><i class="ri-logout-circle-line"></i> Logout</a></li>
     </ul>
   </aside>
+  <div class="chat-header">
+    <span class="mobile-back-btn" onclick="closeChatMobile()">← Back</span>
+    <div>
+        <span class="eyebrow">Customer Support</span>
+        <h3 id="chatUserEmail">Select a User</h3>
+    </div>
+</div>
 
   <main class="dashboard-main no-padding">
     <div class="messages-layout">
@@ -64,6 +71,13 @@
 
     </div>
   </main>
+    <div class="bottom-tabs">
+    <a href="admin-dashboard.html" class="active"><i class="ri-home-5-line"></i></a>
+    <a href="admin-products.html"><i class="ri-box-3-line"></i></a>
+    <a href="admin-messages.html"><i class="ri-message-3-line"></i></a>
+    <a href="#" id="logout-btn"><i class="ri-logout-circle-line"></i></a>
+  </div>
+
   <script type="module" src="admin-messages.js"></script>
   <script type="module" src="logout.js"></script>
 </body>
