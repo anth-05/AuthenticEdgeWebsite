@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="theme.css">
   <link rel="stylesheet" href="admin-base.css">
   <link rel="stylesheet" href="./admin-subscriptions.css">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
 </head>
 
 <body class="dashboard-body">
@@ -29,8 +30,9 @@
   <main class="dashboard-main">
     <header class="main-header">
        <div class="header-left">
-         <h1>Subscription Requests</h1>
-         <p>Review and authorize membership tier changes.</p>
+          <span class="eyebrow">Authorization Center</span>
+          <h1>Subscription Requests</h1>
+          <p>Review and authorize membership tier changes.</p>
        </div>
     </header>
 
@@ -53,15 +55,14 @@
     </section>
   </main>
 
-  <div class="bottom-tabs">
+  <nav class="bottom-tabs">
     <a href="admin-dashboard.html"><i class="ri-home-5-line"></i></a>
     <a href="admin-products.html"><i class="ri-box-3-line"></i></a>
     <a href="admin-messages.html"><i class="ri-message-3-line"></i></a>
     <a href="admin-subscriptions.html" class="active"><i class="ri-vip-crown-line"></i></a>
-  </div>
+  </nav>
 
   <script type="module" src="admin-subscriptions.js"></script>
-  <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
   <script src="logout.js"></script>
 </body>
 </html>

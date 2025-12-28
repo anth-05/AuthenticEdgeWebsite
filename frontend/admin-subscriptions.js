@@ -12,7 +12,6 @@ document.addEventListener("DOMContentLoaded", () => {
 function checkAdminAuth() {
     const token = localStorage.getItem("token");
     const role = localStorage.getItem("role");
-    // Ensure both token exists and user is an admin
     if (!token || role !== "admin") {
         window.location.href = "login.html";
     }
@@ -25,14 +24,11 @@ async function loadRequests() {
     const token = localStorage.getItem("token");
     const tbody = document.getElementById("sub-table-body");
     
-    if (!tbody) {
-        console.error("Critical Error: 'sub-table-body' not found in the DOM.");
-        return;
-    }
+    if (!tbody) return;
 
     tbody.innerHTML = `
-        <tr><td colspan="5" class="loading-state">
-            Checking membership queue...
+        <tr><td colspan="5" class="loading-state" style="text-align:center; padding: 40px; font-size: 0.8rem; letter-spacing: 0.1em; color: #999;">
+            SYNCING MEMBERSHIP QUEUE...
         </td></tr>
     `;
 
@@ -51,44 +47,49 @@ async function loadRequests() {
         if (!pending || pending.length === 0) {
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="5" class="empty-state">
-                        Membership queue is empty.
+                    <td colspan="5" class="empty-state" style="text-align:center; padding: 40px; color: #999; font-size: 0.8rem;">
+                        NO PENDING AUTHORIZATIONS.
                     </td>
                 </tr>
             `;
             return;
         }
 
+        // Mapping rows with data-label for Mobile Card Support
         tbody.innerHTML = pending.map(req => `
             <tr>
-                <td>
-                    <strong>${req.email}</strong>
-                    <div class="muted">ID: ${req.user_id}</div>
+                <td data-label="User Identity">
+                    <div style="text-align: left;">
+                        <strong style="display: block; font-size: 0.9rem;">${req.email}</strong>
+                        <span style="font-size: 0.7rem; color: #aaa; text-transform: uppercase; letter-spacing: 0.05em;">UID: ${req.user_id}</span>
+                    </div>
                 </td>
-                <td>
-                    <span class="plan-badge current">
+                <td data-label="Current Tier">
+                    <span class="status" style="border-color: #eee; color: #666;">
                         ${req.current_plan || "None"}
                     </span>
                 </td>
-                <td>
-                    <span class="plan-badge requested">
+                <td data-label="Requested Tier">
+                    <span class="status approved" style="background: #000; color: #fff; border: none;">
                         ${req.requested_plan || "—"}
                     </span>
                 </td>
-                <td>
-                    <span class="status-pill pending">
-                        ${req.status}
+                <td data-label="Status">
+                    <span class="status pending">
+                        ${req.status.toUpperCase()}
                     </span>
                 </td>
-                <td>
-                    <button class="approve-btn" 
-                        onclick="handleAction('${req.user_id}', 'approve')">
-                        Approve
-                    </button>
-                    <button class="reject-btn" 
-                        onclick="handleAction('${req.user_id}', 'reject')">
-                        Decline
-                    </button>
+                <td data-label="Actions">
+                    <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                        <button class="approve-btn" 
+                            onclick="handleAction('${req.user_id}', 'approve')">
+                            Approve
+                        </button>
+                        <button class="reject-btn" 
+                            onclick="handleAction('${req.user_id}', 'reject')">
+                            Decline
+                        </button>
+                    </div>
                 </td>
             </tr>
         `).join("");
@@ -97,8 +98,8 @@ async function loadRequests() {
         console.error("Subscription sync error:", err);
         tbody.innerHTML = `
             <tr>
-                <td colspan="5" style="color: #d9534f; padding: 20px;">
-                    Error loading requests. Ensure the Admin API endpoint is active.
+                <td colspan="5" style="color: #000; text-align: center; padding: 40px; font-size: 0.75rem; font-weight: 700;">
+                    SYSTEM ERROR: UNABLE TO LOAD QUEUE.
                 </td>
             </tr>
         `;
@@ -107,12 +108,11 @@ async function loadRequests() {
 
 /* =========================
    ACTION HANDLER
-   (Attached to window for HTML onclick compatibility)
 ========================= */
 window.handleAction = async (userId, action) => {
     const token = localStorage.getItem("token");
     const msg = action === "approve"
-        ? "Authorize this tier change?"
+        ? "Authorize this membership upgrade?"
         : "Decline this subscription request?";
 
     if (!confirm(msg)) return;
@@ -132,7 +132,7 @@ window.handleAction = async (userId, action) => {
             throw new Error(err.error || "Action failed");
         }
 
-        // Refresh the list immediately upon success
+        // Success refresh
         loadRequests();
 
     } catch (err) {
@@ -149,12 +149,8 @@ function setupLogout() {
     if (logoutBtn) {
         logoutBtn.addEventListener("click", (e) => {
             e.preventDefault();
-            window.logout();
+            localStorage.clear();
+            window.location.href = "login.html";
         });
     }
 }
-
-window.logout = () => {
-    localStorage.clear();
-    window.location.href = "login.html";
-};
