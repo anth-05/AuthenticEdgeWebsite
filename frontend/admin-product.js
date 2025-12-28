@@ -226,5 +226,32 @@ document.getElementById("edit-product-form")?.addEventListener("submit", async (
         }
     } catch (error) { console.error("Update error:", error); }
 });
+/* =========================
+   BACK TO TOP LOGIC
+========================= */
+const initBackToTop = () => {
+    const topBtn = document.getElementById("backToTop");
+
+    if (!topBtn) return;
+
+    window.addEventListener("scroll", () => {
+        // Show button after scrolling 400px
+        if (window.pageYOffset > 400) {
+            topBtn.classList.add("active");
+        } else {
+            topBtn.classList.remove("active");
+        }
+    });
+
+    topBtn.addEventListener("click", () => {
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+    });
+};
+
+// Call the function
+initBackToTop();
 
 document.addEventListener("DOMContentLoaded", loadProducts);
