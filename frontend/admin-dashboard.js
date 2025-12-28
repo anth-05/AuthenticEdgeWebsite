@@ -1,9 +1,13 @@
 import { API_BASE_URL } from "./config.js";
 
+// Global state to store users for local filtering/searching
+let allUsersData = [];
+
 document.addEventListener("DOMContentLoaded", () => {
   checkAdminAuth();
   loadDashboardData();
   setupLogout();
+  setupSearch(); // Initialize the search listener
 });
 
 /* =========================
@@ -38,15 +42,36 @@ async function loadDashboardData() {
       return;
     }
 
-    const users = await usersRes.json();
+    // Save data to global state for searching
+    allUsersData = await usersRes.json();
     const stats = await statsRes.json();
 
     updateStatsUI(stats);
-    renderUserTables(users);
+    renderUserTables(allUsersData);
 
   } catch (err) {
     console.error("Admin dashboard load failed:", err);
   }
+}
+
+/* =========================
+   SEARCH LOGIC
+========================= */
+function setupSearch() {
+  const searchInput = document.getElementById("userSearchInput");
+  if (!searchInput) return;
+
+  searchInput.addEventListener("input", (e) => {
+    const term = e.target.value.toLowerCase();
+    
+    // Filter by Email or ID
+    const filtered = allUsersData.filter(u => 
+      u.email.toLowerCase().includes(term) || 
+      u.id.toString().includes(term)
+    );
+
+    renderUserTables(filtered);
+  });
 }
 
 /* =========================
@@ -57,6 +82,7 @@ function updateStatsUI(stats) {
   document.getElementById("admin-count").textContent = stats.admins || 0;
   document.getElementById("regular-count").textContent = stats.regularUsers || 0;
 }
+
 /* =========================
    USERS TABLES
 ========================= */
@@ -64,9 +90,9 @@ function renderUserTables(users) {
   const recent = document.querySelector("#recent-users tbody");
   const all = document.querySelector("#all-users tbody");
 
-  // 1. Recent Users Table (Last 5)
-  if (recent) {
-    recent.innerHTML = users
+  // 1. Recent Users Table (Last 5 from original data, not filtered)
+  if (recent && allUsersData.length > 0) {
+    recent.innerHTML = allUsersData
       .slice(-5)
       .reverse()
       .map(u => `
@@ -78,19 +104,22 @@ function renderUserTables(users) {
       `).join("");
   }
 
-  // 2. Manage Users Table (All)
+  // 2. Manage Users Table (Filtered list)
   if (all) {
+    if (users.length === 0) {
+        all.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 40px; color: #999;">No users found.</td></tr>`;
+        return;
+    }
+
     all.innerHTML = users.map(u => {
-      // PLAN LOGIC
       const currentPlan = u.current_plan || "NO ACTIVE SUB";
       const requestedPlan = u.requested_plan;
       const subStatus = (u.status || "none").toLowerCase();
 
-      // Determine if there is a pending request to display
       const requestBadge = (requestedPlan && requestedPlan !== "None") 
         ? `<div style="font-size: 0.6rem; color: #d00000; margin-top: 5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">
-             PENDING: ${requestedPlan}
-           </div>` 
+              PENDING: ${requestedPlan}
+            </div>` 
         : "";
 
       return `
@@ -125,12 +154,12 @@ function renderUserTables(users) {
     }).join("");
   }
 }
+
 /* =========================
    ACTIONS
 ========================= */
 window.updateUserRole = async (id, role) => {
   const token = localStorage.getItem("token");
-
   try {
     const res = await fetch(`${API_BASE_URL}/api/users/${id}`, {
       method: "PUT",
@@ -140,10 +169,7 @@ window.updateUserRole = async (id, role) => {
       },
       body: JSON.stringify({ role })
     });
-
-    if (res.ok) {
-        loadDashboardData();
-    }
+    if (res.ok) loadDashboardData();
   } catch (err) {
     console.error("Failed to update role:", err);
   }
@@ -152,16 +178,12 @@ window.updateUserRole = async (id, role) => {
 window.deleteUser = async (id) => {
   if (!confirm("Permanently remove this user? This cannot be undone.")) return;
   const token = localStorage.getItem("token");
-
   try {
     const res = await fetch(`${API_BASE_URL}/api/users/${id}`, {
       method: "DELETE",
       headers: { Authorization: `Bearer ${token}` }
     });
-
-    if (res.ok) {
-        loadDashboardData();
-    }
+    if (res.ok) loadDashboardData();
   } catch (err) {
     console.error("Failed to delete user:", err);
   }
