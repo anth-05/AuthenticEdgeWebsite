@@ -7,6 +7,9 @@ document.addEventListener('DOMContentLoaded', () => {
     refreshCartDisplay();
 });
 
+/**
+ * Adds a product to the selection and opens the sidebar.
+ */
 export function addToCart(product) {
     let cart = JSON.parse(localStorage.getItem('ae_cart')) || [];
     
@@ -20,10 +23,13 @@ export function addToCart(product) {
         localStorage.setItem('ae_cart', JSON.stringify(cart));
     }
     
-    openCartDrawer();
+    openCartDrawer(); // Ensure drawer slides in from the right
     refreshCartDisplay();
 }
 
+/**
+ * Sets up listeners for opening/closing the sidebar drawer.
+ */
 function initCartUI() {
     const drawer = document.getElementById('cartDrawer');
     const overlay = document.getElementById('cartOverlay');
@@ -31,16 +37,18 @@ function initCartUI() {
     const trigger = document.getElementById('cartTrigger');
     const checkoutBtn = document.getElementById('checkoutBtn');
 
-    // Add this guard clause
     if (!drawer || !overlay) return; 
 
     const closeDrawer = () => {
         drawer.classList.remove('open');
         overlay.classList.remove('show');
+        document.body.style.overflow = 'auto'; // Re-enable scroll
     };
+
     const openDrawer = () => {
         drawer.classList.add('open');
         overlay.classList.add('show');
+        document.body.style.overflow = 'hidden'; // Prevent background scroll
     };
 
     if (closeBtn) closeBtn.onclick = closeDrawer;
@@ -50,7 +58,7 @@ function initCartUI() {
     if (checkoutBtn) {
         checkoutBtn.onclick = () => {
             const cart = JSON.parse(localStorage.getItem('ae_cart')) || [];
-            if (cart.length === 0) return alert("Selection is empty.");
+            if (cart.length === 0) return alert("Your selection is empty.");
             
             closeDrawer();
             document.getElementById('checkoutModal').style.display = 'flex';
@@ -58,12 +66,28 @@ function initCartUI() {
     }
 }
 
+/**
+ * Handles the checkout modal visibility and submission.
+ */
 function initModalLogic() {
     const modal = document.getElementById('checkoutModal');
     const form = document.getElementById('checkoutForm');
     const closeBtn = document.getElementById('closeModal');
 
-    if (closeBtn) closeBtn.onclick = () => modal.style.display = 'none';
+    if (!modal) return;
+
+    if (closeBtn) {
+        closeBtn.onclick = () => {
+            modal.style.display = 'none';
+        };
+    }
+
+    // Close modal if clicking outside content
+    window.onclick = (event) => {
+        if (event.target == modal) {
+            modal.style.display = 'none';
+        }
+    };
 
     if (form) {
         form.onsubmit = async (e) => {
@@ -74,14 +98,17 @@ function initModalLogic() {
     }
 }
 
+/**
+ * Renders items inside the right-side drawer.
+ */
 export function refreshCartDisplay() {
     const cart = JSON.parse(localStorage.getItem('ae_cart')) || [];
     
-    // 1. Update the Header Badge (Top Right)
+    // 1. Update Badge Count
     const badge = document.getElementById('cartBadge');
     if (badge) badge.innerText = cart.length;
 
-    // 2. Update the "Total Items: X" in the Drawer (Bottom)
+    // 2. Update Total Items Counter
     const totalItemsText = document.getElementById('totalItemsCount'); 
     if (totalItemsText) {
         totalItemsText.innerText = `Total Items: ${cart.length}`;
@@ -91,22 +118,26 @@ export function refreshCartDisplay() {
     if (!list) return;
 
     if (cart.length === 0) {
-        list.innerHTML = '<p style="padding: 20px; color: #888;">No items selected.</p>';
+        list.innerHTML = '<p class="empty-msg" style="padding: 40px 0; color: #888; text-align: center;">Your selection is empty.</p>';
         return;
     }
 
-    // 3. Render items and fix the "undefined" price issue
+    // 3. Render Cart Items with updated class names for CSS alignment
     list.innerHTML = cart.map((item, index) => `
         <div class="cart-item">
-            <img src="${item.image}" alt="${item.title}" style="width:60px; height:60px; object-fit:cover;">
+            <img src="${item.image}" alt="${item.title}">
             <div class="cart-item-info">
                 <h4>${item.title}</h4>
-                <p>${item.price || "Contact for Price"}</p> <button class="remove-link" onclick="removeFromSelection(${index})">Remove</button>
+                <p>${item.price || "Contact for Price"}</p> 
+                <button class="remove-btn" onclick="removeFromSelection(${index})">Remove</button>
             </div>
         </div>
     `).join('');
 }
 
+/**
+ * Removes item and refreshes UI.
+ */
 window.removeFromSelection = (index) => {
     let cart = JSON.parse(localStorage.getItem('ae_cart')) || [];
     cart.splice(index, 1);
@@ -114,18 +145,23 @@ window.removeFromSelection = (index) => {
     refreshCartDisplay();
 };
 
+/**
+ * Formats and sends the inquiry to the backend.
+ */
 async function processInquiry(formData) {
     const token = localStorage.getItem("token");
     const cart = JSON.parse(localStorage.getItem('ae_cart')) || [];
 
-    if (!token) return (window.location.href = "login.html");
+    if (!token) {
+        alert("Please sign in to submit your selection.");
+        window.location.href = "login.html";
+        return;
+    }
 
-    // Format the product list with numbering and clear spacing
     const productList = cart.map((item, index) => 
         `${index + 1}. PRODUCT: ${item.title.toUpperCase()}\n   PRICE: ${item.price || 'Contact for Price'}`
     ).join('\n\n');
 
-    // The structured template for the producer
     const message = `
 📦 NEW SELECTION INQUIRY: AUTHENTIC EDGE
 ------------------------------------------
@@ -147,7 +183,6 @@ Country:    ${formData.get('land')}
 ${productList}
 
 ------------------------------------------
-
 Shipping (€7.25 p.p.) + €1 Tikkie fee.
 ------------------------------------------
 `.trim();
@@ -163,18 +198,25 @@ Shipping (€7.25 p.p.) + €1 Tikkie fee.
         });
 
         if (res.ok) {
-            alert("Inquiry successfully sent!");
+            alert("Selection sent! We will contact you soon.");
             localStorage.removeItem('ae_cart');
             window.location.href = "user-messages.html";
+        } else {
+            const err = await res.json();
+            alert(`Error: ${err.error || "Could not send inquiry."}`);
         }
     } catch (e) { 
-        alert("Error sending inquiry."); 
+        alert("Server error. Please try again later."); 
     }
 }
 
-function openCartDrawer() {
+/**
+ * Helper to force open the right drawer.
+ */
+export function openCartDrawer() {
     const drawer = document.getElementById('cartDrawer');
     const overlay = document.getElementById('cartOverlay');
     if(drawer) drawer.classList.add('open');
     if(overlay) overlay.classList.add('show');
+    document.body.style.overflow = 'hidden';
 }
