@@ -13,6 +13,7 @@ function initMenu() {
         <a href="index.html" class="nav-link">Home</a>
         <a href="product.html" class="nav-link">Products</a>
         <a href="subscription.html" class="nav-link">Subscription</a>
+        <a href="about-us.html" class="nav-link">About Us</a>
     `;
 
     // 2. Conditional Auth Links

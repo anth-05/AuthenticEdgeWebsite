@@ -1,0 +1,141 @@
+/* ========== ABOUT PAGE STYLES ========== */
+
+.about-page {
+    background-color: #fff;
+    color: #000;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 5%;
+}
+
+/* --- Hero Section --- */
+.about-hero {
+    padding: 120px 0 60px 0;
+    text-align: left;
+}
+
+.about-hero .subtitle {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    color: #999;
+    display: block;
+    margin-bottom: 20px;
+}
+
+.about-hero h2 {
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    font-weight: 800;
+    line-height: 1;
+    text-transform: uppercase;
+    letter-spacing: -0.02em;
+}
+
+/* --- Split Layout --- */
+.about-split {
+    padding: 60px 0;
+}
+
+.split-container {
+    display: flex;
+    align-items: center;
+    gap: 80px;
+}
+
+.split-image {
+    flex: 1;
+    height: 700px;
+    background: #f5f5f5; /* Placeholder color */
+    overflow: hidden;
+}
+
+.split-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: grayscale(100%); /* Keeps the editorial look */
+    transition: filter 0.5s ease;
+}
+
+.split-image:hover img {
+    filter: grayscale(0%);
+}
+
+.split-text {
+    flex: 1;
+    padding-right: 5%;
+}
+
+.split-text h3 {
+    font-size: 1.5rem;
+    text-transform: uppercase;
+    margin-bottom: 30px;
+    letter-spacing: 0.1em;
+}
+
+.split-text p {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: #444;
+    margin-bottom: 20px;
+}
+
+/* --- Values Grid --- */
+.values-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin-top: 50px;
+}
+
+.value-item span {
+    font-size: 0.8rem;
+    font-weight: 800;
+    color: #ccc;
+    display: block;
+    margin-bottom: 10px;
+}
+
+.value-item h4 {
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+}
+
+.value-item p {
+    font-size: 0.85rem;
+    line-height: 1.5;
+}
+
+/* --- CTA Section --- */
+.about-cta {
+    padding: 150px 0;
+    text-align: center;
+    border-top: 1px solid #eee;
+}
+
+.about-cta h2 {
+    font-size: 2rem;
+    text-transform: uppercase;
+    margin-bottom: 40px;
+}
+
+/* --- Responsive --- */
+@media (max-width: 968px) {
+    .split-container {
+        flex-direction: column;
+        gap: 40px;
+    }
+    
+    .split-image {
+        width: 100%;
+        height: 400px;
+    }
+
+    .about-hero {
+        padding: 80px 0 40px 0;
+    }
+}

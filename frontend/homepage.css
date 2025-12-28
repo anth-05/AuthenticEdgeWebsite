@@ -18,27 +18,22 @@
   width: 100%;
   height: 100%;
   z-index: 1;
-  
-  /* Your Shoe Image */
   background: url('images/Homepage-Image.jpg') no-repeat center;
   background-size: cover;
   filter: blur(5px) brightness(0.7);
-  
-  /* Gradient ensures text is readable without a box */
   mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 50%, rgba(0,0,0,0.2) 100%);
   -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 50%, rgba(0,0,0,0.2) 100%);
 }
 
-/* THE TEXT CONTENT (Free-floating, No Box) */
 .hero-content {
   position: relative;
   z-index: 2;
   max-width: 650px;
-  text-align: left; /* Left alignment matches modern editorial look */
+  text-align: left;
 }
 
 .hero-content h2 {
-  font-size: clamp(3rem, 7vw, 5rem); /* Bold, high-impact typography */
+  font-size: clamp(3rem, 7vw, 5rem);
   font-weight: 800;
   color: #fff;
   letter-spacing: -0.04em;
@@ -69,7 +64,7 @@
   text-transform: uppercase;
   letter-spacing: 0.1em;
   transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-  border: none; /* Removed all borders */
+  border: none;
 }
 
 .btn-primary {
@@ -78,7 +73,7 @@
 }
 
 .btn-secondary {
-  background: rgba(255, 255, 255, 0.15); /* Subtle transparent look */
+  background: rgba(255, 255, 255, 0.15);
   color: #fff;
   backdrop-filter: blur(10px);
 }
@@ -88,21 +83,69 @@
   background: #000;
   color: #fff;
 }
-/* Import the grid logic from product styles if not already present */
+
+/* ========== FEATURED PRODUCT GRID (PROPORTION FIX) ========== */
 .product-card-link {
     text-decoration: none;
     color: inherit;
     display: block;
 }
 
-/* Ensure the grid matches your Product Page style */
 #featured-product-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     column-gap: 20px;
     row-gap: 40px;
+    margin-top: 40px;
 }
 
+/* Fixed Proportion Frame */
+.product-img-frame {
+    width: 100%;
+    aspect-ratio: 1 / 1; /* Forces square shape */
+    background-color: #f5f5f5;
+    overflow: hidden;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    padding: 12%; /* Space around the product image */
+    box-sizing: border-box;
+}
+
+.product-img-frame img {
+    max-width: 100%; 
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain; /* Prevents stretching */
+    mix-blend-mode: multiply; /* Blends white backgrounds with the grey frame */
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.product-card-link:hover img {
+    transform: scale(1.05);
+}
+
+/* Consistent Text Alignment */
+.product-details {
+    text-align: center;
+    padding: 0 10px;
+}
+
+.product-details h3 {
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    min-height: 40px; /* Ensures next row starts at the same level */
+}
+
+/* Responsive Grid Adjustments */
 @media (max-width: 1200px) { #featured-product-grid { grid-template-columns: repeat(3, 1fr); } }
 @media (max-width: 850px) { #featured-product-grid { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 480px) { #featured-product-grid { grid-template-columns: 1fr; } }
+@media (max-width: 480px) { 
+    #featured-product-grid { grid-template-columns: 1fr; } 
+    .container { padding: 0 20px; }
+}
