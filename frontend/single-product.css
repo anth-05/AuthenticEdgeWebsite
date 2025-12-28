@@ -1,292 +1,85 @@
-/* ==========================================================================
-   1. DRAWER OVERLAY (THE DARK BLURRED BACKGROUND)
-   ========================================================================== */
-.cart-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.3); /* Subtle dimming */
-    backdrop-filter: blur(8px);    /* Matches the high-end blur in your image */
-    display: none;
-    z-index: 2000;
-    opacity: 0;
-    transition: opacity 0.4s ease;
+/* RESET & BASE */
+:root {
+    --ae-black: #000000;
+    --ae-white: #ffffff;
+    --ae-gray: #f6f6f6;
+    --ae-text-muted: #888888;
+    --ae-border: #eeeeee;
 }
 
-.cart-overlay.show {
-    display: block;
-    opacity: 1;
-}
+body { font-family: 'Inter', sans-serif; background: var(--ae-white); color: var(--ae-black); }
 
-/* ==========================================================================
-   2. THE SELECTION SIDEBAR (RIGHT SIDE)
-   ========================================================================== */
-.cart-drawer {
-    position: fixed;
-    top: 0;
-    right: -500px; /* Start completely off-screen */
-    width: 450px;  /* Matches the width in your screenshot */
-    height: 100%;
-    background: #ffffff;
-    z-index: 2001;
+/* PRODUCT PAGE LAYOUT */
+.product-main { max-width: 1300px; margin: 0 auto; padding: 40px; }
+.product-page-container { display: grid; grid-template-columns: 1fr 450px; gap: 80px; align-items: start; }
+
+.main-image-container {
+    background: var(--ae-gray);
+    border-radius: 20px;
+    padding: 60px;
     display: flex;
-    flex-direction: column;
-    box-shadow: -10px 0 30px rgba(0, 0, 0, 0.05); /* Soft shadow for depth */
-    transition: right 0.6s cubic-bezier(0.16, 1, 0.3, 1); /* Ultra-smooth slide */
-    padding: 0; /* Let internal containers handle padding */
-}
-
-.cart-drawer.open {
-    right: 0; /* Slide into view */
-}
-
-/* Header within the drawer */
-.cart-header {
-    padding: 40px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid #f2f2f2;
-}
-
-.cart-header h3 {
-    font-size: 1.8rem;
-    font-weight: 700;
-    letter-spacing: -0.03em;
-    margin: 0;
-}
-
-/* Items Area */
-.cart-items {
-    flex: 1;
-    overflow-y: auto;
-    padding: 20px 40px;
-}
-
-/* Footer Area with Submit Button */
-.cart-footer {
-    padding: 40px;
-    border-top: 1px solid #f2f2f2;
-    background: #fff;
-}
-
-/* ==========================================================================
-   3. THE FLOATING TRIGGER (BOTTOM RIGHT BUTTON)
-   ========================================================================== */
-.cart-trigger {
-    position: fixed;
-    bottom: 40px;
-    right: 40px;
-    background: #000;
-    color: #fff;
-    padding: 16px 32px;
-    border-radius: 100px; /* Pill shape from your image */
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    z-index: 999;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    box-shadow: 0 15px 30px rgba(0,0,0,0.2);
-    transition: transform 0.3s ease;
-}
-
-.cart-trigger:hover {
-    transform: translateY(-5px);
-}
-
-.cart-trigger .badge {
-    background: #fff;
-    color: #000;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
     justify-content: center;
-    font-size: 12px;
-    font-weight: 800;
 }
 
-/* ==========================================================================
-   4. RESPONSIVENESS
-   ========================================================================== */
-@media (max-width: 600px) {
-    .cart-drawer {
-        width: 100%; /* Take full screen on mobile */
-        right: -100%;
-    }
-}
-/* ==========================================================================
-   2. ARCHIVE SEARCH (EDITORIAL STYLE)
-   ========================================================================== */
-.search-container {
-    max-width: 1300px;
-    margin: 40px auto;
-    padding: 0 40px;
-}
+.main-product-image { width: 100%; height: auto; mix-blend-mode: multiply; }
 
-#archiveSearch {
+.product-name { font-size: 3rem; font-weight: 800; text-transform: uppercase; letter-spacing: -0.03em; margin: 0 0 10px; }
+.product-price { font-size: 1.5rem; font-weight: 500; margin-bottom: 30px; }
+.section-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ae-text-muted); margin-bottom: 10px; }
+
+/* PREMIUM BUTTON */
+.primary-btn {
     width: 100%;
-    padding: 20px 0;
-    border: none;
-    border-bottom: 1px solid #eee;
-    font-family: 'Inter', sans-serif;
-    font-size: 1rem;
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-    background: transparent;
-    outline: none;
-    transition: border-color 0.3s ease;
-}
-
-#archiveSearch:focus {
-    border-bottom-color: #000;
-}
-
-/* ==========================================================================
-   3. CART DRAWER
-   ========================================================================== */
-.cart-drawer {
-    position: fixed;
-    top: 0;
-    right: -450px;
-    width: 450px;
-    height: 100%;
-    background: #fff;
-    z-index: 2001;
-    transition: right 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-    display: flex;
-    flex-direction: column;
-    padding: 40px;
-    box-shadow: -5px 0 30px rgba(0,0,0,0.1);
-}
-
-.cart-drawer.open { 
-    right: 0; 
-}
-
-.cart-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 40px;
-    border-bottom: 1px solid #f0f0f0;
-    padding-bottom: 20px;
-}
-
-.cart-header h3 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    margin: 0;
-}
-
-.close-btn {
-    background: none;
-    border: none;
-    font-size: 32px;
-    cursor: pointer;
-    line-height: 1;
-}
-
-.cart-items {
-    flex: 1;
-    overflow-y: auto;
-}
-
-.cart-item {
-    display: flex;
-    gap: 20px;
-    padding: 20px 0;
-    border-bottom: 1px solid #f0f0f0;
-    align-items: center;
-}
-
-.cart-item img {
-    width: 80px;
-    height: 80px;
-    object-fit: cover;
-    background: #f6f6f6;
-    border-radius: 12px;
-}
-
-.cart-item-info {
-    flex: 1;
-}
-
-.cart-item-info h4 {
-    font-size: 14px;
-    font-weight: 600;
-    margin: 0 0 4px 0;
-}
-
-.cart-item-info p {
-    font-size: 13px;
-    color: #888;
-    margin: 0 0 10px 0;
-}
-
-.remove-btn {
-    background: none;
-    border: none;
-    color: #ff4d4d;
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    cursor: pointer;
-    padding: 0;
-    transition: opacity 0.2s;
-}
-
-.remove-btn:hover {
-    opacity: 0.7;
-}
-
-.cart-footer {
-    padding-top: 30px;
-    border-top: 1px solid #eee;
-}
-
-.btn-checkout, .final-submit-btn {
-    width: 100%;
-    padding: 20px;
-    background: #000;
-    color: #fff;
+    padding: 22px;
+    background: var(--ae-black);
+    color: var(--ae-white);
     border: none;
     border-radius: 100px;
-    font-weight: 600;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 0.1em;
     cursor: pointer;
-    transition: 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: 0.3s;
+    margin: 40px 0;
 }
 
-.btn-checkout:hover, .final-submit-btn:hover { 
-    background: #222; 
-    transform: translateY(-2px);
+.primary-btn:hover { background: #333; transform: translateY(-2px); }
+
+/* SELECTION DRAWER (RIGHT SIDE) */
+.cart-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.2); backdrop-filter: blur(8px);
+    display: none; z-index: 2000; opacity: 0; transition: 0.4s;
 }
 
+.cart-overlay.show { display: block; opacity: 1; }
+
+.cart-drawer {
+    position: fixed; top: 0; right: -500px; width: 450px; height: 100%;
+    background: var(--ae-white); z-index: 2001;
+    display: flex; flex-direction: column;
+    transition: right 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: -10px 0 40px rgba(0,0,0,0.05);
+}
+
+.cart-drawer.open { right: 0; }
+
+.cart-header { padding: 40px; border-bottom: 1px solid var(--ae-border); display: flex; justify-content: space-between; align-items: center; }
+.cart-items { flex: 1; overflow-y: auto; padding: 20px 40px; }
+
+.cart-item { display: flex; gap: 20px; padding: 20px 0; border-bottom: 1px solid var(--ae-border); align-items: center; }
+.cart-item img { width: 80px; height: 80px; object-fit: cover; border-radius: 12px; background: var(--ae-gray); }
+
+.remove-btn { background: none; border: none; color: #ff4d4d; font-size: 11px; text-transform: uppercase; cursor: pointer; padding: 0; margin-top: 5px; }
+
+/* FLOATING TRIGGER */
 .cart-trigger {
-    position: fixed;
-    bottom: 30px;
-    right: 30px;
-    background: #000;
-    color: #fff;
-    padding: 12px 24px;
-    border-radius: 50px;
-    cursor: pointer;
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    z-index: 999;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+    position: fixed; bottom: 40px; right: 40px;
+    background: var(--ae-black); color: var(--ae-white);
+    padding: 16px 28px; border-radius: 100px; cursor: pointer;
+    display: flex; align-items: center; gap: 12px; z-index: 999;
+    font-weight: 700; text-transform: uppercase; font-size: 13px;
 }
-
 /* ==========================================================================
    4. CHECKOUT MODAL & FORM
    ========================================================================== */
@@ -330,119 +123,4 @@
 .warning-text { 
     color: #d00; 
     font-weight: 700;
-}
-
-/* ==========================================================================
-   5. PRODUCT PAGE LAYOUT & TYPOGRAPHY
-   ========================================================================== */
-.product-main {
-    max-width: 1300px;
-    margin: 0 auto;
-    padding: 20px 40px;
-}
-
-.product-page-container {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 80px;
-    align-items: start;
-    margin-top: 40px;
-}
-
-.product-gallery {
-    position: sticky;
-    top: 100px;
-}
-
-.main-image-container {
-    background-color: #f6f6f6;
-    border-radius: 24px;
-    aspect-ratio: 1 / 1.1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 10%;
-    overflow: hidden;
-}
-
-.main-product-image {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-    mix-blend-mode: multiply;
-}
-
-.product-details-content .premium-tag {
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: #888;
-    margin-bottom: 8px;
-    display: block;
-}
-
-.product-name {
-    font-size: 2.8rem;
-    font-weight: 700;
-    margin: 0 0 15px 0;
-    letter-spacing: -0.03em;
-    line-height: 1.1;
-    text-transform: uppercase;
-}
-
-.price-contact {
-    font-size: 1.2rem;
-    color: #444;
-    margin-bottom: 30px;
-    display: block;
-    font-weight: 500;
-}
-
-/* Updated Add to Selection Button to match design */
-#messageBtn {
-    width: 100%;
-    max-width: 400px;
-    padding: 22px;
-    background: #000;
-    color: #fff;
-    border: none;
-    border-radius: 100px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-#messageBtn:hover {
-    background: #333;
-    transform: translateY(-2px);
-}
-
-/* ==========================================================================
-   6. MOBILE RESPONSIVENESS
-   ========================================================================== */
-@media (max-width: 900px) {
-    .product-page-container {
-        grid-template-columns: 1fr;
-        gap: 40px;
-    }
-    
-    .cart-drawer {
-        width: 100%;
-        right: -100%;
-        padding: 20px;
-    }
-
-    .form-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .product-name {
-        font-size: 1.8rem;
-    }
-
-    .search-container {
-        padding: 0 20px;
-    }
 }
