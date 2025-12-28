@@ -13,7 +13,6 @@ import nodemailer from 'nodemailer';
 import { fileURLToPath } from 'url';
 import rateLimit from 'express-rate-limit';
 import validator from 'validator';
-const bcrypt = require('bcrypt');
 
 // Recreate __dirname for ES modules
 const __filename = fileURLToPath(import.meta.url);
