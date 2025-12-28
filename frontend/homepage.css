@@ -88,3 +88,21 @@
   background: #000;
   color: #fff;
 }
+/* Import the grid logic from product styles if not already present */
+.product-card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+/* Ensure the grid matches your Product Page style */
+#featured-product-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    column-gap: 20px;
+    row-gap: 40px;
+}
+
+@media (max-width: 1200px) { #featured-product-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 850px) { #featured-product-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 480px) { #featured-product-grid { grid-template-columns: 1fr; } }
