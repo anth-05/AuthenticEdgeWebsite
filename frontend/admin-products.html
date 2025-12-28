@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="theme.css" />
   <link rel="stylesheet" href="admin-base.css" />
   <link rel="stylesheet" href="admin-product.css" />
+  <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
 </head>
 
 <body class="dashboard-body">
@@ -110,6 +111,11 @@
             </tbody>
         </table>
       </div>
+      <div class="pagination-container">
+        <button id="prev-page" class="btn-pagination" disabled>Previous</button>
+        <div id="page-numbers" class="page-numbers"></div>
+        <button id="next-page" class="btn-pagination">Next</button>
+      </div>
     </section>
   </main>
 <div id="edit-modal" class="modal" style="display:none; position: fixed; inset: 0; z-index: 9999; justify-content: center; align-items: center; background: rgba(0,0,0,0.5);">
@@ -189,7 +195,7 @@
   <i class="ri-arrow-up-s-line"></i>
 </button>
 
-  <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
+  
   <script type="module" src="admin-product.js"></script>
   <script src="logout.js"></script>
   

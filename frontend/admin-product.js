@@ -1,6 +1,13 @@
 import { API_BASE_URL } from "./config.js";
 
 /* -------------------------------------------------------
+   GLOBAL STATE FOR PAGINATION
+------------------------------------------------------- */
+let allProducts = [];
+let currentPage = 1;
+const itemsPerPage = 15;
+
+/* -------------------------------------------------------
    IMAGE TYPE SWITCHER (URL ↔ FILE)
 ------------------------------------------------------- */
 const radioGroup = document.querySelectorAll('input[name="imageType"]');
@@ -26,7 +33,7 @@ radioGroup.forEach(radio => {
 });
 
 /* -------------------------------------------------------
-   LOAD PRODUCTS INTO TABLE (Sorted by Custom Order)
+   LOAD PRODUCTS (FETCH & SORT)
 ------------------------------------------------------- */
 async function loadProducts() {
     const token = localStorage.getItem("token");
@@ -41,47 +48,112 @@ async function loadProducts() {
         });
 
         if (!res.ok) throw new Error("Unauthorized access");
-        let products = await res.json();
+        allProducts = await res.json();
         
-        // --- ADDED: SORT LOGIC FOR ADMIN TABLE ---
-        // High to Low: Highest sort_index appears first
-        products.sort((a, b) => (b.sort_index || 0) - (a.sort_index || 0));
+        // Sort: Highest sort_index appears first
+        allProducts.sort((a, b) => (b.sort_index || 0) - (a.sort_index || 0));
 
-        if (!products.length) {
+        if (!allProducts.length) {
             tbody.innerHTML = "<tr><td colspan='7'>No inventory recorded.</td></tr>";
             return;
         }
 
-        tbody.innerHTML = products.map(p => `
-            <tr>
-                <td>#${p.id} <br><small style="color:#888">Order: ${p.sort_index || 0}</small></td>
-                <td><img src="${p.image}" alt="${p.name}" class="product-thumb"></td>
-                <td><strong>${p.name}</strong></td>
-                <td>${p.gender || "—"}</td>
-                <td><span class="quality-tag">${p.quality || "Standard"}</span></td>
-                <td>${p.availability || "In Stock"}</td>
-                <td>
-                    <div class="action-cell">
-                        <button class="text-link-btn edit-btn" data-id="${p.id}">Edit</button>
-                        <button class="text-link-btn delete-btn" data-id="${p.id}" style="color: #d00000;">Remove</button>
-                    </div>
-                </td>
-            </tr>
-        `).join("");
+        renderTablePage();
+        renderPaginationControls();
 
-        tbody.querySelectorAll('.delete-btn').forEach(btn =>
-            btn.addEventListener('click', () => deleteProduct(btn.dataset.id))
-        );
-
-        tbody.querySelectorAll('.edit-btn').forEach(btn =>
-            btn.addEventListener('click', () => {
-                const product = products.find(item => item.id == btn.dataset.id);
-                openEditModal(product);
-            })
-        );
     } catch (err) {
         tbody.innerHTML = `<tr><td colspan='7'>Sync Error: ${err.message}</td></tr>`;
     }
+}
+
+/* -------------------------------------------------------
+   RENDER TABLE (SLICE BY PAGE)
+------------------------------------------------------- */
+function renderTablePage() {
+    const tbody = document.querySelector("#product-table tbody");
+    
+    // Calculate start and end indices for slicing
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const pagedProducts = allProducts.slice(startIndex, endIndex);
+
+    tbody.innerHTML = pagedProducts.map(p => `
+        <tr>
+            <td>#${p.id} <br><small style="color:#888">Order: ${p.sort_index || 0}</small></td>
+            <td><img src="${p.image}" alt="${p.name}" class="product-thumb"></td>
+            <td><strong>${p.name}</strong></td>
+            <td>${p.gender || "—"}</td>
+            <td><span class="quality-tag">${p.quality || "Standard"}</span></td>
+            <td>${p.availability || "In Stock"}</td>
+            <td>
+                <div class="action-cell">
+                    <button class="text-link-btn edit-btn" data-id="${p.id}">Edit</button>
+                    <button class="text-link-btn delete-btn" data-id="${p.id}" style="color: #d00000;">Remove</button>
+                </div>
+            </td>
+        </tr>
+    `).join("");
+
+    // Re-attach event listeners
+    tbody.querySelectorAll('.delete-btn').forEach(btn =>
+        btn.addEventListener('click', () => deleteProduct(btn.dataset.id))
+    );
+
+    tbody.querySelectorAll('.edit-btn').forEach(btn =>
+        btn.addEventListener('click', () => {
+            const product = allProducts.find(item => item.id == btn.dataset.id);
+            openEditModal(product);
+        })
+    );
+}
+
+/* -------------------------------------------------------
+   PAGINATION CONTROLS LOGIC
+------------------------------------------------------- */
+function renderPaginationControls() {
+    const totalPages = Math.ceil(allProducts.length / itemsPerPage);
+    const pageNumbersDiv = document.getElementById('page-numbers');
+    const prevBtn = document.getElementById('prev-page');
+    const nextBtn = document.getElementById('next-page');
+
+    if (!pageNumbersDiv) return;
+
+    pageNumbersDiv.innerHTML = "";
+
+    for (let i = 1; i <= totalPages; i++) {
+        const span = document.createElement('span');
+        span.innerText = i;
+        span.className = `page-num ${i === currentPage ? 'active' : ''}`;
+        span.onclick = () => {
+            currentPage = i;
+            updateUI();
+        };
+        pageNumbersDiv.appendChild(span);
+    }
+
+    // Button States
+    prevBtn.disabled = (currentPage === 1);
+    nextBtn.disabled = (currentPage === totalPages || totalPages === 0);
+
+    prevBtn.onclick = () => {
+        if (currentPage > 1) {
+            currentPage--;
+            updateUI();
+        }
+    };
+
+    nextBtn.onclick = () => {
+        if (currentPage < totalPages) {
+            currentPage++;
+            updateUI();
+        }
+    };
+}
+
+function updateUI() {
+    renderTablePage();
+    renderPaginationControls();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 /* -------------------------------------------------------
@@ -100,12 +172,10 @@ async function deleteProduct(id) {
 }
 
 /* -------------------------------------------------------
-   OPEN EDIT MODAL
+   MODAL LOGIC
 ------------------------------------------------------- */
 function openEditModal(p) {
-    // Fixed: changed 'product' to 'p' to match function parameter
     document.getElementById('edit-sort-index').value = p.sort_index || 0;
-    
     document.getElementById("edit-product-id").value = p.id;
     document.getElementById("edit-name").value = p.name || "";
     document.getElementById("edit-description").value = p.description || "";
@@ -128,7 +198,7 @@ window.closeEditModal = () => {
 };
 
 /* -------------------------------------------------------
-   SUBMIT ADD PRODUCT (Including Sort Order)
+   FORM SUBMISSIONS
 ------------------------------------------------------- */
 document.getElementById("add-product-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -144,7 +214,6 @@ document.getElementById("add-product-form")?.addEventListener("submit", async (e
     fd.append("quality", form.elements["quality"].value.trim());
     fd.append("availability", form.elements["availability"]?.value.trim() || "In Stock");
     
-    // --- ADDED: GRAB SORT INDEX FROM ADD FORM ---
     const sortIdx = form.querySelector('#add-sort-index')?.value || 0;
     fd.append("sort_index", sortIdx);
 
@@ -170,24 +239,6 @@ document.getElementById("add-product-form")?.addEventListener("submit", async (e
     } catch (error) { console.error("Add failed:", error); }
 });
 
-/* -------------------------------------------------------
-   EDIT MODAL IMAGE SWITCHER
-------------------------------------------------------- */
-const editRadioGroup = document.querySelectorAll('input[name="editImageType"]');
-const editUrlRow = document.getElementById('edit-image-url-row');
-const editUploadRow = document.getElementById('edit-image-upload-row');
-
-editRadioGroup.forEach(radio => {
-    radio.addEventListener('change', () => {
-        const isUrl = radio.value === "url";
-        if (editUrlRow) editUrlRow.style.display = isUrl ? 'block' : 'none';
-        if (editUploadRow) editUploadRow.style.display = isUrl ? 'none' : 'block';
-    });
-});
-
-/* -------------------------------------------------------
-   SUBMIT EDIT PRODUCT (Including Sort Order)
-------------------------------------------------------- */
 document.getElementById("edit-product-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const token = localStorage.getItem("token");
@@ -199,8 +250,6 @@ document.getElementById("edit-product-form")?.addEventListener("submit", async (
     fd.append("gender", document.getElementById("edit-gender").value.trim());
     fd.append("quality", document.getElementById("edit-quality").value.trim());
     fd.append("availability", document.getElementById("edit-availability").value.trim());
-    
-    // --- ADDED: GRAB SORT INDEX FROM EDIT MODAL ---
     fd.append("sort_index", document.getElementById("edit-sort-index").value);
 
     const imageType = document.querySelector('input[name="editImageType"]:checked').value;
@@ -226,32 +275,21 @@ document.getElementById("edit-product-form")?.addEventListener("submit", async (
         }
     } catch (error) { console.error("Update error:", error); }
 });
-/* =========================
-   BACK TO TOP LOGIC
-========================= */
+
+/* -------------------------------------------------------
+   BACK TO TOP & INITIALIZATION
+------------------------------------------------------- */
 const initBackToTop = () => {
     const topBtn = document.getElementById("backToTop");
-
     if (!topBtn) return;
-
     window.addEventListener("scroll", () => {
-        // Show button after scrolling 400px
-        if (window.pageYOffset > 400) {
-            topBtn.classList.add("active");
-        } else {
-            topBtn.classList.remove("active");
-        }
+        if (window.pageYOffset > 400) topBtn.classList.add("active");
+        else topBtn.classList.remove("active");
     });
-
     topBtn.addEventListener("click", () => {
-        window.scrollTo({
-            top: 0,
-            behavior: "smooth"
-        });
+        window.scrollTo({ top: 0, behavior: "smooth" });
     });
 };
 
-// Call the function
 initBackToTop();
-
 document.addEventListener("DOMContentLoaded", loadProducts);
