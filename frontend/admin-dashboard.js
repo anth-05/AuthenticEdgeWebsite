@@ -57,7 +57,6 @@ function updateStatsUI(stats) {
   document.getElementById("admin-count").textContent = stats.admins || 0;
   document.getElementById("regular-count").textContent = stats.regularUsers || 0;
 }
-
 /* =========================
    USERS TABLES
 ========================= */
@@ -66,48 +65,62 @@ function renderUserTables(users) {
   const all = document.querySelector("#all-users tbody");
 
   // 1. Recent Users Table (Last 5)
-  recent.innerHTML = users
-    .slice(-5)
-    .reverse()
-    .map(u => `
-      <tr>
-        <td data-label="Email">${u.email}</td>
-        <td data-label="Role"><span class="admin-badge">${u.role}</span></td>
-        <td data-label="Registered At">${new Date(u.created_at).toLocaleDateString()}</td>
-      </tr>
-    `).join("");
+  if (recent) {
+    recent.innerHTML = users
+      .slice(-5)
+      .reverse()
+      .map(u => `
+        <tr>
+          <td data-label="Email">${u.email}</td>
+          <td data-label="Role"><span class="admin-badge">${u.role}</span></td>
+          <td data-label="Registered At">${new Date(u.created_at).toLocaleDateString()}</td>
+        </tr>
+      `).join("");
+  }
 
   // 2. Manage Users Table (All)
-  all.innerHTML = users.map(u => {
-    // Logic to extract actual subscription name
-    // This assumes your backend returns 'subscription_name' or 'plan_name'
-    const planDisplay = u.subscription_name || u.plan_name || "NO ACTIVE SUB";
-    const planClass = (u.subscription_name || u.plan_name || 'none').toLowerCase().replace(/\s+/g, '-');
+  if (all) {
+    all.innerHTML = users.map(u => {
+      // PLAN LOGIC
+      const currentPlan = u.current_plan || "NO ACTIVE SUB";
+      const requestedPlan = u.requested_plan;
+      const subStatus = (u.status || "none").toLowerCase();
 
-    return `
-      <tr>
-        <td data-label="User ID">#${u.id}</td>
-        <td data-label="Email"><strong>${u.email}</strong></td>
-        <td data-label="Subscription">
-          <span class="status ${planClass}" 
-                style="background: #000; color: #fff; border: none; padding: 5px 10px; font-size: 0.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em;">
-            ${planDisplay}
-          </span>
-        </td>
-        <td data-label="Role">
-          <select onchange="updateUserRole(${u.id}, this.value)" style="padding: 5px; font-size: 0.75rem; font-family: inherit; border: 1px solid #eee;">
-            <option value="user" ${u.role === "user" ? "selected" : ""}>User</option>
-            <option value="admin" ${u.role === "admin" ? "selected" : ""}>Admin</option>
-          </select>
-        </td>
-        <td data-label="Actions">
-          <button onclick="deleteUser(${u.id})" class="delete-x" style="color:#d00000; background:none; border:none; font-size:1.3rem; cursor:pointer; line-height: 1;">×</button>
-        </td>
-      </tr>
-    `;
-  }).join("");
+      // Determine if there is a pending request to highlight
+      const requestBadge = (requestedPlan && requestedPlan !== "None") 
+        ? `<div style="font-size: 0.55rem; color: #d00000; margin-top: 4px; font-weight: 700;">REQ: ${requestedPlan}</div>` 
+        : "";
+
+      return `
+        <tr>
+          <td data-label="User ID">#${u.id}</td>
+          <td data-label="Email">
+            <strong>${u.email}</strong>
+            <div style="font-size: 0.6rem; color: #999;">Joined: ${new Date(u.created_at).toLocaleDateString()}</div>
+          </td>
+          <td data-label="Subscription">
+            <span class="status-pill ${subStatus}" 
+                  style="display: inline-block; padding: 4px 8px; font-size: 0.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; border-radius: 2px; background: ${subStatus === 'active' ? '#000' : '#eee'}; color: ${subStatus === 'active' ? '#fff' : '#666'};">
+              ${currentPlan}
+            </span>
+            ${requestBadge}
+          </td>
+          <td data-label="Role">
+            <select onchange="updateUserRole(${u.id}, this.value)" style="padding: 5px; font-size: 0.75rem; font-family: inherit; border: 1px solid #eee; background: #fff;">
+              <option value="user" ${u.role === "user" ? "selected" : ""}>User</option>
+              <option value="admin" ${u.role === "admin" ? "selected" : ""}>Admin</option>
+            </select>
+          </td>
+          <td data-label="Actions">
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <button onclick="deleteUser(${u.id})" class="delete-x" title="Delete User">×</button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join("");
+  }
 }
-
 /* =========================
    ACTIONS
 ========================= */
