@@ -86,9 +86,11 @@ function renderUserTables(users) {
       const requestedPlan = u.requested_plan;
       const subStatus = (u.status || "none").toLowerCase();
 
-      // Determine if there is a pending request to highlight
+      // Determine if there is a pending request to display
       const requestBadge = (requestedPlan && requestedPlan !== "None") 
-        ? `<div style="font-size: 0.55rem; color: #d00000; margin-top: 4px; font-weight: 700;">REQ: ${requestedPlan}</div>` 
+        ? `<div style="font-size: 0.6rem; color: #d00000; margin-top: 5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">
+             PENDING: ${requestedPlan}
+           </div>` 
         : "";
 
       return `
@@ -96,23 +98,25 @@ function renderUserTables(users) {
           <td data-label="User ID">#${u.id}</td>
           <td data-label="Email">
             <strong>${u.email}</strong>
-            <div style="font-size: 0.6rem; color: #999;">Joined: ${new Date(u.created_at).toLocaleDateString()}</div>
+            <div style="font-size: 0.6rem; color: #999; margin-top: 2px;">Joined: ${new Date(u.created_at).toLocaleDateString()}</div>
           </td>
           <td data-label="Subscription">
             <span class="status-pill ${subStatus}" 
-                  style="display: inline-block; padding: 4px 8px; font-size: 0.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; border-radius: 2px; background: ${subStatus === 'active' ? '#000' : '#eee'}; color: ${subStatus === 'active' ? '#fff' : '#666'};">
+                  style="display: inline-block; padding: 4px 10px; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; border-radius: 2px; 
+                         background: ${subStatus === 'active' ? '#000' : '#eeeeee'}; 
+                         color: ${subStatus === 'active' ? '#fff' : '#888888'};">
               ${currentPlan}
             </span>
             ${requestBadge}
           </td>
           <td data-label="Role">
-            <select onchange="updateUserRole(${u.id}, this.value)" style="padding: 5px; font-size: 0.75rem; font-family: inherit; border: 1px solid #eee; background: #fff;">
+            <select onchange="updateUserRole(${u.id}, this.value)" style="padding: 6px; font-size: 0.75rem; font-family: inherit; border: 1px solid #eeeeee; background: #fff; cursor: pointer;">
               <option value="user" ${u.role === "user" ? "selected" : ""}>User</option>
               <option value="admin" ${u.role === "admin" ? "selected" : ""}>Admin</option>
             </select>
           </td>
           <td data-label="Actions">
-            <div style="display: flex; gap: 10px; align-items: center;">
+            <div style="display: flex; justify-content: center; align-items: center;">
                 <button onclick="deleteUser(${u.id})" class="delete-x" title="Delete User">×</button>
             </div>
           </td>

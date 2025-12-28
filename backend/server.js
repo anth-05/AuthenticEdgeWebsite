@@ -472,9 +472,27 @@ app.post('/api/register', async (req, res) => {
 });
 
 /* ---------------- ADMIN & MESSAGE ROUTES ---------------- */
+// GET All Users for Admin (With Subscription Data)
 app.get("/api/users", authenticateToken, verifyAdmin, async (req, res) => {
-  const result = await pool.query("SELECT id, email, role, created_at FROM users ORDER BY created_at DESC");
-  res.json(result.rows);
+    try {
+        const query = `
+            SELECT 
+                u.id, 
+                u.email, 
+                u.role, 
+                u.created_at,
+                s.current_plan, 
+                s.requested_plan, 
+                s.status
+            FROM users u
+            LEFT JOIN subscriptions s ON u.id = s.user_id
+            ORDER BY u.id DESC
+        `;
+        const result = await pool.query(query);
+        res.json(result.rows);
+    } catch (err) {
+        respondServerError(res, err, "Failed to fetch users");
+    }
 });
 
 app.get("/api/stats", authenticateToken, verifyAdmin, async (req, res) => {
