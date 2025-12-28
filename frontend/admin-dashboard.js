@@ -78,27 +78,34 @@ function renderUserTables(users) {
     `).join("");
 
   // 2. Manage Users Table (All)
-  all.innerHTML = users.map(u => `
-    <tr>
-      <td data-label="User ID">#${u.id}</td>
-      <td data-label="Email"><strong>${u.email}</strong></td>
-      <td data-label="Plan">
-        <span class="status ${u.plan_name ? u.plan_name.toLowerCase() : 'none'}" 
-              style="background: #000; color: #fff; border: none; padding: 4px 8px; font-size: 0.65rem; border-radius: 2px;">
-          ${u.plan_name || 'FREE TIER'}
-        </span>
-      </td>
-      <td data-label="Role">
-        <select onchange="updateUserRole(${u.id}, this.value)" style="padding: 4px; font-size: 0.75rem;">
-          <option value="user" ${u.role === "user" ? "selected" : ""}>User</option>
-          <option value="admin" ${u.role === "admin" ? "selected" : ""}>Admin</option>
-        </select>
-      </td>
-      <td data-label="Actions">
-        <button onclick="deleteUser(${u.id})" class="delete-x" style="color:red; background:none; border:none; font-size:1.2rem; cursor:pointer;">×</button>
-      </td>
-    </tr>
-  `).join("");
+  all.innerHTML = users.map(u => {
+    // Logic to extract actual subscription name
+    // This assumes your backend returns 'subscription_name' or 'plan_name'
+    const planDisplay = u.subscription_name || u.plan_name || "NO ACTIVE SUB";
+    const planClass = (u.subscription_name || u.plan_name || 'none').toLowerCase().replace(/\s+/g, '-');
+
+    return `
+      <tr>
+        <td data-label="User ID">#${u.id}</td>
+        <td data-label="Email"><strong>${u.email}</strong></td>
+        <td data-label="Subscription">
+          <span class="status ${planClass}" 
+                style="background: #000; color: #fff; border: none; padding: 5px 10px; font-size: 0.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em;">
+            ${planDisplay}
+          </span>
+        </td>
+        <td data-label="Role">
+          <select onchange="updateUserRole(${u.id}, this.value)" style="padding: 5px; font-size: 0.75rem; font-family: inherit; border: 1px solid #eee;">
+            <option value="user" ${u.role === "user" ? "selected" : ""}>User</option>
+            <option value="admin" ${u.role === "admin" ? "selected" : ""}>Admin</option>
+          </select>
+        </td>
+        <td data-label="Actions">
+          <button onclick="deleteUser(${u.id})" class="delete-x" style="color:#d00000; background:none; border:none; font-size:1.3rem; cursor:pointer; line-height: 1;">×</button>
+        </td>
+      </tr>
+    `;
+  }).join("");
 }
 
 /* =========================
@@ -118,7 +125,6 @@ window.updateUserRole = async (id, role) => {
     });
 
     if (res.ok) {
-        console.log(`User ${id} updated to ${role}`);
         loadDashboardData();
     }
   } catch (err) {
@@ -143,20 +149,3 @@ window.deleteUser = async (id) => {
     console.error("Failed to delete user:", err);
   }
 };
-
-/* =========================
-   LOGOUT
-========================= */
-function setupLogout() {
-  document.querySelectorAll("#logout-btn").forEach(btn =>
-    btn.addEventListener("click", (e) => {
-        e.preventDefault();
-        logout();
-    })
-  );
-}
-
-function logout() {
-  localStorage.clear();
-  window.location.href = "login.html";
-}
