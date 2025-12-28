@@ -150,16 +150,17 @@
   to { opacity: 1; transform: translateY(0); }
 }
 /* BACK TO TOP - EDITORIAL STYLE */
+/* CENTRALIZED BACK TO TOP */
 .back-to-top {
     position: fixed;
-    right: 40px;
+    left: 50%; /* Center relative to screen width */
+    transform: translateX(-50%) translateY(20px); /* Start slightly lower for entrance effect */
     bottom: 40px;
-    width: 48px;
-    height: 48px;
-    background-color: var(--accent-black);
-    color: #ffffff;
+    width: 50px;
+    height: 50px;
+    background-color: #000;
+    color: #fff;
     border: none;
-    border-radius: 0; /* Keep it sharp/editorial */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -167,31 +168,30 @@
     z-index: 2000;
     opacity: 0;
     visibility: hidden;
-    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
 }
 
 .back-to-top i {
-    font-size: 1.5rem;
+    font-size: 1.4rem;
 }
 
+/* When the user scrolls down */
 .back-to-top.active {
     opacity: 1;
     visibility: visible;
-    transform: translateY(0);
+    transform: translateX(-50%) translateY(0); /* Final centered position */
 }
 
 .back-to-top:hover {
     background-color: #333;
-    transform: translateY(-5px);
 }
 
-/* RESPONSIVE ADJUSTMENTS */
+/* RESPONSIVE: Avoid overlapping Bottom Tabs */
 @media (max-width: 900px) {
     .back-to-top {
-        right: 20px;
-        bottom: 85px; /* Moves above the mobile bottom-tabs */
-        width: 40px;
-        height: 40px;
+        bottom: 90px; /* Moves it above the mobile bottom bar */
+        width: 45px;
+        height: 45px;
     }
 }
