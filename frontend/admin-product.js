@@ -5,7 +5,7 @@ import { API_BASE_URL } from "./config.js";
 ------------------------------------------------------- */
 let allProducts = [];
 let currentPage = 1;
-const itemsPerPage = 15;
+const itemsPerPage = 5;
 
 /* -------------------------------------------------------
    IMAGE TYPE SWITCHER (URL ↔ FILE)
@@ -72,7 +72,6 @@ async function loadProducts() {
 function renderTablePage() {
     const tbody = document.querySelector("#product-table tbody");
     
-    // Calculate start and end indices for slicing
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
     const pagedProducts = allProducts.slice(startIndex, endIndex);
@@ -94,7 +93,6 @@ function renderTablePage() {
         </tr>
     `).join("");
 
-    // Re-attach event listeners
     tbody.querySelectorAll('.delete-btn').forEach(btn =>
         btn.addEventListener('click', () => deleteProduct(btn.dataset.id))
     );
@@ -108,7 +106,7 @@ function renderTablePage() {
 }
 
 /* -------------------------------------------------------
-   PAGINATION CONTROLS LOGIC
+   CLEANED UP PAGINATION CONTROLS (Max 4 numbers)
 ------------------------------------------------------- */
 function renderPaginationControls() {
     const totalPages = Math.ceil(allProducts.length / itemsPerPage);
@@ -117,10 +115,21 @@ function renderPaginationControls() {
     const nextBtn = document.getElementById('next-page');
 
     if (!pageNumbersDiv) return;
-
     pageNumbersDiv.innerHTML = "";
 
-    for (let i = 1; i <= totalPages; i++) {
+    // Calculate window of pages to show
+    const maxVisible = 4;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+    let endPage = startPage + maxVisible - 1;
+
+    // Adjust if we are near the end
+    if (endPage > totalPages) {
+        endPage = totalPages;
+        startPage = Math.max(1, endPage - maxVisible + 1);
+    }
+
+    // Generate limited page numbers
+    for (let i = startPage; i <= endPage; i++) {
         const span = document.createElement('span');
         span.innerText = i;
         span.className = `page-num ${i === currentPage ? 'active' : ''}`;
@@ -131,7 +140,7 @@ function renderPaginationControls() {
         pageNumbersDiv.appendChild(span);
     }
 
-    // Button States
+    // Update Button States
     prevBtn.disabled = (currentPage === 1);
     nextBtn.disabled = (currentPage === totalPages || totalPages === 0);
 
