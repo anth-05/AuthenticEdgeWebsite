@@ -1,48 +1,64 @@
 import { API_BASE_URL } from "./config.js";
 
 /* -------------------------------------------------------
-   GLOBAL STATE FOR PAGINATION
+    GLOBAL STATE
 ------------------------------------------------------- */
-let allProducts = [];
+let allProducts = [];      // Raw data from server
+let filteredProducts = []; // Data after search/filtering
 let currentPage = 1;
 const itemsPerPage = 10;
 
 /* -------------------------------------------------------
-   SELECTORS
+    SELECTORS & INITIALIZATION
 ------------------------------------------------------- */
-// Add Form Selectors
+document.addEventListener("DOMContentLoaded", () => {
+    loadProducts();
+    setupSearch(); // Initialize search listener
+});
+
+// Search Logic
+function setupSearch() {
+    const searchInput = document.getElementById("productSearchInput");
+    if (!searchInput) return;
+
+    searchInput.addEventListener("input", (e) => {
+        const term = e.target.value.toLowerCase();
+        
+        // Filter from the master list
+        filteredProducts = allProducts.filter(p => 
+            p.name.toLowerCase().includes(term) || 
+            p.id.toString().includes(term) ||
+            (p.description && p.description.toLowerCase().includes(term))
+        );
+
+        currentPage = 1; // Reset to page 1 on search
+        updateUI();
+    });
+}
+
+/* -------------------------------------------------------
+    IMAGE TYPE SWITCHERS
+------------------------------------------------------- */
 const radioGroup = document.querySelectorAll('input[name="imageType"]');
 const urlRow = document.getElementById('image-url-row');
 const uploadRow = document.getElementById('image-upload-row');
 const urlInput = document.querySelector('input[name="image"]');
 const fileInput = document.querySelector('input[name="imageUpload"]');
 
-// Edit Modal Selectors
-const editUrlRow = document.getElementById('edit-image-url-row');
-const editUploadRow = document.getElementById('edit-image-upload-row');
-const editRadioGroup = document.querySelectorAll('input[name="editImageType"]');
-
-/* -------------------------------------------------------
-   IMAGE TYPE SWITCHERS (URL ↔ FILE)
-------------------------------------------------------- */
-// Main Add Form Switcher
 radioGroup.forEach(radio => {
     radio.addEventListener('change', () => {
         const isUrl = radio.value === "url";
         if (urlRow) urlRow.style.display = isUrl ? 'block' : 'none';
         if (uploadRow) uploadRow.style.display = isUrl ? 'none' : 'block';
-
-        if (isUrl) {
-            if (urlInput) urlInput.required = true;
-            if (fileInput) { fileInput.required = false; fileInput.value = ""; }
-        } else {
-            if (urlInput) { urlInput.required = false; urlInput.value = ""; }
-            if (fileInput) fileInput.required = true;
-        }
+        if (urlInput) urlInput.required = isUrl;
+        if (fileInput) fileInput.required = !isUrl;
     });
 });
 
-// Edit Modal Switcher
+const editRadioGroup = document.querySelectorAll('input[name="editImageType"]');
+const editUrlRow = document.getElementById('edit-image-url-row');
+const editUploadRow = document.getElementById('edit-image-upload-row');
+
 editRadioGroup.forEach(radio => {
     radio.addEventListener('change', () => {
         const isUrl = radio.value === "url";
@@ -52,7 +68,7 @@ editRadioGroup.forEach(radio => {
 });
 
 /* -------------------------------------------------------
-   LOAD PRODUCTS (FETCH & SORT)
+    LOAD PRODUCTS
 ------------------------------------------------------- */
 async function loadProducts() {
     const token = localStorage.getItem("token");
@@ -67,18 +83,20 @@ async function loadProducts() {
         });
 
         if (!res.ok) throw new Error("Unauthorized access");
-        allProducts = await res.json();
         
-        // Sort: Highest sort_index appears first
+        allProducts = await res.json();
+        // Sort: Highest sort_index first
         allProducts.sort((a, b) => (b.sort_index || 0) - (a.sort_index || 0));
+        
+        // Initially, filtered products is just the full list
+        filteredProducts = [...allProducts];
 
         if (!allProducts.length) {
             tbody.innerHTML = "<tr><td colspan='7'>No inventory recorded.</td></tr>";
             return;
         }
 
-        renderTablePage();
-        renderPaginationControls();
+        updateUI();
 
     } catch (err) {
         tbody.innerHTML = `<tr><td colspan='7'>Sync Error: ${err.message}</td></tr>`;
@@ -86,7 +104,7 @@ async function loadProducts() {
 }
 
 /* -------------------------------------------------------
-   RENDER TABLE (SLICE BY PAGE)
+    RENDER LOGIC (Uses filteredProducts)
 ------------------------------------------------------- */
 function renderTablePage() {
     const tbody = document.querySelector("#product-table tbody");
@@ -94,9 +112,13 @@ function renderTablePage() {
 
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
-    const pagedProducts = allProducts.slice(startIndex, endIndex);
+    const pagedProducts = filteredProducts.slice(startIndex, endIndex);
 
-    // Inside renderTablePage pagedProducts.map:
+    if (pagedProducts.length === 0) {
+        tbody.innerHTML = "<tr><td colspan='7' style='text-align:center; padding:20px;'>No matching products found.</td></tr>";
+        return;
+    }
+
     tbody.innerHTML = pagedProducts.map(p => `
         <tr>
             <td data-label="ID/Sort">#${p.id} <br><small>Order: ${p.sort_index || 0}</small></td>
@@ -114,10 +136,10 @@ function renderTablePage() {
         </tr>
     `).join("");
 
+    // Re-attach listeners
     tbody.querySelectorAll('.delete-btn').forEach(btn =>
         btn.addEventListener('click', () => deleteProduct(btn.dataset.id))
     );
-
     tbody.querySelectorAll('.edit-btn').forEach(btn =>
         btn.addEventListener('click', () => {
             const product = allProducts.find(item => item.id == btn.dataset.id);
@@ -126,17 +148,24 @@ function renderTablePage() {
     );
 }
 
-/* -------------------------------------------------------
-   PAGINATION CONTROLS (Max 4 numbers)
-------------------------------------------------------- */
 function renderPaginationControls() {
-    const totalPages = Math.ceil(allProducts.length / itemsPerPage);
+    const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
     const pageNumbersDiv = document.getElementById('page-numbers');
     const prevBtn = document.getElementById('prev-page');
     const nextBtn = document.getElementById('next-page');
 
     if (!pageNumbersDiv) return;
     pageNumbersDiv.innerHTML = "";
+
+    // Hide pagination if only 1 page or 0 results
+    if (totalPages <= 1) {
+        if (prevBtn) prevBtn.style.display = 'none';
+        if (nextBtn) nextBtn.style.display = 'none';
+        return;
+    } else {
+        if (prevBtn) prevBtn.style.display = 'block';
+        if (nextBtn) nextBtn.style.display = 'block';
+    }
 
     const maxVisible = 4;
     let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
@@ -159,31 +188,19 @@ function renderPaginationControls() {
     }
 
     prevBtn.disabled = (currentPage === 1);
-    nextBtn.disabled = (currentPage === totalPages || totalPages === 0);
+    nextBtn.disabled = (currentPage === totalPages);
 
-    prevBtn.onclick = () => {
-        if (currentPage > 1) {
-            currentPage--;
-            updateUI();
-        }
-    };
-
-    nextBtn.onclick = () => {
-        if (currentPage < totalPages) {
-            currentPage++;
-            updateUI();
-        }
-    };
+    prevBtn.onclick = () => { if (currentPage > 1) { currentPage--; updateUI(); } };
+    nextBtn.onclick = () => { if (currentPage < totalPages) { currentPage++; updateUI(); } };
 }
 
 function updateUI() {
     renderTablePage();
     renderPaginationControls();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 /* -------------------------------------------------------
-   DELETE PRODUCT
+    DELETE & MODAL LOGIC (Existing)
 ------------------------------------------------------- */
 async function deleteProduct(id) {
     if (!confirm("Remove this item?")) return;
@@ -197,9 +214,6 @@ async function deleteProduct(id) {
     } catch (e) { console.error(e); }
 }
 
-/* -------------------------------------------------------
-   MODAL LOGIC
-------------------------------------------------------- */
 function openEditModal(p) {
     document.getElementById('edit-sort-index').value = p.sort_index || 0;
     document.getElementById("edit-product-id").value = p.id;
@@ -210,10 +224,8 @@ function openEditModal(p) {
     document.getElementById("edit-quality").value = p.quality || "";
     document.getElementById("edit-availability").value = p.availability || "";
 
-    // Reset view to URL by default
     const urlRadio = document.querySelector('input[name="editImageType"][value="url"]');
     if (urlRadio) urlRadio.checked = true;
-    
     if (editUrlRow) editUrlRow.style.display = 'block';
     if (editUploadRow) editUploadRow.style.display = 'none';
 
@@ -227,30 +239,18 @@ window.closeEditModal = () => {
 };
 
 /* -------------------------------------------------------
-   FORM SUBMISSIONS
+    FORM SUBMISSIONS (Existing)
 ------------------------------------------------------- */
 document.getElementById("add-product-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const token = localStorage.getItem("token");
-    const form = e.target;
-    const fd = new FormData();
-
-    const imageType = form.querySelector('input[name="imageType"]:checked').value;
-    
-    fd.append("name", form.elements["name"].value.trim());
-    fd.append("description", form.elements["description"].value.trim());
-    fd.append("gender", form.elements["gender"].value.trim());
-    fd.append("quality", form.elements["quality"].value.trim());
-    fd.append("availability", form.elements["availability"]?.value.trim() || "In Stock");
-    
-    const sortIdx = form.querySelector('#add-sort-index')?.value || 0;
+    const fd = new FormData(e.target);
+    const sortIdx = document.getElementById('add-sort-index')?.value || 0;
     fd.append("sort_index", sortIdx);
 
-    if (imageType === "upload") {
-        const fileIn = form.querySelector('input[name="imageUpload"]');
-        if (fileIn.files[0]) fd.append("imageFile", fileIn.files[0]); 
-    } else {
-        fd.append("image", form.elements["image"].value.trim()); 
+    const imageType = e.target.querySelector('input[name="imageType"]:checked').value;
+    if (imageType === "url") {
+        fd.delete("imageUpload");
     }
 
     try {
@@ -259,12 +259,7 @@ document.getElementById("add-product-form")?.addEventListener("submit", async (e
             headers: { Authorization: `Bearer ${token}` },
             body: fd
         });
-
-        if (res.ok) {
-            alert("Product published.");
-            form.reset();
-            loadProducts();
-        }
+        if (res.ok) { alert("Product published."); e.target.reset(); loadProducts(); }
     } catch (error) { console.error("Add failed:", error); }
 });
 
@@ -272,8 +267,8 @@ document.getElementById("edit-product-form")?.addEventListener("submit", async (
     e.preventDefault();
     const token = localStorage.getItem("token");
     const id = document.getElementById("edit-product-id").value;
-
     const fd = new FormData();
+    
     fd.append("name", document.getElementById("edit-name").value.trim());
     fd.append("description", document.getElementById("edit-description").value.trim());
     fd.append("gender", document.getElementById("edit-gender").value.trim());
@@ -282,7 +277,6 @@ document.getElementById("edit-product-form")?.addEventListener("submit", async (
     fd.append("sort_index", document.getElementById("edit-sort-index").value);
 
     const imageType = document.querySelector('input[name="editImageType"]:checked').value;
-    
     if (imageType === "upload") {
         const fileIn = document.getElementById('edit-image-upload');
         if (fileIn.files[0]) fd.append("imageFile", fileIn.files[0]);
@@ -296,29 +290,6 @@ document.getElementById("edit-product-form")?.addEventListener("submit", async (
             headers: { Authorization: `Bearer ${token}` },
             body: fd
         });
-
-        if (res.ok) {
-            alert("Product updated successfully.");
-            closeEditModal();
-            loadProducts();
-        }
+        if (res.ok) { alert("Product updated."); closeEditModal(); loadProducts(); }
     } catch (error) { console.error("Update error:", error); }
 });
-
-/* -------------------------------------------------------
-   BACK TO TOP & INITIALIZATION
-------------------------------------------------------- */
-const initBackToTop = () => {
-    const topBtn = document.getElementById("backToTop");
-    if (!topBtn) return;
-    window.addEventListener("scroll", () => {
-        if (window.pageYOffset > 400) topBtn.classList.add("active");
-        else topBtn.classList.remove("active");
-    });
-    topBtn.addEventListener("click", () => {
-        window.scrollTo({ top: 0, behavior: "smooth" });
-    });
-};
-
-initBackToTop();
-document.addEventListener("DOMContentLoaded", loadProducts);
