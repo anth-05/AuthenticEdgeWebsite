@@ -8,14 +8,24 @@ let currentPage = 1;
 const itemsPerPage = 10;
 
 /* -------------------------------------------------------
-   IMAGE TYPE SWITCHER (URL ↔ FILE)
+   SELECTORS
 ------------------------------------------------------- */
+// Add Form Selectors
 const radioGroup = document.querySelectorAll('input[name="imageType"]');
 const urlRow = document.getElementById('image-url-row');
 const uploadRow = document.getElementById('image-upload-row');
 const urlInput = document.querySelector('input[name="image"]');
 const fileInput = document.querySelector('input[name="imageUpload"]');
 
+// Edit Modal Selectors
+const editUrlRow = document.getElementById('edit-image-url-row');
+const editUploadRow = document.getElementById('edit-image-upload-row');
+const editRadioGroup = document.querySelectorAll('input[name="editImageType"]');
+
+/* -------------------------------------------------------
+   IMAGE TYPE SWITCHERS (URL ↔ FILE)
+------------------------------------------------------- */
+// Main Add Form Switcher
 radioGroup.forEach(radio => {
     radio.addEventListener('change', () => {
         const isUrl = radio.value === "url";
@@ -29,6 +39,15 @@ radioGroup.forEach(radio => {
             if (urlInput) { urlInput.required = false; urlInput.value = ""; }
             if (fileInput) fileInput.required = true;
         }
+    });
+});
+
+// Edit Modal Switcher
+editRadioGroup.forEach(radio => {
+    radio.addEventListener('change', () => {
+        const isUrl = radio.value === "url";
+        if (editUrlRow) editUrlRow.style.display = isUrl ? 'block' : 'none';
+        if (editUploadRow) editUploadRow.style.display = isUrl ? 'none' : 'block';
     });
 });
 
@@ -71,7 +90,8 @@ async function loadProducts() {
 ------------------------------------------------------- */
 function renderTablePage() {
     const tbody = document.querySelector("#product-table tbody");
-    
+    if (!tbody) return;
+
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
     const pagedProducts = allProducts.slice(startIndex, endIndex);
@@ -106,7 +126,7 @@ function renderTablePage() {
 }
 
 /* -------------------------------------------------------
-   CLEANED UP PAGINATION CONTROLS (Max 4 numbers)
+   PAGINATION CONTROLS (Max 4 numbers)
 ------------------------------------------------------- */
 function renderPaginationControls() {
     const totalPages = Math.ceil(allProducts.length / itemsPerPage);
@@ -117,18 +137,15 @@ function renderPaginationControls() {
     if (!pageNumbersDiv) return;
     pageNumbersDiv.innerHTML = "";
 
-    // Calculate window of pages to show
     const maxVisible = 4;
     let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
     let endPage = startPage + maxVisible - 1;
 
-    // Adjust if we are near the end
     if (endPage > totalPages) {
         endPage = totalPages;
         startPage = Math.max(1, endPage - maxVisible + 1);
     }
 
-    // Generate limited page numbers
     for (let i = startPage; i <= endPage; i++) {
         const span = document.createElement('span');
         span.innerText = i;
@@ -140,7 +157,6 @@ function renderPaginationControls() {
         pageNumbersDiv.appendChild(span);
     }
 
-    // Update Button States
     prevBtn.disabled = (currentPage === 1);
     nextBtn.disabled = (currentPage === totalPages || totalPages === 0);
 
@@ -193,7 +209,10 @@ function openEditModal(p) {
     document.getElementById("edit-quality").value = p.quality || "";
     document.getElementById("edit-availability").value = p.availability || "";
 
-    document.querySelector('input[name="editImageType"][value="url"]').checked = true;
+    // Reset view to URL by default
+    const urlRadio = document.querySelector('input[name="editImageType"][value="url"]');
+    if (urlRadio) urlRadio.checked = true;
+    
     if (editUrlRow) editUrlRow.style.display = 'block';
     if (editUploadRow) editUploadRow.style.display = 'none';
 
