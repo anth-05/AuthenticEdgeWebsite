@@ -1,10 +1,10 @@
-/* Sidebar Container */
+/* --- SIDEBAR / CART DRAWER --- */
 .cart-drawer {
     position: fixed;
-    top: 0;
-    right: -400px; /* Hidden by default */
+    top: 80px; /* Lowered to clear logo and burger menu */
+    right: -100%; /* Hidden by default - Changed for smoother mobile entry */
     width: 400px;
-    height: 100%;
+    height: calc(100% - 80px); /* Adjust height since top is pushed down */
     background: #fff;
     box-shadow: -5px 0 15px rgba(0,0,0,0.1);
     z-index: 1001;
@@ -17,7 +17,7 @@
     right: 0;
 }
 
-/* Background Overlay */
+/* --- BACKGROUND OVERLAY --- */
 .cart-overlay {
     position: fixed;
     top: 0;
@@ -33,7 +33,7 @@
     display: block;
 }
 
-/* Header & Footer */
+/* --- DRAWER CONTENT --- */
 .cart-header {
     padding: 20px;
     border-bottom: 1px solid #eee;
@@ -47,7 +47,6 @@
     border-top: 1px solid #eee;
 }
 
-/* Item Styling */
 .cart-items {
     flex: 1;
     overflow-y: auto;
@@ -65,21 +64,11 @@
     width: 60px;
     height: 60px;
     object-fit: cover;
-    border-radius: 4px;
+    border-radius: 8px;
+    background: #f6f6f6;
 }
 
-.cart-item-info h4 {
-    font-size: 0.9rem;
-    margin: 0;
-}
-
-.cart-item-info p {
-    font-size: 0.8rem;
-    color: #666;
-    margin: 5px 0 0;
-}
-
-/* Buttons */
+/* --- BUTTONS --- */
 .btn-checkout {
     width: 100%;
     padding: 15px;
@@ -90,104 +79,48 @@
     text-transform: uppercase;
     letter-spacing: 1px;
     font-weight: 600;
+    border-radius: 8px;
 }
 
 .remove-btn {
     background: none;
     border: none;
     color: #ff4444;
-    font-size: 0.7rem;
+    font-size: 0.75rem;
     cursor: pointer;
     padding: 0;
+    margin-top: 4px;
 }
 
-/* Floating Trigger */
+/* --- FLOATING TRIGGER --- */
 .cart-trigger {
     position: fixed;
     bottom: 30px;
     right: 30px;
     background: #000;
     color: #fff;
-    padding: 12px 20px;
+    padding: 12px 24px;
     border-radius: 50px;
     cursor: pointer;
     display: flex;
     gap: 10px;
     z-index: 999;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 }
+
+/* --- MODAL OVERLAY --- */
 .modal-overlay {
     position: fixed;
     top: 0; left: 0;
     width: 100%; height: 100%;
-    background: rgba(0,0,0,0.8);
-    display: none; /* Hidden by default */
-    justify-content: center;
-    align-items: center;
-    z-index: 3000;
-}
-
-.modal-content {
-    background: #fff;
-    width: 90%;
-    max-width: 600px;
-    max-height: 90vh;
-    padding: 40px;
-    border-radius: 20px;
-    overflow-y: auto;
-}
-
-.bank-info {
-    background: #f6f6f6;
-    padding: 15px;
-    border-radius: 10px;
-    margin-bottom: 20px;
-    text-align: center;
-    font-family: monospace;
-}
-
-.form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
-}
-
-.form-grid input {
-    padding: 12px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-}
-
-.shipping-info {
-    font-size: 12px;
-    margin-top: 20px;
-    line-height: 1.4;
-    color: #555;
-}
-
-.warning-text { color: #d00; }
-
-.final-submit-btn {
-    width: 100%;
-    padding: 18px;
-    background: #000;
-    color: #fff;
-    border: none;
-    border-radius: 50px;
-    margin-top: 25px;
-    cursor: pointer;
-    font-weight: 700;
-}
-/* --- CENTERED MODAL OVERLAY --- */
-.modal-overlay {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.7); /* Darker backdrop to focus on form */
+    background: rgba(0, 0, 0, 0.7);
     backdrop-filter: blur(5px);
-    display: none; /* Controlled by JS */
+    display: none;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start; /* Aligned to top for easier mobile scrolling */
+    padding-top: 100px; /* Offset for header/logo */
     z-index: 4000;
+    overflow-y: auto;
 }
 
 /* --- MODAL CONTENT BOX --- */
@@ -195,97 +128,92 @@
     background: #fff;
     width: 95%;
     max-width: 700px;
-    max-height: 90vh;
-    padding: 50px;
-    border-radius: 30px;
-    overflow-y: auto;
+    margin-bottom: 50px; /* Space at bottom for scrolling */
+    padding: 40px;
+    border-radius: 25px;
     position: relative;
     box-shadow: 0 25px 50px rgba(0,0,0,0.3);
 }
 
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 30px;
-}
-
 .modal-header h2 {
-    font-size: 1.8rem;
+    font-size: 1.5rem;
     font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: -0.02em;
 }
 
 /* --- THE FORM GRID --- */
 .form-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr; /* Two columns */
+    grid-template-columns: 1fr 1fr;
     gap: 15px;
 }
 
 .form-grid input {
     width: 100%;
-    padding: 15px 20px;
+    padding: 15px;
     background: #f9f9f9;
     border: 1px solid #eee;
     border-radius: 12px;
     font-size: 14px;
     outline: none;
-    transition: border-color 0.3s;
 }
 
-.form-grid input:focus {
-    border-color: #000;
-    background: #fff;
-}
-
-/* Full-width inputs for certain fields */
 input[name="email"], .shipping-info {
     grid-column: span 2;
 }
 
-/* --- SHIPPING INFO TEXT BOX --- */
 .shipping-info {
-    margin-top: 30px;
-    padding: 25px;
+    margin-top: 20px;
+    padding: 20px;
     background: #f6f6f6;
     border-radius: 15px;
     font-size: 13px;
     line-height: 1.6;
-    color: #444;
 }
 
-.shipping-info h4 {
-    text-transform: uppercase;
-    margin-bottom: 10px;
-    font-weight: 700;
-}
-
-.warning-text {
-    color: #d00;
-    font-weight: 700;
-    display: block;
-    margin-top: 10px;
-}
-
-/* --- FINAL SUBMIT BUTTON --- */
 .final-submit-btn {
     width: 100%;
-    margin-top: 30px;
-    padding: 20px;
+    margin-top: 20px;
+    padding: 18px;
     background: #000;
     color: #fff;
     border: none;
     border-radius: 100px;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
     cursor: pointer;
-    transition: 0.3s;
 }
 
-.final-submit-btn:hover {
-    background: #333;
-    transform: translateY(-2px);
+/* --- MOBILE OPTIMIZATION --- */
+@media (max-width: 600px) {
+    .cart-drawer {
+        top: 70px; /* Slightly higher top on small phones */
+        width: 100%; /* Full width for easier interaction */
+        height: calc(100% - 70px);
+    }
+
+    .modal-overlay {
+        padding-top: 80px; /* Adjust modal positioning */
+    }
+
+    .modal-content {
+        padding: 30px 20px;
+        width: 92%;
+    }
+
+    /* Stack form fields vertically on phones */
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    input[name="email"], .shipping-info {
+        grid-column: span 1;
+    }
+
+    .cart-trigger {
+        bottom: 20px;
+        right: 20px;
+        left: 20px; /* Stretch trigger for easier thumb access */
+        justify-content: center;
+    }
 }
