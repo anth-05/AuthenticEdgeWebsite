@@ -1,7 +1,6 @@
 import { API_BASE_URL } from "./config.js";
 
 let allProducts = [];
-
 async function loadProducts() {
     const grid = document.getElementById("product-grid");
     try {
@@ -9,7 +8,7 @@ async function loadProducts() {
         allProducts = await res.json();
         
         if (allProducts.length > 0) {
-            generateDynamicFilters();
+            // REMOVED generateDynamicFilters() call here
             renderGrid(allProducts);
         } else {
             grid.innerHTML = `<p class="empty-msg">The archives are currently empty.</p>`;
