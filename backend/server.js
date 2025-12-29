@@ -124,6 +124,12 @@ app.post("/api/login", async (req, res) => {
   } catch (err) { respondServerError(res, err, "Login failed"); }
 });
 
+app.use((req, res, next) => {
+    if (process.env.NODE_ENV === 'production' && req.headers['x-forwarded-proto'] !== 'https') {
+        return res.redirect('https://' + req.get('host') + req.url);
+    }
+    next();
+});
 /* ---------------- PRODUCT ROUTES ---------------- */
 app.get("/api/products", async (req, res) => {
   try {
@@ -642,7 +648,7 @@ app.post("/api/contact", contactLimiter, async (req, res) => {
         // 5. Configure and send the email
         const mailOptions = {
             from: `"Authentic Edge Contact" <${process.env.CONTACT_EMAIL}>`,
-            to: "anthilori25@gmail.com", 
+            to: "authenticedgeinfo@gmail.com", 
             replyTo: email, 
             subject: `New Inquiry from ${name}`,
             html: htmlContent
