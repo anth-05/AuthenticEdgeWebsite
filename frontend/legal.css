@@ -1,0 +1,119 @@
+/* ==========================================================================
+   LEGAL PAGE STYLES (Privacy & Terms)
+   ========================================================================== */
+
+.legal-container {
+    max-width: 900px;
+    margin: 80px auto;
+    padding: 0 30px;
+    line-height: 1.7;
+    color: #1a1a1a;
+    font-family: 'Inter', -apple-system, sans-serif;
+}
+
+.legal-section {
+    margin-bottom: 80px;
+    animation: fadeIn 0.8s ease-out;
+}
+
+.legal-header {
+    border-bottom: 2px solid #000;
+    padding-bottom: 25px;
+    margin-bottom: 40px;
+}
+
+.legal-header h1 {
+    font-size: 1.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 10px;
+}
+
+.legal-header p {
+    font-size: 12px;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Bilingual Grid Layout */
+.lang-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 50px;
+    align-items: start;
+}
+
+.lang-grid h2 {
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    font-size: 1.1rem;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.lang-grid p, .lang-grid ul {
+    font-size: 14px;
+    color: #444;
+    margin-bottom: 15px;
+}
+
+.lang-grid ul {
+    padding-left: 20px;
+}
+
+.lang-grid li {
+    margin-bottom: 8px;
+}
+
+/* Warning & Important Notices */
+.warning-box {
+    background: #fffafa;
+    border: 1px solid #000; /* Solid black border for premium look */
+    padding: 20px;
+    margin: 20px 0;
+    text-align: center;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 13px;
+    color: #d00000;
+}
+
+hr {
+    border: 0;
+    border-top: 1px solid #eee;
+    margin: 40px 0;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================================================
+   MOBILE RESPONSIVENESS
+   ========================================================================== */
+
+@media (max-width: 800px) {
+    .legal-container {
+        margin: 40px auto;
+    }
+    
+    .lang-grid {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+
+    .nl {
+        border-bottom: 1px solid #eee;
+        padding-bottom: 30px;
+    }
+    
+    .legal-header h1 {
+        font-size: 1.4rem;
+    }
+}

@@ -7,6 +7,11 @@
   --glass-white: rgba(255, 255, 255, 0.4);
   --glass-blur: blur(20px) saturate(160%);
 }
+a{
+  text-decoration: none;
+  color: var(--accent);
+  position: relative;
+}
 
 /* Ensure the page itself has no edge gaps */
 body, html {
