@@ -175,35 +175,57 @@ document.getElementById("add-product-form")?.addEventListener("submit", async (e
 });
 
 // EDIT PRODUCT (Includes Most Wanted)
+// EDIT PRODUCT (Includes Most Wanted)
 document.getElementById("edit-product-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const token = localStorage.getItem("token");
     const id = document.getElementById("edit-product-id").value;
-    const fd = new FormData(e.target);
+    
+    // Create empty FormData
+    const fd = new FormData();
 
-    // Explicitly add Most Wanted boolean
+    // Manually append data to ensure keys match backend req.body exactly
+    fd.append("name", document.getElementById("edit-name").value);
+    fd.append("description", document.getElementById("edit-description").value);
+    fd.append("gender", document.getElementById("edit-gender").value);
+    fd.append("quality", document.getElementById("edit-quality").value);
+    fd.append("availability", document.getElementById("edit-availability").value);
+    fd.append("sort_index", document.getElementById("edit-sort-index").value);
+    
+    // Most Wanted Toggle
     const mwCheckbox = document.getElementById("edit-is-most-wanted");
     fd.append("is_most_wanted", mwCheckbox ? mwCheckbox.checked : false);
 
-    // Correct file field for Multer
+    // Image Handling
     const imageType = e.target.querySelector('input[name="editImageType"]:checked').value;
     if (imageType === "upload") {
         const fileIn = document.getElementById('edit-image-upload');
-        if (fileIn.files[0]) fd.append("imageFile", fileIn.files[0]);
+        if (fileIn.files[0]) {
+            fd.append("imageFile", fileIn.files[0]); // Matches backend Multer config
+        }
+    } else {
+        fd.append("image", document.getElementById("edit-image").value);
     }
 
     try {
         const res = await fetch(`${API_BASE_URL}/api/products/${id}`, {
             method: "PUT",
             headers: { Authorization: `Bearer ${token}` },
-            body: fd
+            body: fd // Browser sets Content-Type to multipart/form-data automatically
         });
+
         if (res.ok) { 
-            alert("Product updated."); 
+            alert("Product updated successfully."); 
             closeEditModal(); 
             loadProducts(); 
+        } else {
+            const errorData = await res.json();
+            alert(`Update failed: ${errorData.error || 'Unknown error'}`);
         }
-    } catch (error) { console.error("Update error:", error); }
+    } catch (error) { 
+        console.error("Update error:", error); 
+        alert("Server communication error.");
+    }
 });
 
 // Helper UI updates
