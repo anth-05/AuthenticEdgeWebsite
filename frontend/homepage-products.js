@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
         
         openModal(
             "Archive Update", 
-            "Please note: Our digital vault is currently being synced. Not all physical stock has been listed yet. We are adding new pieces daily—thank you for your patience as we curate the collection. Explore what's live now.",
+            "Please note: Our stock is still being added. Not all physical stock has been listed yet. We are adding new pieces daily—thank you for your patience as we curate the collection. Explore what's live now!!",
             () => {
                 console.log("User acknowledged stock update.");
                 sessionStorage.setItem("announcementSeen", "true");
