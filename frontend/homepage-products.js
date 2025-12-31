@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!sessionStorage.getItem("announcementSeen")) {
         
         openModal(
-            "Archive Update", 
+            "Stock Update", 
             "Please note: Our stock is still being added. Not all physical stock has been listed yet. We are adding new pieces daily—thank you for your patience as we curate the collection. Explore what's live now!!",
             () => {
                 console.log("User acknowledged stock update.");
