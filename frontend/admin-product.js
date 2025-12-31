@@ -230,6 +230,8 @@ document.getElementById("edit-product-form")?.addEventListener("submit", async (
 
 // Helper UI updates
 function updateUI() {
+    const tbody = document.querySelector("#product-table tbody");
+    if (!tbody) return; // Prevent crash if table is missing
     renderTablePage();
     renderPaginationControls();
 }
