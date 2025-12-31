@@ -531,7 +531,7 @@ app.post('/api/register', async (req, res) => {
             html: `
                 <div style="font-family: 'Inter', sans-serif; max-width: 600px; margin: auto; padding: 40px; border: 1px solid #eee;">
                     <h1 style="text-transform: uppercase; letter-spacing: 3px; font-size: 20px; text-align: center;">Welcome to the Edge</h1>
-                    <p style="color: #666; line-height: 1.6; text-align: center;">Your membership has been successfully activated. You now have exclusive access to our curated archives and concierge services.</p>
+                    <p style="color: #666; line-height: 1.6; text-align: center;">Your membership has been successfully activated. You now have exclusive access to our Products.</p>
                     <div style="text-align: center; margin-top: 30px;">
 
                            style="background: #000;                         <a href="https://authenticedgewebsite-1.onrender.com/login.html" color: #fff; padding: 15px 30px; text-decoration: none; text-transform: uppercase; font-size: 11px; font-weight: 700; border-radius: 100px;">
