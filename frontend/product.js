@@ -2,7 +2,7 @@ import { API_BASE_URL } from "./config.js";
 
 let allProducts = [];
 
-// 1. Updated list with your specific brands
+// 1. Fixed Brands List
 const FIXED_BRANDS = [
     "NIKE", "ADIDAS", "ASICS", "LOUIS VUITTON", "PRADA", 
     "RICK OWENS", "CHANEL", "DIOR", "LANVIN", "MAISON MIHARA", 
@@ -31,6 +31,7 @@ function renderFixedFilters() {
     const filterContainer = document.getElementById("dynamic-filters");
     if (!filterContainer) return;
 
+    // "ALL" is placed at the beginning
     let filterHTML = `<li><button class="filter-btn active" data-filter="ALL">All</button></li>`;
     filterHTML += FIXED_BRANDS.map(brand => `
         <li><button class="filter-btn" data-filter="${brand}">${brand}</button></li>
@@ -43,7 +44,7 @@ function renderFixedFilters() {
 function setupFilterEvents() {
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.onclick = (e) => {
-            const target = e.target;
+            const target = e.currentTarget; // Using currentTarget for better event reliability
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
             target.classList.add('active');
 
@@ -52,9 +53,14 @@ function setupFilterEvents() {
             if (filterValue === 'ALL') {
                 renderGrid(allProducts);
             } else {
-                // Matches the brand name anywhere in the product title
+                /* NEW LOGIC: Whole Word Match
+                   \b creates a word boundary. 
+                   This ensures 'OC' doesn't match 'ROCK' or 'DIOR' doesn't match 'DIORAMA'
+                */
+                const regex = new RegExp(`\\b${filterValue}\\b`, 'i'); 
+                
                 const filtered = allProducts.filter(p => 
-                    p.name.toUpperCase().includes(filterValue)
+                    regex.test(p.name.toUpperCase())
                 );
                 renderGrid(filtered);
             }
@@ -80,6 +86,7 @@ function renderGrid(products) {
         </a>
     `).join('');
 }
+
 function setupScrollArrows() {
     const list = document.getElementById("dynamic-filters");
     const leftArrow = document.getElementById("scrollLeft");
@@ -87,7 +94,6 @@ function setupScrollArrows() {
 
     if (!list || !leftArrow || !rightArrow) return;
 
-    // Amount to scroll on each click
     const scrollAmount = 300; 
 
     leftArrow.onclick = () => {
@@ -98,18 +104,15 @@ function setupScrollArrows() {
         list.scrollBy({ left: scrollAmount, behavior: 'smooth' });
     };
 
-    // Optional: Hide/Show arrows based on scroll position
     list.onscroll = () => {
         leftArrow.style.opacity = list.scrollLeft > 0 ? "1" : "0";
         leftArrow.style.pointerEvents = list.scrollLeft > 0 ? "auto" : "none";
         
         const maxScroll = list.scrollWidth - list.clientWidth;
-        rightArrow.style.opacity = list.scrollLeft >= maxScroll ? "0" : "1";
-        rightArrow.style.pointerEvents = list.scrollLeft >= maxScroll ? "none" : "auto";
+        rightArrow.style.opacity = list.scrollLeft >= maxScroll - 5 ? "0" : "1";
+        rightArrow.style.pointerEvents = list.scrollLeft >= maxScroll - 5 ? "none" : "auto";
     };
 }
-
-// CALL THIS INSIDE window.onload OR AFTER renderFixedFilters()
 
 // Search Logic
 document.getElementById('archiveSearch').oninput = (e) => {
@@ -122,4 +125,7 @@ document.getElementById('archiveSearch').oninput = (e) => {
     renderGrid(filtered);
 };
 
-window.onload = () => {setupScrollArrows(); loadProducts(); };
+window.onload = () => {
+    setupScrollArrows(); 
+    loadProducts(); 
+};
