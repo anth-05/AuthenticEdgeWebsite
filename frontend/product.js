@@ -105,7 +105,7 @@ function updateLoadMoreVisibility() {
         btn = document.createElement("button");
         btn.id = "load-more-btn";
         btn.className = "load-more-btn";
-        btn.innerText = "LOAD MORE ARCHIVES";
+        btn.innerText = "LOAD MORE PRODUCTS";
         container.appendChild(btn);
         
         btn.onclick = () => {
