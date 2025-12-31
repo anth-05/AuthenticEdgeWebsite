@@ -1,34 +1,42 @@
-import { API_BASE_URL } from "./config.js";
-
-async function loadFeaturedProducts() {
-    const grid = document.getElementById("featured-product-grid");
+async function loadHomepageProducts() {
     try {
         const res = await fetch(`${API_BASE_URL}/api/products`);
         const allProducts = await res.json();
-        
-        // Take only the first 4 products for the homepage
-        const featured = allProducts.slice(0, 4);
 
-        if (featured.length > 0) {
-            grid.innerHTML = featured.map(p => `
-                <a href="single-product.html?id=${p.id}" class="product-card-link">
-                    <div class="product-card">
-                        <div class="product-img-frame">
-                            <img src="${p.image}" alt="${p.name}">
-                        </div>
-                        <div class="product-details">
-                            <span class="product-cat">${p.quality || 'Premium'}</span>
-                            <h3>${p.name}</h3>
-                        </div>
-                    </div>
-                </a>
-            `).join('');
-        } else {
-            grid.innerHTML = `<p>No products available.</p>`;
-        }
-    } catch (err) {
-        grid.innerHTML = `<p>Unable to load featured products.</p>`;
+        // 1. New Arrivals (Top 4 latest)
+        const newArrivals = allProducts.slice(0, 4);
+        renderGrid(document.getElementById('featured-product-grid'), newArrivals);
+
+        // 2. Most Wanted (Filtered by your admin choice)
+        const mostWanted = allProducts.filter(p => p.is_most_wanted === true);
+        renderGrid(document.getElementById('most-wanted-grid'), mostWanted);
+    } 
+    catch (err) {
+        console.error("Error loading grids:", err);
     }
 }
 
-window.addEventListener('DOMContentLoaded', loadFeaturedProducts);
+// Re-usable render function to keep your code clean
+function renderGrid(container, productList) {
+    if (!container) return;
+    if (productList.length === 0) {
+        container.innerHTML = "<div class='empty-msg'>Selection arriving soon.</div>";
+        return;
+    }
+
+    container.innerHTML = productList.map(p => `
+        <div class="product-card">
+            <a href="product-detail.html?id=${p.id}">
+                <div class="product-img-frame">
+                    <img src="${p.image}" alt="${p.name}">
+                </div>
+                <div class="product-details">
+                    <h3>${p.name}</h3>
+                    <p class="product-meta">${p.quality || 'Archive'}</p>
+                </div>
+            </a>
+        </div>
+    `).join("");
+}
+
+document.addEventListener("DOMContentLoaded", loadHomepageProducts);

@@ -267,10 +267,13 @@ document.getElementById("add-product-form")?.addEventListener("submit", async (e
     e.preventDefault();
     const token = localStorage.getItem("token");
     
+    
     // Use the name attributes from HTML for basic fields
     const fd = new FormData(e.target);
     const sortIdx = document.getElementById('add-sort-index')?.value || 0;
     fd.append("sort_index", sortIdx);
+    // Inside your submit listener:
+    fd.append("is_most_wanted", document.getElementById("edit-most-wanted").checked);
 
     const imageType = e.target.querySelector('input[name="imageType"]:checked').value;
     

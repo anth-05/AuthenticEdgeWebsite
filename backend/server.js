@@ -140,7 +140,8 @@ app.get("/api/products", async (req, res) => {
 
 app.post("/api/products", authenticateToken, verifyAdmin, upload.single("imageFile"), async (req, res) => {
   try {
-    const { name, description = "", image: imageUrl, gender, quality, availability } = req.body;
+    // 1. Add is_most_wanted to the destructuring
+    const { name, description = "", image: imageUrl, gender, quality, availability, is_most_wanted } = req.body;
     if (!name) return res.status(400).json({ error: "Product name is required." });
 
     let finalImage = imageUrl || null;
@@ -148,35 +149,42 @@ app.post("/api/products", authenticateToken, verifyAdmin, upload.single("imageFi
       finalImage = req.file.path || req.file.secure_url || `/uploads/products/${req.file.filename}`;
     }
 
+    // 2. Updated SQL to include is_most_wanted ($7)
     const { rows } = await pool.query(
-      `INSERT INTO products (name, description, image, gender, quality, availability)
-       VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`,
-      [sanitize(name), sanitize(description), finalImage, sanitize(gender), sanitize(quality), sanitize(availability)]
+      `INSERT INTO products (name, description, image, gender, quality, availability, is_most_wanted)
+       VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *`,
+      [
+        sanitize(name), 
+        sanitize(description), 
+        finalImage, 
+        sanitize(gender), 
+        sanitize(quality), 
+        sanitize(availability),
+        is_most_wanted === 'true' || is_most_wanted === true // Convert string "true" from FormData to Boolean
+      ]
     );
     res.status(201).json(rows[0]);
   } catch (err) { respondServerError(res, err, "Failed to add product"); }
 });
-
 app.put("/api/products/:id", authenticateToken, verifyAdmin, upload.single("imageFile"), async (req, res) => {
   try {
     const { id } = req.params;
     const existing = await pool.query("SELECT * FROM products WHERE id=$1", [id]);
     if (existing.rowCount === 0) return res.status(404).json({ error: "Product not found" });
     
-    // 1. Added sort_index to the destructuring
-    const { name, description, image: imageUrl, gender, quality, availability, sort_index } = req.body;
+    // 1. Add is_most_wanted to the destructuring
+    const { name, description, image: imageUrl, gender, quality, availability, sort_index, is_most_wanted } = req.body;
     let finalImage = imageUrl || existing.rows[0].image;
 
     if (req.file) {
       finalImage = req.file.path || req.file.secure_url || `/uploads/products/${req.file.filename}`;
     }
 
-    // 2. Updated SQL query to include sort_index=$7
-    // 3. Updated parameter array to include the value and shifted 'id' to index $8
+    // 2. Updated SQL query to include is_most_wanted=$8, and id=$9
     const result = await pool.query(
       `UPDATE products 
-       SET name=$1, description=$2, image=$3, gender=$4, quality=$5, availability=$6, sort_index=$7
-       WHERE id=$8 RETURNING *`,
+       SET name=$1, description=$2, image=$3, gender=$4, quality=$5, availability=$6, sort_index=$7, is_most_wanted=$8
+       WHERE id=$9 RETURNING *`,
       [
         sanitize(name), 
         sanitize(description), 
@@ -184,7 +192,8 @@ app.put("/api/products/:id", authenticateToken, verifyAdmin, upload.single("imag
         sanitize(gender), 
         sanitize(quality), 
         sanitize(availability), 
-        parseInt(sort_index) || 0, // Ensure it's saved as a number
+        parseInt(sort_index) || 0,
+        is_most_wanted === 'true' || is_most_wanted === true, // Handling the boolean toggle
         id
       ]
     );
@@ -194,7 +203,6 @@ app.put("/api/products/:id", authenticateToken, verifyAdmin, upload.single("imag
     respondServerError(res, err, "Failed to update product"); 
   }
 });
-
 // Use the same 'upload' middleware you used for products
 app.post('/api/admin/reply', authenticateToken, upload.single('imageFile'), async (req, res) => {
     try {
@@ -215,6 +223,19 @@ app.post('/api/admin/reply', authenticateToken, upload.single('imageFile'), asyn
         console.error(err);
         res.status(500).send("Server Error");
     }
+});
+app.patch("/api/products/:id/toggle-wanted", authenticateToken, verifyAdmin, async (req, res) => {
+  const { id } = req.params;
+  const { is_most_wanted } = req.body;
+  try {
+    const result = await pool.query(
+      "UPDATE products SET is_most_wanted = $1 WHERE id = $2 RETURNING *",
+      [is_most_wanted, id]
+    );
+    res.json(result.rows[0]);
+  } catch (err) {
+    respondServerError(res, err, "Failed to toggle status");
+  }
 });
 
 // Call the function

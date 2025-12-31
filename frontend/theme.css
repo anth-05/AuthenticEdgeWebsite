@@ -14,6 +14,7 @@ body, html {
     padding: 0;
     width: 100%;
     overflow-x: hidden; /* Prevents unwanted side-scrolling */
+    font-family: 'Inter', sans-serif; 
 }
 
 /* If you have a global container, make sure it doesn't wrap the Hero */
