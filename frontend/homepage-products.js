@@ -39,5 +39,31 @@ function renderGrid(container, productList) {
         </div>
     `).join("");
 }
+document.addEventListener("DOMContentLoaded", () => {
+    const heroOverlay = document.querySelector(".hero-bg-overlay");
+    
+    // List your slideshow images here
+    const images = [
+        'images/Homepage-Image.jpg',
+        'images/image1.png',
+        'images/image2.png',
+        'images/image3.png'
+    ];
 
+    let currentIndex = 0;
+
+    function changeBackground() {
+        // Apply the new image
+        heroOverlay.style.backgroundImage = `url('${images[currentIndex]}')`;
+        
+        // Increment index, or reset to 0 if at the end
+        currentIndex = (currentIndex + 1) % images.length;
+    }
+
+    // Set initial image
+    changeBackground();
+
+    // Change image every 5 seconds (5000ms)
+    setInterval(changeBackground, 10000);
+});
 document.addEventListener("DOMContentLoaded", loadHomepageProducts);
