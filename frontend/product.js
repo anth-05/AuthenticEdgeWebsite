@@ -8,7 +8,7 @@ let itemsToShow = 30;
 const FIXED_BRANDS = [
     "NIKE", "ADIDAS", "ASICS", "LOUIS VUITTON", "PRADA", 
     "RICK OWENS", "CHANEL", "DIOR", "LANVIN", "MAISON MIHARA", 
-    "PUMA", "TIMBERLAND", "APPLE", "DYSON", "ALO", 
+    "PUMA", "TIMBERLAND", "AIRPODS", "DYSON", "ALO", 
     "OC", "LULULEMON", "ESSENTIALS"
 ];
 
@@ -42,7 +42,10 @@ function renderFixedFilters() {
     const filterContainer = document.getElementById("dynamic-filters");
     if (!filterContainer) return;
 
-    let filterHTML = `<li><button class="filter-btn active" data-filter="ALL">All</button></li>`;
+    // We start with the 'ALL' tab manually
+    let filterHTML = `<li><button class="filter-btn active" data-filter="ALL">ALL</button></li>`;
+    
+    // Then we add the brands from your FIXED_BRANDS array
     filterHTML += FIXED_BRANDS.map(brand => `
         <li><button class="filter-btn" data-filter="${brand}">${brand}</button></li>
     `).join('');
