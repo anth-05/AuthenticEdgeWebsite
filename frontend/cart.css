@@ -1,10 +1,10 @@
 /* --- SIDEBAR / CART DRAWER --- */
 .cart-drawer {
     position: fixed;
-    top: 80px; /* Lowered to clear logo and burger menu */
-    right: -100%; /* Hidden by default - Changed for smoother mobile entry */
+    top: 80px; 
+    right: -100%; 
     width: 400px;
-    height: calc(100% - 80px); /* Adjust height since top is pushed down */
+    height: calc(100% - 80px); 
     background: #fff;
     box-shadow: -5px 0 15px rgba(0,0,0,0.1);
     z-index: 1001;
@@ -25,6 +25,7 @@
     width: 100%;
     height: 100%;
     background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(4px); /* Adds a premium touch */
     display: none;
     z-index: 1000;
 }
@@ -35,16 +36,11 @@
 
 /* --- DRAWER CONTENT --- */
 .cart-header {
-    padding: 20px;
+    padding: 25px;
     border-bottom: 1px solid #eee;
     display: flex;
     justify-content: space-between;
     align-items: center;
-}
-
-.cart-footer {
-    padding: 20px;
-    border-top: 1px solid #eee;
 }
 
 .cart-items {
@@ -53,43 +49,74 @@
     padding: 20px;
 }
 
-.cart-item {
-    display: flex;
-    gap: 15px;
-    margin-bottom: 20px;
-    align-items: center;
+/* --- CART FOOTER (Fixed to Bottom of Drawer) --- */
+.cart-footer {
+    padding: 25px;
+    border-top: 1px solid #eee;
+    background: #fff;
 }
 
-.cart-item img {
-    width: 60px;
-    height: 60px;
-    object-fit: cover;
-    border-radius: 8px;
-    background: #f6f6f6;
+#totalItemsCount {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #888;
+    margin-bottom: 15px;
+    font-weight: 700;
 }
 
-/* --- BUTTONS --- */
 .btn-checkout {
     width: 100%;
-    padding: 15px;
+    padding: 18px;
     background: #000;
     color: #fff;
     border: none;
     cursor: pointer;
     text-transform: uppercase;
-    letter-spacing: 1px;
-    font-weight: 600;
+    letter-spacing: 2px;
+    font-weight: 700;
+    border-radius: 4px;
+    transition: background 0.3s ease;
+}
+
+.btn-checkout:hover {
+    background: #333;
+}
+
+/* --- ITEM STYLING --- */
+.cart-item {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+    align-items: center;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #f9f9f9;
+}
+
+.cart-item img {
+    width: 70px;
+    height: 70px;
+    object-fit: contain; /* Better for shoe photos */
     border-radius: 8px;
+    background: #f6f6f6;
+}
+
+.cart-item-info h4 {
+    margin: 0;
+    font-size: 14px;
+    text-transform: uppercase;
 }
 
 .remove-btn {
     background: none;
     border: none;
     color: #ff4444;
-    font-size: 0.75rem;
+    font-size: 10px;
+    text-transform: uppercase;
+    font-weight: 700;
     cursor: pointer;
     padding: 0;
-    margin-top: 4px;
+    margin-top: 8px;
 }
 
 /* --- FLOATING TRIGGER --- */
@@ -99,49 +126,44 @@
     right: 30px;
     background: #000;
     color: #fff;
-    padding: 12px 24px;
+    padding: 14px 28px;
     border-radius: 50px;
     cursor: pointer;
     display: flex;
+    align-items: center;
     gap: 10px;
     z-index: 999;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
 }
 
-/* --- MODAL OVERLAY --- */
+/* --- MODAL (CHECKOUT) --- */
 .modal-overlay {
     position: fixed;
     top: 0; left: 0;
     width: 100%; height: 100%;
     background: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(5px);
+    backdrop-filter: blur(8px);
     display: none;
     justify-content: center;
-    align-items: flex-start; /* Aligned to top for easier mobile scrolling */
-    padding-top: 100px; /* Offset for header/logo */
+    align-items: flex-start;
+    padding-top: 80px; 
     z-index: 4000;
     overflow-y: auto;
 }
 
-/* --- MODAL CONTENT BOX --- */
 .modal-content {
     background: #fff;
-    width: 95%;
-    max-width: 700px;
-    margin-bottom: 50px; /* Space at bottom for scrolling */
+    width: 90%;
+    max-width: 600px;
+    margin: 40px auto;
     padding: 40px;
-    border-radius: 25px;
+    border-radius: 20px;
     position: relative;
-    box-shadow: 0 25px 50px rgba(0,0,0,0.3);
 }
 
-.modal-header h2 {
-    font-size: 1.5rem;
-    font-weight: 800;
-    text-transform: uppercase;
-}
-
-/* --- THE FORM GRID --- */
 .form-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -150,70 +172,30 @@
 
 .form-grid input {
     width: 100%;
-    padding: 15px;
+    padding: 16px;
     background: #f9f9f9;
     border: 1px solid #eee;
-    border-radius: 12px;
+    border-radius: 8px;
     font-size: 14px;
-    outline: none;
 }
 
 input[name="email"], .shipping-info {
     grid-column: span 2;
 }
 
-.shipping-info {
-    margin-top: 20px;
-    padding: 20px;
-    background: #f6f6f6;
-    border-radius: 15px;
-    font-size: 13px;
-    line-height: 1.6;
-}
-
-.final-submit-btn {
-    width: 100%;
-    margin-top: 20px;
-    padding: 18px;
-    background: #000;
-    color: #fff;
-    border: none;
-    border-radius: 100px;
-    font-weight: 700;
-    text-transform: uppercase;
-    cursor: pointer;
-}
-
 /* --- MOBILE OPTIMIZATION --- */
 @media (max-width: 600px) {
     .cart-drawer {
-        top: 70px; /* Slightly higher top on small phones */
-        width: 100%; /* Full width for easier interaction */
-        height: calc(100% - 70px);
+        width: 100%;
+        top: 0; /* Full height on mobile looks cleaner */
+        height: 100%;
     }
 
-    .modal-overlay {
-        padding-top: 80px; /* Adjust modal positioning */
-    }
-
-    .modal-content {
-        padding: 30px 20px;
-        width: 92%;
-    }
-
-    /* Stack form fields vertically on phones */
     .form-grid {
         grid-template-columns: 1fr;
     }
 
     input[name="email"], .shipping-info {
         grid-column: span 1;
-    }
-
-    .cart-trigger {
-        bottom: 20px;
-        right: 20px;
-        left: 20px; /* Stretch trigger for easier thumb access */
-        justify-content: center;
     }
 }

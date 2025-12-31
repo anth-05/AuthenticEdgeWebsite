@@ -31,14 +31,14 @@ function initCartEvents() {
     };
 
     const closeCart = () => {
-        els.drawer.classList.remove('open');
-        els.overlay.classList.remove('show');
+        if (els.drawer) els.drawer.classList.remove('open');
+        if (els.overlay) els.overlay.classList.remove('show');
         document.body.style.overflow = '';
     };
 
     const openCartInternal = () => {
-        els.drawer.classList.add('open');
-        els.overlay.classList.add('show');
+        if (els.drawer) els.drawer.classList.add('open');
+        if (els.overlay) els.overlay.classList.add('show');
         document.body.style.overflow = 'hidden';
     };
 
@@ -48,13 +48,22 @@ function initCartEvents() {
 
     if (els.checkout) {
         els.checkout.onclick = () => {
+            // 1. CHECK LOGIN STATUS FIRST
+            const token = localStorage.getItem("token");
+            if (!token) {
+                alert("Please sign in to proceed with your selection.");
+                window.location.href = "login.html";
+                return;
+            }
+
+            // 2. CHECK IF CART HAS ITEMS
             const cart = JSON.parse(localStorage.getItem('ae_cart')) || [];
             if (cart.length === 0) {
                 alert("Your selection is empty.");
                 return;
             }
+
             closeCart(); // Close sidebar first
-            // Only now show the modal
             document.getElementById('checkoutModal').style.display = 'flex';
         };
     }
@@ -77,7 +86,6 @@ export function refreshCartUI() {
     if (badge) badge.innerText = cart.length;
     if (totalCount) totalCount.innerText = `Total Selection: ${cart.length}`;
     
-    // Hide or show the selection trigger button based on items
     const trigger = document.getElementById('cartTrigger');
     if (trigger) {
         trigger.style.display = cart.length > 0 ? 'flex' : 'none';
@@ -124,6 +132,15 @@ function initModalLogic() {
     if (form) {
         form.onsubmit = async (e) => {
             e.preventDefault();
+
+            // SECONDARY LOGIN CHECK (In case token was deleted while modal was open)
+            const token = localStorage.getItem("token");
+            if (!token) {
+                alert("Session expired. Please log in again.");
+                window.location.href = "login.html";
+                return;
+            }
+
             const formData = new FormData(form);
             await processInquiry(formData);
         };
@@ -135,7 +152,7 @@ async function processInquiry(formData) {
     const cart = JSON.parse(localStorage.getItem('ae_cart')) || [];
 
     if (!token) {
-        alert("Please sign in to submit your selection.");
+        alert("Authentication required.");
         window.location.href = "login.html";
         return;
     }
