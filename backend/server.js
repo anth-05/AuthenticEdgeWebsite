@@ -180,23 +180,25 @@ app.put("/api/products/:id", authenticateToken, verifyAdmin, upload.single("imag
       finalImage = req.file.path || req.file.secure_url || `/uploads/products/${req.file.filename}`;
     }
 
-    // 2. Updated SQL query to include is_most_wanted=$8, and id=$9
-    const result = await pool.query(
-      `UPDATE products 
-       SET name=$1, description=$2, image=$3, gender=$4, quality=$5, availability=$6, sort_index=$7, is_most_wanted=$8
-       WHERE id=$9 RETURNING *`,
-      [
-        sanitize(name), 
-        sanitize(description), 
-        finalImage, 
-        sanitize(gender), 
-        sanitize(quality), 
-        sanitize(availability), 
-        parseInt(sort_index) || 0,
-        is_most_wanted === 'true' || is_most_wanted === true, // Handling the boolean toggle
-        id
-      ]
-    );
+// $1:name, $2:description, $3:image, $4:gender, $5:quality, $6:availability, $7:sort_index, $8:is_most_wanted
+// WHERE id=$9
+
+const result = await pool.query(
+  `UPDATE products 
+   SET name=$1, description=$2, image=$3, gender=$4, quality=$5, availability=$6, sort_index=$7, is_most_wanted=$8
+   WHERE id=$9 RETURNING *`, 
+  [
+    sanitize(name),          // $1
+    sanitize(description),   // $2
+    finalImage,              // $3
+    sanitize(gender),        // $4
+    sanitize(quality),       // $5
+    sanitize(availability),  // $6
+    parseInt(sort_index) || 0, // $7
+    is_most_wanted === 'true' || is_most_wanted === true, // $8 (Must be Boolean)
+    id                       // $9
+  ]
+);
     
     res.json(result.rows[0]);
   } catch (err) { 

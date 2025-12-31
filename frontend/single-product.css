@@ -16,6 +16,82 @@ body {
     margin: 0; 
     overflow-x: hidden; 
 }
+/* ==========================================================================
+   NAVIGATION HEADER (BACK BUTTON)
+   ========================================================================== */
+
+.navigation-header {
+    margin-bottom: 30px;
+    display: flex;
+    align-items: center;
+    /* Ensures it aligns with your 1300px container */
+    width: 100%; 
+}
+
+.return-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px; /* Slightly wider gap for premium feel */
+    text-decoration: none;
+    color: var(--ae-text-muted);
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.15em; /* Matches your section labels */
+    transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+    padding: 8px 0;
+    position: relative;
+    border: none;
+    background: transparent;
+}
+
+.return-btn svg {
+    transition: transform 0.3s ease;
+    stroke: currentColor; /* Matches icon color to text color */
+}
+
+/* Hover State */
+.return-btn:hover {
+    color: var(--ae-black);
+}
+
+.return-btn:hover svg {
+    transform: translateX(-6px); /* Sophisticated movement */
+}
+
+/* Underline Animation */
+.return-btn::after {
+    content: '';
+    position: absolute;
+    bottom: 2px;
+    left: 0;
+    width: 0;
+    height: 1.5px;
+    background-color: var(--ae-black);
+    transition: width 0.3s ease;
+}
+
+.return-btn:hover::after {
+    width: 100%;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 600px) {
+    .navigation-header {
+        margin-bottom: 25px;
+        padding-left: 5px;
+    }
+    
+    .return-btn {
+        font-size: 11px;
+        gap: 8px;
+    }
+
+    .return-btn svg {
+        width: 18px;
+        height: 18px;
+    }
+}
 
 /* PRODUCT PAGE LAYOUT */
 .product-main { 
