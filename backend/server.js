@@ -230,7 +230,11 @@ app.patch("/api/products/:id/toggle-wanted", authenticateToken, verifyAdmin, asy
   try {
     const result = await pool.query(
       "UPDATE products SET is_most_wanted = $1 WHERE id = $2 RETURNING *",
-      [is_most_wanted, id]
+      [
+        // CRASH PROTECTION: Ensure it's a boolean
+        is_most_wanted === 'true' || is_most_wanted === true, 
+        id
+      ]
     );
     res.json(result.rows[0]);
   } catch (err) {

@@ -342,3 +342,34 @@
         font-size: 0.6rem;
     }
 }
+/* Badge for Featured Items in Table */
+.badge-wanted {
+    display: inline-block;
+    background-color: #000;
+    color: #fff;
+    font-size: 9px;
+    font-weight: 800;
+    padding: 3px 8px;
+    margin-top: 5px;
+    border-radius: 2px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+/* Edit Modal Checkbox Styling */
+.form-group input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: #000; /* Makes the checkmark black */
+}
+
+.form-group label {
+    cursor: pointer;
+    user-select: none;
+}
+
+/* Optional: Row highlight for Most Wanted items */
+#product-table tr:has(.badge-wanted) {
+    background-color: #fafafa;
+}
