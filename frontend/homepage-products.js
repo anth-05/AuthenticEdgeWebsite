@@ -27,7 +27,7 @@ function renderGrid(container, productList) {
 
     container.innerHTML = productList.map(p => `
         <div class="product-card">
-            <a href="product-detail.html?id=${p.id}">
+            <a href="single-product.html?id=${p.id}">
                 <div class="product-img-frame">
                     <img src="${p.image}" alt="${p.name}">
                 </div>
