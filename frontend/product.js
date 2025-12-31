@@ -2,6 +2,9 @@ import { API_BASE_URL } from "./config.js";
 
 let allProducts = [];
 
+// 1. Define your fixed brands here
+const FIXED_BRANDS = ["NIKE", "ADIDAS", "JORDAN", "YEEZY", "VINTAGE"];
+
 async function loadProducts() {
     const grid = document.getElementById("product-grid");
     try {
@@ -9,8 +12,7 @@ async function loadProducts() {
         allProducts = await res.json();
         
         if (allProducts.length > 0) {
-            // Re-enabling the dynamic filter generation
-            generateDynamicFilters(); 
+            renderFixedFilters(); // Use the new fixed generator
             renderGrid(allProducts);
         } else {
             grid.innerHTML = `<p class="empty-msg">The archives are currently empty.</p>`;
@@ -20,25 +22,13 @@ async function loadProducts() {
     }
 }
 
-function generateDynamicFilters() {
+function renderFixedFilters() {
     const filterContainer = document.getElementById("dynamic-filters");
     if (!filterContainer) return;
 
-    // Extract unique first words and clean them
-    const brandSet = new Set();
-    allProducts.forEach(p => {
-        if (p.name) {
-            // regex removes non-alphanumeric chars to prevent "Nike," or "Adidas!"
-            const firstWord = p.name.trim().split(/\s+/)[0].replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
-            if (firstWord) brandSet.add(firstWord);
-        }
-    });
-
-    const brands = Array.from(brandSet).sort();
-
-    // Build the HTML for the tab buttons
+    // Build HTML using the FIXED_BRANDS array
     let filterHTML = `<li><button class="filter-btn active" data-filter="ALL">All</button></li>`;
-    filterHTML += brands.map(brand => `
+    filterHTML += FIXED_BRANDS.map(brand => `
         <li><button class="filter-btn" data-filter="${brand}">${brand}</button></li>
     `).join('');
 
@@ -49,21 +39,20 @@ function generateDynamicFilters() {
 function setupFilterEvents() {
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.onclick = (e) => {
-            // UI Update
+            const target = e.target;
+            // UI State Update
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            e.target.classList.add('active');
+            target.classList.add('active');
 
-            const filterValue = e.target.getAttribute('data-filter');
+            const filterValue = target.getAttribute('data-filter');
 
             if (filterValue === 'ALL') {
                 renderGrid(allProducts);
             } else {
-                // Filters by checking if the first word matches the selected tab
-                const filtered = allProducts.filter(p => {
-                    const name = (p.name || "").toUpperCase();
-                    // We use startsWith to strictly follow the "first word" tab logic
-                    return name.startsWith(filterValue); 
-                });
+                // Filter products that contain the brand name anywhere in the title
+                const filtered = allProducts.filter(p => 
+                    p.name.toUpperCase().includes(filterValue)
+                );
                 renderGrid(filtered);
             }
         };

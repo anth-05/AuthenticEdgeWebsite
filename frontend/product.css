@@ -335,3 +335,40 @@
 .submit-btn:active {
     transform: translateY(-1px);
 }
+/* Ensure fixed tabs are perfectly spaced */
+.filter-list {
+    display: flex;
+    justify-content: center;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    gap: 30px; /* Increased gap for a cleaner look */
+}
+
+.filter-btn {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #999;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding-bottom: 5px;
+    transition: color 0.3s ease;
+}
+
+.filter-btn.active {
+    color: #000;
+    border-bottom: 2px solid #000;
+}
+
+@media (max-width: 600px) {
+    .filter-list {
+        justify-content: flex-start;
+        overflow-x: auto;
+        padding: 0 20px;
+        gap: 20px;
+    }
+}
