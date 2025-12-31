@@ -686,7 +686,7 @@ app.post('/api/messages/bulk-inquiry', authenticateToken, async (req, res) => {
         // 3. ALERT THE ADMIN (Optional but Highly Recommended)
         const mailOptions = {
             from: `"Concierge Alert" <${process.env.CONTACT_EMAIL}>`,
-            to: "authenticedge@gmail.com", // Your personal email
+            to: "authenticedgeinfo@gmail.com", // Your personal email
             subject: `New Mail from User #${userId}`,
             text: `A user has submitted a new selection:\n\n${finalMessage}`
         };

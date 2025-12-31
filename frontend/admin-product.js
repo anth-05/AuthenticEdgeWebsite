@@ -263,33 +263,45 @@ document.getElementById("add-product-form")?.addEventListener("submit", async (e
     } catch (error) { console.error("Add failed:", error); }
 });
 
-document.getElementById("edit-product-form")?.addEventListener("submit", async (e) => {
+document.getElementById("add-product-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const token = localStorage.getItem("token");
-    const id = document.getElementById("edit-product-id").value;
-    const fd = new FormData();
     
-    fd.append("name", document.getElementById("edit-name").value.trim());
-    fd.append("description", document.getElementById("edit-description").value.trim());
-    fd.append("gender", document.getElementById("edit-gender").value.trim());
-    fd.append("quality", document.getElementById("edit-quality").value.trim());
-    fd.append("availability", document.getElementById("edit-availability").value.trim());
-    fd.append("sort_index", document.getElementById("edit-sort-index").value);
+    // Use the name attributes from HTML for basic fields
+    const fd = new FormData(e.target);
+    const sortIdx = document.getElementById('add-sort-index')?.value || 0;
+    fd.append("sort_index", sortIdx);
 
-    const imageType = document.querySelector('input[name="editImageType"]:checked').value;
+    const imageType = e.target.querySelector('input[name="imageType"]:checked').value;
+    
     if (imageType === "upload") {
-        const fileIn = document.getElementById('edit-image-upload');
-        if (fileIn.files[0]) fd.append("imageFile", fileIn.files[0]);
+        const fileIn = document.querySelector('input[name="imageUpload"]');
+        if (fileIn.files[0]) {
+            // MATCHING BACKEND: append as 'imageFile'
+            fd.append("imageFile", fileIn.files[0]);
+        }
+        // Clean up the original name to avoid confusion
+        fd.delete("imageUpload"); 
     } else {
-        fd.append("image", document.getElementById("edit-image").value.trim());
+        fd.delete("imageUpload");
     }
 
     try {
-        const res = await fetch(`${API_BASE_URL}/api/products/${id}`, {
-            method: "PUT",
+        const res = await fetch(`${API_BASE_URL}/api/products`, {
+            method: "POST",
             headers: { Authorization: `Bearer ${token}` },
-            body: fd
+            body: fd // Browser handles Content-Type automatically
         });
-        if (res.ok) { alert("Product updated."); closeEditModal(); loadProducts(); }
-    } catch (error) { console.error("Update error:", error); }
+
+        if (res.ok) { 
+            alert("Product published."); 
+            e.target.reset(); 
+            loadProducts(); 
+        } else {
+            const errorData = await res.json();
+            alert(`Upload failed: ${errorData.error || 'Check server logs'}`);
+        }
+    } catch (error) { 
+        console.error("Add failed:", error); 
+    }
 });
