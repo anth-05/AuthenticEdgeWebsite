@@ -202,6 +202,13 @@ a {
     background-color: #fff;
     border-top: 1px solid #eee;
 }
+.testimonials-section h2 {
+    font-size: clamp(1.5rem, 4vw, 2rem);
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    margin-bottom: 50px;
+    text-align: center;
+}
 
 .testimonials-grid {
     display: grid;
