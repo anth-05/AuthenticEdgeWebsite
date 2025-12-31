@@ -8,7 +8,7 @@ let itemsToShow = 30;
 const FIXED_BRANDS = [
     "NIKE", "ADIDAS", "ASICS", "LOUIS VUITTON", "PRADA", 
     "RICK OWENS", "CHANEL", "DIOR", "LANVIN", "MAISON MIHARA", 
-    "PUMA", "TIMBERLAND", "AIRPODS", "DYSON", "ALO", 
+    "PUMA", "TIMBERLAND", "AIRPODS", "DSN", "ALO", 
     "OC", "LULULEMON", "ESSENTIALS"
 ];
 
