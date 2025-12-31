@@ -34,18 +34,19 @@
          <p>Manage your inventory and upcoming drops.</p>
        </div>
     </header>
-    <div class="form-group">
-  <label>
-    <input type="checkbox" id="edit-most-wanted" name="is_most_wanted">
-    Feature in "Most Wanted"
-  </label>
-</div>
+
 
     <section class="admin-section">
       <div class="section-header">
         <span class="eyebrow">Inventory Control</span>
         <h2>Add New Product</h2>
       </div>
+      <div style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+    <input type="checkbox" id="add-most-wanted" name="is_most_wanted" style="width: 18px; height: 18px;">
+    <label for="add-most-wanted" style="font-size: 12px; font-weight: 600; text-transform: uppercase; color: #666;">
+      Feature in "Most Wanted"
+    </label>
+  </div>
 
       <form id="add-product-form" class="editorial-admin-form" enctype="multipart/form-data">
         <div class="form-row">
