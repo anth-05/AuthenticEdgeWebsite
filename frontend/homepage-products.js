@@ -1,4 +1,21 @@
 import { API_BASE_URL } from "./config.js";
+import { openModal } from "./modal.js"; // Adjust path if needed
+
+document.addEventListener("DOMContentLoaded", () => {
+    // Check if the user has already seen the popup this session (optional)
+    if (!sessionStorage.getItem("announcementSeen")) {
+        
+        openModal(
+            "Archive Update", 
+            "Please note: Our digital vault is currently being synced. Not all physical stock has been listed yet. We are adding new pieces daily—thank you for your patience as we curate the collection. Explore what's live now.",
+            () => {
+                console.log("User acknowledged stock update.");
+                sessionStorage.setItem("announcementSeen", "true");
+            },
+            "Enter Archives"
+        );
+    }
+});
 async function loadHomepageProducts() {
     try {
         const res = await fetch(`${API_BASE_URL}/api/products`);
