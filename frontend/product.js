@@ -1,6 +1,8 @@
 import { API_BASE_URL } from "./config.js";
 
 let allProducts = [];
+let filteredProducts = []; 
+let itemsToShow = 30;
 
 // 1. Fixed Brands List
 const FIXED_BRANDS = [
@@ -15,10 +17,11 @@ async function loadProducts() {
     try {
         const res = await fetch(`${API_BASE_URL}/api/products`);
         allProducts = await res.json();
+        filteredProducts = allProducts; // Default state
         
         if (allProducts.length > 0) {
             renderFixedFilters(); 
-            renderGrid(allProducts);
+            renderInitialGrid(); // Load first 30
         } else {
             grid.innerHTML = `<p class="empty-msg">The archives are currently empty.</p>`;
         }
@@ -27,11 +30,18 @@ async function loadProducts() {
     }
 }
 
+// Logic to handle the "30 products per page" requirement
+function renderInitialGrid() {
+    itemsToShow = 30; 
+    const toRender = filteredProducts.slice(0, itemsToShow);
+    renderGrid(toRender);
+    updateLoadMoreVisibility();
+}
+
 function renderFixedFilters() {
     const filterContainer = document.getElementById("dynamic-filters");
     if (!filterContainer) return;
 
-    // "ALL" is placed at the beginning
     let filterHTML = `<li><button class="filter-btn active" data-filter="ALL">All</button></li>`;
     filterHTML += FIXED_BRANDS.map(brand => `
         <li><button class="filter-btn" data-filter="${brand}">${brand}</button></li>
@@ -44,26 +54,22 @@ function renderFixedFilters() {
 function setupFilterEvents() {
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.onclick = (e) => {
-            const target = e.currentTarget; // Using currentTarget for better event reliability
+            const target = e.currentTarget;
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
             target.classList.add('active');
 
             const filterValue = target.getAttribute('data-filter');
 
             if (filterValue === 'ALL') {
-                renderGrid(allProducts);
+                filteredProducts = allProducts;
             } else {
-                /* NEW LOGIC: Whole Word Match
-                   \b creates a word boundary. 
-                   This ensures 'OC' doesn't match 'ROCK' or 'DIOR' doesn't match 'DIORAMA'
-                */
+                // Whole Word Match Logic
                 const regex = new RegExp(`\\b${filterValue}\\b`, 'i'); 
-                
-                const filtered = allProducts.filter(p => 
+                filteredProducts = allProducts.filter(p => 
                     regex.test(p.name.toUpperCase())
                 );
-                renderGrid(filtered);
             }
+            renderInitialGrid();
         };
     });
 }
@@ -85,6 +91,30 @@ function renderGrid(products) {
             </div>
         </a>
     `).join('');
+}
+
+// Handle the "Load More" button appearance and logic
+function updateLoadMoreVisibility() {
+    let btn = document.getElementById("load-more-btn");
+    const container = document.querySelector(".collection-grid-section .container");
+
+    if (!btn && container) {
+        btn = document.createElement("button");
+        btn.id = "load-more-btn";
+        btn.className = "load-more-btn";
+        btn.innerText = "LOAD MORE ARCHIVES";
+        container.appendChild(btn);
+        
+        btn.onclick = () => {
+            itemsToShow += 30;
+            renderGrid(filteredProducts.slice(0, itemsToShow));
+            updateLoadMoreVisibility();
+        };
+    }
+
+    if (btn) {
+        btn.style.display = itemsToShow >= filteredProducts.length ? "none" : "block";
+    }
 }
 
 function setupScrollArrows() {
@@ -117,12 +147,12 @@ function setupScrollArrows() {
 // Search Logic
 document.getElementById('archiveSearch').oninput = (e) => {
     const query = e.target.value.toUpperCase();
-    const filtered = allProducts.filter(p => {
+    filteredProducts = allProducts.filter(p => {
         const name = p.name.toUpperCase();
         const desc = (p.description || "").toUpperCase();
         return name.includes(query) || desc.includes(query);
     });
-    renderGrid(filtered);
+    renderInitialGrid();
 };
 
 window.onload = () => {
