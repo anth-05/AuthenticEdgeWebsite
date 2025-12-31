@@ -283,47 +283,19 @@
         display: none; /* Remove underline on mobile pill version */
     }
 }
-/* ========== SUBMIT INQUIRY BUTTON REFINEMENT ========== */
+/* --- CART DRAWER FOOTER REFINEMENT --- */
 
-.btn-checkout, 
-.final-submit-btn {
+.cart-footer {
+    padding: 30px;
+    border-top: 1px solid #eee;
+    background: #fff;
+    position: sticky;
+    bottom: 0;
     width: 100%;
-    background-color: #000;
-    color: #fff;
-    border: none;
-    padding: 20px;
-    font-size: 12px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.25em; /* Editorial spacing */
-    cursor: pointer;
-    border-radius: 100px; /* Sophisticated pill shape */
-    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    display: block;
-    text-align: center;
+    box-sizing: border-box;
 }
 
-.btn-checkout:hover, 
-.final-submit-btn:hover {
-    background-color: #333;
-    transform: translateY(-3px); /* Subtle lift */
-    box-shadow: 0 12px 24px rgba(0,0,0,0.15);
-}
-
-.btn-checkout:active, 
-.final-submit-btn:active {
-    transform: translateY(-1px);
-}
-
-/* Modal specific button adjustment */
-.final-submit-btn {
-    margin-top: 30px;
-    letter-spacing: 0.3em; /* Slightly more emphasis for the final action */
-}
-
-/* Total Items text alignment in the drawer footer */
-.cart-footer #totalItemsCount {
+#totalItemsCount {
     font-size: 10px;
     text-transform: uppercase;
     letter-spacing: 0.15em;
@@ -332,4 +304,34 @@
     display: block;
     text-align: center;
     font-weight: 600;
+}
+
+/* Matching the .submit-btn class from your HTML */
+.submit-btn {
+    width: 100%;
+    background-color: #000;
+    color: #fff;
+    border: none;
+    padding: 18px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.25em; /* Premium editorial spacing */
+    cursor: pointer;
+    border-radius: 100px; /* Sophisticated pill shape */
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    display: block;
+    text-align: center;
+    outline: none;
+}
+
+.submit-btn:hover {
+    background-color: #333;
+    transform: translateY(-3px); /* Subtle lift effect */
+    box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+}
+
+.submit-btn:active {
+    transform: translateY(-1px);
 }
