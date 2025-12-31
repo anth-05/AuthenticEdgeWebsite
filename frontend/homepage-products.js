@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "./config.js";
 async function loadHomepageProducts() {
     try {
         const res = await fetch(`${API_BASE_URL}/api/products`);
