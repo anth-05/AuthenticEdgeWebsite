@@ -523,10 +523,32 @@ app.post('/api/register', async (req, res) => {
         
         console.log(`New user registered: ${email}`);
 
+        // 2. Prepare the confirmation email
+        const mailOptions = {
+            from: '"Authentic Edge" <authenticedge@gmail.com>',
+            to: email,
+            subject: 'Welcome to the Archives | Authentic Edge',
+            html: `
+                <div style="font-family: 'Inter', sans-serif; max-width: 600px; margin: auto; padding: 40px; border: 1px solid #eee;">
+                    <h1 style="text-transform: uppercase; letter-spacing: 3px; font-size: 20px; text-align: center;">Welcome to the Edge</h1>
+                    <p style="color: #666; line-height: 1.6; text-align: center;">Your membership has been successfully activated. You now have exclusive access to our curated archives and concierge services.</p>
+                    <div style="text-align: center; margin-top: 30px;">
+                        <a href="https://authenticedge.onrender.com/login.html" 
+                           style="background: #000; color: #fff; padding: 15px 30px; text-decoration: none; text-transform: uppercase; font-size: 11px; font-weight: 700; border-radius: 100px;">
+                           Access Your Account
+                        </a>
+                    </div>
+                </div>
+            `
+        };
+
+        // 3. Send the email
+        await transporter.sendMail(mailOptions);
+
         // 5. Success Response
         res.status(201).json({ 
             success: true,
-            message: "User created successfully.",
+            message: "Registration successful. Confirmation email sent.",
             user: newUser.rows[0]
         });
 
@@ -534,6 +556,7 @@ app.post('/api/register', async (req, res) => {
         console.error("Server Registration Error:", err);
         res.status(500).json({ error: "Internal server error." });
     }
+    
 });
 
 /* ---------------- ADMIN & MESSAGE ROUTES ---------------- */

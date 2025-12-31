@@ -1,7 +1,6 @@
 import { API_BASE_URL } from "./config.js";
 
 document.addEventListener("DOMContentLoaded", () => {
-    // MATCHED ID: register-form (dash-case to match HTML)
     const registerForm = document.getElementById("register-form");
     if (registerForm) {
         registerForm.addEventListener("submit", handleRegister);
@@ -16,7 +15,6 @@ async function handleRegister(e) {
     const submitBtn = document.getElementById("registerBtn");
     const feedback = document.getElementById("register-feedback");
 
-    // Clear previous feedback
     if (feedback) feedback.textContent = "";
 
     // 1. Validation
@@ -31,7 +29,6 @@ async function handleRegister(e) {
     }
 
     try {
-        // UI Feedback
         if (submitBtn) {
             submitBtn.disabled = true;
             submitBtn.innerText = "Processing Application...";
@@ -51,13 +48,14 @@ async function handleRegister(e) {
         const data = await res.json();
 
         if (res.ok) {
-            // Success
-            showFeedback("Membership created. Welcome.", "success");
+            // SUCCESS: Updated message to include email confirmation notice
+            showFeedback("Membership created. A confirmation email has been sent.", "success");
+            
+            // Increased timeout to 3 seconds so users can read the email notice
             setTimeout(() => {
                 window.location.replace("login.html");
-            }, 1500);
+            }, 3000);
         } else {
-            // Server Error
             showFeedback(data.error || "Registration encountered an issue.");
         }
     } catch (err) {
@@ -71,13 +69,22 @@ async function handleRegister(e) {
     }
 }
 
-// Helper function to handle the UI feedback div
+// Optimized helper function for "Authentic Edge" styling
 function showFeedback(message, type = "error") {
     const feedback = document.getElementById("register-feedback");
     if (feedback) {
-        feedback.style.color = type === "success" ? "#155724" : "#d00000";
+        // Applying more premium styling via JS
+        feedback.style.fontSize = "12px";
+        feedback.style.textTransform = "uppercase";
+        feedback.style.letterSpacing = "0.1em";
+        feedback.style.textAlign = "center";
+        feedback.style.marginTop = "15px";
+        feedback.style.fontWeight = "600";
+        
+        // Solid black for success (brand-aligned) or red for error
+        feedback.style.color = type === "success" ? "#000" : "#d00000";
         feedback.textContent = message;
     } else {
-        alert(message); // Fallback if div is missing
+        alert(message);
     }
 }
