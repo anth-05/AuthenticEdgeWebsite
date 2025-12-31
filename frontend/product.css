@@ -400,3 +400,50 @@
         gap: 20px;
     }
 }
+/* --- SCROLL WRAPPER & ARROWS --- */
+.scroll-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.scroll-arrow {
+    background: white;
+    border: none;
+    cursor: pointer;
+    font-size: 20px;
+    z-index: 10;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.3s ease;
+    color: #000;
+}
+
+/* Positioning the arrows */
+.scroll-arrow.left {
+    position: absolute;
+    left: 0;
+    background: linear-gradient(to right, white 60%, transparent);
+    padding-right: 20px;
+}
+
+.scroll-arrow.right {
+    position: absolute;
+    right: 0;
+    background: linear-gradient(to left, white 60%, transparent);
+    padding-left: 20px;
+}
+
+/* Hide scrollbar but keep functionality */
+.filter-list {
+    scroll-behavior: smooth; /* Enables smooth sliding animation */
+    padding: 0 40px !important; /* Space for arrows */
+}
+
+/* Mobile: usually better to hide arrows and let users swipe naturally */
+@media (max-width: 768px) {
+    .scroll-arrow { display: none; }
+    .filter-list { padding: 0 20px !important; }
+}

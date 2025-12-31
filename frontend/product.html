@@ -28,12 +28,20 @@
     <input type="text" id="archiveSearch" placeholder="SEARCH ARCHIVES (E.G. 'JORDAN', 'VINTAGE')..." />
 </div>
 
-  <nav class="filter-nav">
-    <div class="container">
-      <ul id="dynamic-filters" class="filter-list">
-        </ul>
-    </div>
-  </nav>
+<nav class="filter-nav">
+  <div class="container scroll-wrapper">
+    <button class="scroll-arrow left" id="scrollLeft" aria-label="Scroll left">
+      <i class="ri-arrow-left-s-line"></i>
+    </button>
+
+    <ul id="dynamic-filters" class="filter-list">
+      </ul>
+
+    <button class="scroll-arrow right" id="scrollRight" aria-label="Scroll right">
+      <i class="ri-arrow-right-s-line"></i>
+    </button>
+  </div>
+</nav>
 
   <section class="collection-grid-section">
     <div class="container">

@@ -80,6 +80,36 @@ function renderGrid(products) {
         </a>
     `).join('');
 }
+function setupScrollArrows() {
+    const list = document.getElementById("dynamic-filters");
+    const leftArrow = document.getElementById("scrollLeft");
+    const rightArrow = document.getElementById("scrollRight");
+
+    if (!list || !leftArrow || !rightArrow) return;
+
+    // Amount to scroll on each click
+    const scrollAmount = 300; 
+
+    leftArrow.onclick = () => {
+        list.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+    };
+
+    rightArrow.onclick = () => {
+        list.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    };
+
+    // Optional: Hide/Show arrows based on scroll position
+    list.onscroll = () => {
+        leftArrow.style.opacity = list.scrollLeft > 0 ? "1" : "0";
+        leftArrow.style.pointerEvents = list.scrollLeft > 0 ? "auto" : "none";
+        
+        const maxScroll = list.scrollWidth - list.clientWidth;
+        rightArrow.style.opacity = list.scrollLeft >= maxScroll ? "0" : "1";
+        rightArrow.style.pointerEvents = list.scrollLeft >= maxScroll ? "none" : "auto";
+    };
+}
+
+// CALL THIS INSIDE window.onload OR AFTER renderFixedFilters()
 
 // Search Logic
 document.getElementById('archiveSearch').oninput = (e) => {
@@ -92,4 +122,4 @@ document.getElementById('archiveSearch').oninput = (e) => {
     renderGrid(filtered);
 };
 
-window.onload = loadProducts;
+window.onload = () => {setupScrollArrows(); loadProducts(); };
