@@ -2,8 +2,13 @@ import { API_BASE_URL } from "./config.js";
 
 let allProducts = [];
 
-// 1. Define your fixed brands here
-const FIXED_BRANDS = ["NIKE", "ADIDAS", "JORDAN", "YEEZY", "VINTAGE"];
+// 1. Updated list with your specific brands
+const FIXED_BRANDS = [
+    "NIKE", "ADIDAS", "ASICS", "LOUIS VUITTON", "PRADA", 
+    "RICK OWENS", "CHANEL", "DIOR", "LANVIN", "MAISON MIHARA", 
+    "PUMA", "TIMBERLAND", "APPLE", "DYSON", "ALO", 
+    "OC", "LULULEMON", "ESSENTIALS"
+];
 
 async function loadProducts() {
     const grid = document.getElementById("product-grid");
@@ -12,7 +17,7 @@ async function loadProducts() {
         allProducts = await res.json();
         
         if (allProducts.length > 0) {
-            renderFixedFilters(); // Use the new fixed generator
+            renderFixedFilters(); 
             renderGrid(allProducts);
         } else {
             grid.innerHTML = `<p class="empty-msg">The archives are currently empty.</p>`;
@@ -26,7 +31,6 @@ function renderFixedFilters() {
     const filterContainer = document.getElementById("dynamic-filters");
     if (!filterContainer) return;
 
-    // Build HTML using the FIXED_BRANDS array
     let filterHTML = `<li><button class="filter-btn active" data-filter="ALL">All</button></li>`;
     filterHTML += FIXED_BRANDS.map(brand => `
         <li><button class="filter-btn" data-filter="${brand}">${brand}</button></li>
@@ -40,7 +44,6 @@ function setupFilterEvents() {
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.onclick = (e) => {
             const target = e.target;
-            // UI State Update
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
             target.classList.add('active');
 
@@ -49,7 +52,7 @@ function setupFilterEvents() {
             if (filterValue === 'ALL') {
                 renderGrid(allProducts);
             } else {
-                // Filter products that contain the brand name anywhere in the title
+                // Matches the brand name anywhere in the product title
                 const filtered = allProducts.filter(p => 
                     p.name.toUpperCase().includes(filterValue)
                 );
