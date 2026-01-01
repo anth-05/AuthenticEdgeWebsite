@@ -444,22 +444,32 @@ app.get("/api/admin/subscriptions", authenticateToken, async (req, res) => {
 // Example Node.js Backend Fix
 app.get('/api/admin/conversations', authenticateToken, async (req, res) => {
     try {
-        // 1. Perform the query
+        // We select the user info and a count of messages where is_read is false
+        // and the sender is NOT the admin (meaning it's from the user).
         const result = await pool.query(`
-            SELECT DISTINCT u.id as user_id, u.email 
+            SELECT 
+                u.id as user_id, 
+                u.email,
+                (
+                    SELECT COUNT(*)::int 
+                    FROM messages m2 
+                    WHERE m2.user_id = u.id 
+                    AND m2.is_read = false 
+                    AND m2.sender != 'admin'
+                ) as unread_count
             FROM users u
             JOIN messages m ON u.id = m.user_id 
-            ORDER BY u.email ASC
+            GROUP BY u.id, u.email
+            ORDER BY unread_count DESC, u.email ASC
         `);
         
-        // 2. Access the .rows property (Postgres returns an object, not an array)
-        const conversations = result.rows;
-        
-        // 3. Send the array back to the frontend
-        res.json(conversations);
+        res.json(result.rows);
     } catch (err) {
         console.error("DATABASE ERROR:", err.message);
-        res.status(500).json({ error: "Database query failed", details: err.message });
+        res.status(500).json({ 
+            error: "Database query failed", 
+            details: err.message 
+        });
     }
 });
 // POST to Approve or Reject
@@ -470,8 +480,14 @@ app.post("/api/admin/subscriptions/:userId", authenticateToken, async (req, res)
     const { action } = req.body; // 'approve' or 'reject'
 
     try {
+        let messageText = "";
+
         if (action === 'approve') {
-            // Move requested_plan to current_plan and set status to active
+            // 1. Get the plan name before nullifying it to use in the message
+            const planRes = await pool.query('SELECT requested_plan FROM subscriptions WHERE user_id = $1', [userId]);
+            const planName = planRes.rows[0]?.requested_plan || "Premium";
+
+            // 2. Update Subscription
             await pool.query(`
                 UPDATE subscriptions 
                 SET current_plan = requested_plan, 
@@ -479,17 +495,30 @@ app.post("/api/admin/subscriptions/:userId", authenticateToken, async (req, res)
                     status = 'active', 
                     updated_at = NOW() 
                 WHERE user_id = $1`, [userId]);
+            
+            messageText = `Your subscription for ${planName} has been approved! You now have full access.`;
         } else {
-            // Reset request but keep current plan as is
+            // Update Subscription for Rejection
             await pool.query(`
                 UPDATE subscriptions 
                 SET requested_plan = NULL, 
                     status = CASE WHEN current_plan IS NOT NULL THEN 'active' ELSE 'none' END, 
                     updated_at = NOW() 
                 WHERE user_id = $1`, [userId]);
+
+            messageText = "Your subscription request was not approved. Please contact support if you have questions.";
         }
-        res.json({ success: true });
+
+        // 3. AUTO-MESSAGE: This triggers the "unread notification" for the user
+        // We set is_read = false (for the user) and sender = 'admin'
+        await pool.query(`
+            INSERT INTO messages (user_id, sender, message, is_read, created_at)
+            VALUES ($1, 'admin', $2, false, NOW())
+        `, [userId, messageText]);
+
+        res.json({ success: true, message: "Subscription updated and user notified." });
     } catch (err) {
+        console.error("SUBSCRIPTION ERROR:", err.message);
         res.status(500).json({ error: "Action failed" });
     }
 });

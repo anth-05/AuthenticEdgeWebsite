@@ -1,7 +1,7 @@
 import { API_BASE_URL } from "./config.js";
 
 let activeUser = null;
-const messagesLayout = document.querySelector(".messages-layout"); // For mobile sliding
+const messagesLayout = document.querySelector(".messages-layout");
 const usersList = document.getElementById("usersList");
 const chatBody = document.getElementById("chatBody");
 const chatHeader = document.getElementById("chatHeader");
@@ -11,7 +11,6 @@ const messageBadge = document.getElementById("message-badge");
 const fileInput = document.getElementById("fileInput");
 const attachBtn = document.getElementById("attachBtn");
 
-// Elements for image preview
 const imagePreviewContainer = document.getElementById("imagePreviewContainer");
 const imagePreview = document.getElementById("imagePreview");
 const clearPreview = document.getElementById("clearPreview");
@@ -19,7 +18,7 @@ const clearPreview = document.getElementById("clearPreview");
 if (attachBtn) attachBtn.onclick = () => fileInput.click();
 
 /**
- * 1. LOAD INBOX SIDEBAR
+ * 1. LOAD INBOX SIDEBAR (With Unread Logic)
  */
 async function loadInbox() {
     const token = localStorage.getItem("token");
@@ -37,20 +36,32 @@ async function loadInbox() {
             return;
         }
 
-        if (messageBadge) messageBadge.textContent = users.length;
+        // Global Badge: Sum of all unread messages
+        const totalUnread = users.reduce((sum, u) => sum + (parseInt(u.unread_count) || 0), 0);
+        if (messageBadge) {
+            messageBadge.textContent = totalUnread;
+            // Turn badge red if there are unread messages
+            messageBadge.style.background = totalUnread > 0 ? "#ff0000" : "#000";
+        }
+
         setupInboxHeader();
 
         usersList.innerHTML = "";
         users.forEach(u => {
+            const hasUnread = u.unread_count > 0;
             const div = document.createElement("div");
-            div.className = `user-item ${activeUser === u.user_id ? 'active' : ''}`;
+            // Add 'active' class if selected, 'has-unread' for styling
+            div.className = `user-item ${activeUser === u.user_id ? 'active' : ''} ${hasUnread ? 'has-unread' : ''}`;
             
             div.innerHTML = `
                 <div class="user-item-content">
                     <input type="checkbox" class="convo-checkbox" data-id="${u.user_id}" onclick="event.stopPropagation()">
                     <div class="user-info" onclick="selectConversation(${u.user_id}, '${u.email}')">
-                        <span class="user-email">${u.email}</span>
-                        <span class="last-msg">View private inquiry</span>
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span class="user-email">${u.email}</span>
+                            ${hasUnread ? `<span class="unread-count">${u.unread_count}</span>` : ''}
+                        </div>
+                        <span class="last-msg">${hasUnread ? 'NEW MESSAGE' : 'View private inquiry'}</span>
                     </div>
                     <button class="delete-x" onclick="event.stopPropagation(); deleteConversation(${u.user_id})">×</button>
                 </div>
@@ -63,21 +74,32 @@ async function loadInbox() {
 }
 
 /**
- * 2. SELECT & LOAD CHAT (Updated for Mobile Slide)
+ * 2. SELECT & LOAD CHAT (Mark as Read)
  */
 async function selectConversation(userId, email) {
     activeUser = userId;
+    const token = localStorage.getItem("token");
     
     // Toggle Mobile Slide
-    if (messagesLayout) {
-        messagesLayout.classList.add('chat-open');
-    }
+    if (messagesLayout) messagesLayout.classList.add('chat-open');
 
-    // UI Update: Highlight active
+    // UI Update: Highlight active immediately
     document.querySelectorAll('.user-item').forEach(item => {
         item.classList.remove('active');
         if(item.querySelector(`.convo-checkbox[data-id="${userId}"]`)) item.classList.add('active');
     });
+
+    // MARK AS READ: Notify backend
+    try {
+        await fetch(`${API_BASE_URL}/api/admin/read/${userId}`, {
+            method: "POST",
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        // Refresh sidebar to clear the red badge for this user
+        loadInbox();
+    } catch (err) {
+        console.error("Mark read error:", err);
+    }
 
     chatHeader.innerHTML = `
         <div style="display:flex; align-items:center; gap:15px; width:100%;">
@@ -89,7 +111,6 @@ async function selectConversation(userId, email) {
         </div>
     `;
     
-    const token = localStorage.getItem("token");
     try {
         const res = await fetch(`${API_BASE_URL}/api/admin/messages/${userId}`, {
             headers: { Authorization: `Bearer ${token}` }
@@ -105,40 +126,6 @@ async function selectConversation(userId, email) {
     } catch (err) {
         console.error("History load error:", err);
     }
-}
-
-/**
- * Mobile Navigation Helper
- */
-function closeChatMobile() {
-    if (messagesLayout) {
-        messagesLayout.classList.remove('chat-open');
-    }
-}
-
-/**
- * 3. FILE PREVIEW & REPLY
- */
-if (fileInput) {
-    fileInput.onchange = () => {
-        const file = fileInput.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                if (imagePreview) imagePreview.src = e.target.result;
-                if (imagePreviewContainer) imagePreviewContainer.style.display = "block";
-            }
-            reader.readAsDataURL(file);
-        }
-    };
-}
-
-if (clearPreview) {
-    clearPreview.onclick = () => {
-        fileInput.value = "";
-        if (imagePreviewContainer) imagePreviewContainer.style.display = "none";
-        if (imagePreview) imagePreview.src = "";
-    };
 }
 
 async function handleReply() {
