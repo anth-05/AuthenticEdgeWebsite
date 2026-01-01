@@ -57,6 +57,10 @@
 .users-list {
     flex: 1;
     overflow-y: auto;
+    overflow-x: hidden; /* Prevent horizontal shifting */
+    height: 100%;
+    /* Standardizes the scrollbar width so it doesn't overlap text */
+    scrollbar-gutter: stable; 
 }
 
 .user-item {
@@ -65,6 +69,24 @@
     border-bottom: 1px solid #f9f9f9;
     transition: all 0.2s ease;
     cursor: pointer;
+    /* ADD THESE: */
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box; /* Ensures padding doesn't add to width */
+}
+
+.user-item .user-email {
+    display: block;
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: #000;
+    /* Change 'nowrap' to 'normal' if you want them to wrap, 
+       otherwise keep these to ensure clean ellipsis */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; 
+    margin-bottom: 4px;
+    max-width: 100%; 
 }
 
 .user-item:hover {
@@ -75,17 +97,31 @@
     background-color: #000 !important;
 }
 
+.user-item {
+    width: 100%;
+    padding: 20px 25px;
+    border-bottom: 1px solid #f9f9f9;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    /* ADD THESE: */
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box; /* Ensures padding doesn't add to width */
+}
+
 .user-item .user-email {
     display: block;
     font-weight: 700;
     font-size: 0.85rem;
     color: #000;
+    /* Change 'nowrap' to 'normal' if you want them to wrap, 
+       otherwise keep these to ensure clean ellipsis */
     white-space: nowrap;
     overflow: hidden;
-    text-overflow: ellipsis;
+    text-overflow: ellipsis; 
     margin-bottom: 4px;
+    max-width: 100%; 
 }
-
 .user-item.active .user-email {
     color: #fff;
 }
