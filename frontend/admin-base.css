@@ -19,7 +19,7 @@ body {
 
 /* SIDEBAR */
 .sidebar {
-    width: 260px;
+    width: 200px;
     background: var(--bg-sidebar);
     border-right: 1px solid var(--border-color);
     padding: 40px 20px;
