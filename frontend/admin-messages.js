@@ -18,7 +18,19 @@ const clearPreview = document.getElementById("clearPreview");
 if (attachBtn) attachBtn.onclick = () => fileInput.click();
 
 /**
- * 1. LOAD INBOX SIDEBAR (With Unread Logic)
+ * 1. MOBILE NAVIGATION HELPERS
+ */
+function closeChatMobile() {
+    if (messagesLayout) {
+        messagesLayout.classList.remove('chat-open');
+    }
+    activeUser = null;
+    // Refresh to clear any notification badges that were just "read"
+    loadInbox();
+}
+
+/**
+ * 2. LOAD INBOX SIDEBAR (With Unread Logic)
  */
 async function loadInbox() {
     const token = localStorage.getItem("token");
@@ -40,7 +52,6 @@ async function loadInbox() {
         const totalUnread = users.reduce((sum, u) => sum + (parseInt(u.unread_count) || 0), 0);
         if (messageBadge) {
             messageBadge.textContent = totalUnread;
-            // Turn badge red if there are unread messages
             messageBadge.style.background = totalUnread > 0 ? "#ff0000" : "#000";
         }
 
@@ -50,7 +61,6 @@ async function loadInbox() {
         users.forEach(u => {
             const hasUnread = u.unread_count > 0;
             const div = document.createElement("div");
-            // Add 'active' class if selected, 'has-unread' for styling
             div.className = `user-item ${activeUser === u.user_id ? 'active' : ''} ${hasUnread ? 'has-unread' : ''}`;
             
             div.innerHTML = `
@@ -74,13 +84,12 @@ async function loadInbox() {
 }
 
 /**
- * 2. SELECT & LOAD CHAT (Mark as Read)
+ * 3. SELECT & LOAD CHAT (Mark as Read)
  */
 async function selectConversation(userId, email) {
     activeUser = userId;
     const token = localStorage.getItem("token");
     
-    // Toggle Mobile Slide
     if (messagesLayout) messagesLayout.classList.add('chat-open');
 
     // UI Update: Highlight active immediately
@@ -89,13 +98,12 @@ async function selectConversation(userId, email) {
         if(item.querySelector(`.convo-checkbox[data-id="${userId}"]`)) item.classList.add('active');
     });
 
-    // MARK AS READ: Notify backend
+    // MARK AS READ
     try {
         await fetch(`${API_BASE_URL}/api/admin/read/${userId}`, {
             method: "POST",
             headers: { Authorization: `Bearer ${token}` }
         });
-        // Refresh sidebar to clear the red badge for this user
         loadInbox();
     } catch (err) {
         console.error("Mark read error:", err);
@@ -103,7 +111,7 @@ async function selectConversation(userId, email) {
 
     chatHeader.innerHTML = `
         <div style="display:flex; align-items:center; gap:15px; width:100%;">
-            <span class="mobile-back-btn" onclick="closeChatMobile()" style="display:none; cursor:pointer; font-weight:800; font-size:1.2rem;">←</span>
+            <span class="mobile-back-btn" onclick="closeChatMobile()" style="cursor:pointer; font-weight:800; font-size:1.2rem;">←</span>
             <div style="display:flex; flex-direction:column;">
                 <span class="eyebrow">CONVERSATION WITH</span>
                 <h3>${email}</h3>
@@ -128,6 +136,9 @@ async function selectConversation(userId, email) {
     }
 }
 
+/**
+ * 4. MESSAGE HANDLING & UI
+ */
 async function handleReply() {
     const text = adminInput.value.trim();
     const file = fileInput.files[0];
@@ -149,7 +160,6 @@ async function handleReply() {
         if (res.ok) {
             const data = await res.json();
             renderBubble(data);
-            
             adminInput.value = "";
             fileInput.value = "";
             if (imagePreviewContainer) imagePreviewContainer.style.display = "none";
@@ -160,9 +170,6 @@ async function handleReply() {
     }
 }
 
-/**
- * 4. UI RENDER & HELPERS
- */
 function renderBubble(msg) {
     const wrapper = document.createElement("div");
     wrapper.className = `message-wrapper ${msg.sender === 'admin' ? 'admin-align' : 'user-align'}`;
@@ -219,7 +226,7 @@ async function deleteConversation(userId) {
                 chatBody.innerHTML = "";
                 chatHeader.innerHTML = '<span class="eyebrow">Select a conversation</span>';
                 activeUser = null;
-                closeChatMobile(); // Ensure we go back to inbox on mobile
+                closeChatMobile();
             }
             loadInbox();
         }
