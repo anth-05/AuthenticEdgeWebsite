@@ -664,6 +664,28 @@ app.get('/api/admin/messages/:userId', authenticateToken, verifyAdmin, async (re
         res.status(500).json({ error: "Failed to fetch history" });
     }
 });
+// Add this to your backend server file
+app.post("/api/admin/read/:userId", authenticateToken, async (req, res) => {
+    const { userId } = req.params;
+
+    // Optional: Check if admin
+    if (req.user.role !== 'admin') {
+        return res.status(403).json({ error: "Access denied" });
+    }
+
+    try {
+        await pool.query(`
+            UPDATE messages 
+            SET is_read = true 
+            WHERE user_id = $1 AND sender != 'admin'
+        `, [userId]);
+
+        res.json({ success: true, message: "Messages marked as read" });
+    } catch (err) {
+        console.error("MARK READ ERROR:", err.message);
+        res.status(500).json({ error: "Failed to update read status" });
+    }
+});
 
 app.delete('/api/admin/conversations/:userId', authenticateToken, async (req, res) => {
     const { userId } = req.params;
