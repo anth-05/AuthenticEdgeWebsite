@@ -64,10 +64,19 @@ function renderFixedFilters() {
     `).join('');
 
     filterContainer.innerHTML = filterHTML;
-    
-    // Reset scroll and check arrow visibility immediately
-    filterContainer.scrollLeft = 0;
-    updateArrowVisibility(); 
+
+    // Use a timeout to ensure the browser has calculated the width 
+    // before we force it to the left.
+    setTimeout(() => {
+        filterContainer.scrollLeft = 0;
+        // Verify with a second method for mobile browsers
+        filterContainer.scrollTo({ left: 0, behavior: 'instant' });
+        
+        // Refresh arrow visibility (if you used the code from the previous step)
+        if (typeof updateArrowVisibility === "function") {
+            updateArrowVisibility();
+        }
+    }, 10);
 
     setupFilterEvents();
 }
