@@ -49,8 +49,9 @@ function renderFixedFilters() {
     filterHTML += FIXED_BRANDS.map(brand => `
         <li><button class="filter-btn" data-filter="${brand}">${brand}</button></li>
     `).join('');
+    // FORCE SCROLL TO START
+    filterContainer.scrollLeft = 0;
 
-    filterContainer.innerHTML = filterHTML;
     setupFilterEvents();
 }
 
