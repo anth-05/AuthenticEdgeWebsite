@@ -15,6 +15,7 @@ document.addEventListener("DOMContentLoaded", () => {
             "Enter Archives"
         );
     }
+    createFallingHearts();
 });
 async function loadHomepageProducts() {
     try {
@@ -83,4 +84,34 @@ document.addEventListener("DOMContentLoaded", () => {
     // Change image every 5 seconds (5000ms)
     setInterval(changeBackground, 10000);
 });
+
+function createFallingHearts() {
+    const container = document.createElement('div');
+    container.className = 'hearts-container';
+    document.body.appendChild(container);
+
+    const heartIcons = ['❤️', '💖', '💘', '💝'];
+
+    setInterval(() => {
+        const heart = document.createElement('div');
+        heart.className = 'heart';
+        
+        // Randomize appearance
+        heart.innerText = heartIcons[Math.floor(Math.random() * heartIcons.length)];
+        heart.style.left = Math.random() * 100 + "vw";
+        heart.style.animationDuration = (Math.random() * 3 + 2) + "s"; // 2-5 seconds
+        heart.style.fontSize = (Math.random() * 10 + 15) + "px"; // 15-25px
+        
+        container.appendChild(heart);
+
+        // Remove heart from DOM after animation ends to save memory
+        setTimeout(() => {
+            heart.remove();
+        }, 5000);
+    }, 300); // Create a heart every 300ms
+}
+
+// Trigger it when the page loads
+document.addEventListener("DOMContentLoaded", createFallingHearts);
+
 document.addEventListener("DOMContentLoaded", loadHomepageProducts);
