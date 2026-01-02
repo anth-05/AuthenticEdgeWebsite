@@ -42,15 +42,25 @@ function renderFixedFilters() {
     const filterContainer = document.getElementById("dynamic-filters");
     if (!filterContainer) return;
 
-    // We start with the 'ALL' tab manually
+    // 1. Build the HTML string
+    // Note: If you want Valentijn to be the VERY first, you could move it 
+    // before the 'ALL' button, but usually 'ALL' stays first.
     let filterHTML = `<li><button class="filter-btn active" data-filter="ALL">ALL</button></li>`;
     
-    // Then we add the brands from your FIXED_BRANDS array
     filterHTML += FIXED_BRANDS.map(brand => `
         <li><button class="filter-btn" data-filter="${brand}">${brand}</button></li>
     `).join('');
-    // FORCE SCROLL TO START
+
+    // 2. Inject the HTML into the DOM
+    filterContainer.innerHTML = filterHTML;
+
+    // 3. Reset Scroll Position (After injection)
     filterContainer.scrollLeft = 0;
+
+    // 4. Optional: Extra safety for browsers that need a moment to calculate width
+    setTimeout(() => {
+        filterContainer.scrollTo({ left: 0, behavior: 'instant' });
+    }, 10);
 
     setupFilterEvents();
 }
