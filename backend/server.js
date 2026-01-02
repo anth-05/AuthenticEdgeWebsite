@@ -806,5 +806,46 @@ app.post('/api/messages/bulk-inquiry', authenticateToken, async (req, res) => {
         res.status(500).json({ error: "Failed to send inquiry" });
     }
 });
+// POST route to blast the Valentine email to all members
+app.post("/api/admin/valentijn-blast", async (req, res) => {
+    const { adminKey } = req.body;
 
+    // 1. Basic Security check
+    if (adminKey !== process.env.ADMIN_SECRET_KEY) {
+        return res.status(403).json({ error: "Unauthorized" });
+    }
+
+    try {
+        // 2. Fetch all members from your DB
+        // Replace 'User' with your actual database model/query
+        const users = await db.collection('users').find({}).toArray(); 
+        const emails = users.map(u => u.email);
+
+        // 3. Load the template
+        const templatePath = path.join(__dirname, 'emailTemplates', 'valentijn.html');
+        const htmlContent = fs.readFileSync(templatePath, 'utf8');
+
+        // 4. Send the emails
+        // Note: For many users, use a loop with a small delay to avoid spam filters
+        for (const email of emails) {
+            await transporter.sendMail({
+                from: `"Authentic Edge" <${process.env.CONTACT_EMAIL}>`,
+                to: email,
+                subject: "🌹 A Valentijn Special from Us!",
+                html: htmlContent
+            });
+            // Optional: wait 500ms between emails to stay under provider limits
+            await new Promise(resolve => setTimeout(resolve, 500));
+        }
+
+        res.json({ success: true, message: `Sent to ${emails.length} members.` });
+
+    } catch (error) {
+        console.error("Blast Error:", error);
+        res.status(500).json({ error: "Failed to send mass email" });
+    }
+    // curl -X POST http://localhost:5000/api/admin/valentijn-blast \
+    //  -H "Content-Type: application/json" \
+    //  -d '{"adminKey": "your_actual_secret_key_here"}'
+});
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));

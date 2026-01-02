@@ -499,3 +499,12 @@
     width: 100%;
     margin-bottom: 20px;
 }
+/* Add this to your CSS */
+.filter-btn[data-filter="Valentijn"] {
+    color: #ff4d4d !important;
+    text-shadow: 0 0 5px rgba(255, 77, 77, 0.3);
+}
+
+.filter-btn[data-filter="Valentijn"].active::after {
+    background: #ff4d4d !important;
+}

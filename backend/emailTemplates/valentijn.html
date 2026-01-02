@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: 'Helvetica', Arial, sans-serif; line-height: 1.6; color: #1a1a1a; margin: 0; padding: 0; background-color: #ffffff; }
+        .container { max-width: 600px; margin: 20px auto; padding: 30px; border: 1px solid #f0f0f0; }
+        
+        .header h1 { 
+            text-align: center; 
+            letter-spacing: 6px; 
+            text-transform: uppercase; 
+            font-weight: 300; 
+            font-size: 22px;
+            margin-bottom: 40px;
+        }
+
+        .valentijn-tag { 
+            color: #ff4d4d; 
+            font-weight: bold; 
+            text-align: center; 
+            text-transform: uppercase; 
+            font-size: 12px; 
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+
+        .headline { 
+            text-align: center; 
+            font-size: 24px; 
+            margin-bottom: 20px;
+            font-weight: normal; 
+        }
+
+        .description { 
+            text-align: center; 
+            color: #666; 
+            font-size: 15px; 
+            margin-bottom: 40px; 
+            padding: 0 20px;
+        }
+
+        /* Using Table for universal email support */
+        .product-table { width: 100%; border-collapse: collapse; }
+        .product-cell { width: 50%; padding: 10px; vertical-align: top; }
+        
+        .product-card { background: #fafafa; padding: 0; text-align: center; border-radius: 4px; overflow: hidden; }
+        
+        /* Forces images to be equal size and look cropped like a grid */
+        .img-container {
+            width: 100%;
+            height: 250px; /* Adjust this height as needed */
+            overflow: hidden;
+            display: block;
+        }
+        
+        .img-container img { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover; /* Keeps images equal even if original files differ */
+            display: block;
+        }
+
+        .product-label { 
+            padding: 15px 0; 
+            font-size: 12px; 
+            text-transform: uppercase; 
+            letter-spacing: 1px; 
+            font-weight: bold; 
+            color: #1a1a1a;
+        }
+
+        .btn-wrapper { text-align: center; margin-top: 40px; }
+        .btn { 
+            display: inline-block; 
+            width: 240px; 
+            padding: 18px 0; 
+            background: #000; 
+            color: #ffffff !important; 
+            text-decoration: none; 
+            font-weight: bold; 
+            font-size: 12px; 
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .footer { 
+            font-size: 10px; 
+            color: #aaa; 
+            text-align: center; 
+            margin-top: 50px; 
+            text-transform: uppercase; 
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Authentic Edge</h1>
+        </div>
+
+        <p class="valentijn-tag">Valentijn Special</p>
+        <h2 class="headline">A Love Letter to the Archives.</h2>
+        <p class="description">Our stock is expanding. Discover curated pieces selected for the season of Valentijn.</p>
+        
+        <table class="product-table">
+            <tr>
+                <td class="product-cell">
+                    <div class="product-card">
+                        <div class="img-container">
+                            <img src="./latest_drop.png" alt="Latest Drop">
+                        </div>
+                        <p class="product-label">Latest Drop</p>
+                    </div>
+                </td>
+                <td class="product-cell">
+                    <div class="product-card">
+                        <div class="img-container">
+                            <img src="./most_wanted.png" alt="Most Wanted">
+                        </div>
+                        <p class="product-label">Most Wanted</p>
+                    </div>
+                </td>
+            </tr>
+        </table>
+
+        <div class="btn-wrapper">
+            <a href="https://authenticedgewebsite-1.onrender.com/product.html" class="btn">Explore the Collection</a>
+        </div>
+
+        <p class="footer">You are receiving this as a member of Authentic Edge Archive.</p>
+    </div>
+</body>
+</html>
