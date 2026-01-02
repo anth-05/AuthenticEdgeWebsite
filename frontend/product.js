@@ -29,6 +29,22 @@ async function loadProducts() {
         grid.innerHTML = `<p>Archive sync unavailable.</p>`;
     }
 }
+function updateArrowVisibility() {
+    const list = document.getElementById("dynamic-filters");
+    const leftArrow = document.getElementById("scrollLeft");
+    const rightArrow = document.getElementById("scrollRight");
+
+    if (!list || !leftArrow || !rightArrow) return;
+
+    // Show left arrow only if we have scrolled right
+    leftArrow.style.opacity = list.scrollLeft > 5 ? "1" : "0";
+    leftArrow.style.pointerEvents = list.scrollLeft > 5 ? "auto" : "none";
+
+    // Show right arrow only if there is more content to the right
+    const maxScroll = list.scrollWidth - list.clientWidth;
+    rightArrow.style.opacity = list.scrollLeft >= maxScroll - 5 ? "0" : "1";
+    rightArrow.style.pointerEvents = list.scrollLeft >= maxScroll - 5 ? "none" : "auto";
+}
 
 // Logic to handle the "30 products per page" requirement
 function renderInitialGrid() {
@@ -42,25 +58,16 @@ function renderFixedFilters() {
     const filterContainer = document.getElementById("dynamic-filters");
     if (!filterContainer) return;
 
-    // 1. Build the HTML string
-    // Note: If you want Valentijn to be the VERY first, you could move it 
-    // before the 'ALL' button, but usually 'ALL' stays first.
     let filterHTML = `<li><button class="filter-btn active" data-filter="ALL">ALL</button></li>`;
-    
     filterHTML += FIXED_BRANDS.map(brand => `
         <li><button class="filter-btn" data-filter="${brand}">${brand}</button></li>
     `).join('');
 
-    // 2. Inject the HTML into the DOM
     filterContainer.innerHTML = filterHTML;
-
-    // 3. Reset Scroll Position (After injection)
+    
+    // Reset scroll and check arrow visibility immediately
     filterContainer.scrollLeft = 0;
-
-    // 4. Optional: Extra safety for browsers that need a moment to calculate width
-    setTimeout(() => {
-        filterContainer.scrollTo({ left: 0, behavior: 'instant' });
-    }, 10);
+    updateArrowVisibility(); 
 
     setupFilterEvents();
 }
@@ -138,24 +145,16 @@ function setupScrollArrows() {
 
     if (!list || !leftArrow || !rightArrow) return;
 
-    const scrollAmount = 300; 
-
     leftArrow.onclick = () => {
-        list.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+        list.scrollBy({ left: -300, behavior: 'smooth' });
     };
 
     rightArrow.onclick = () => {
-        list.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+        list.scrollBy({ left: 300, behavior: 'smooth' });
     };
 
-    list.onscroll = () => {
-        leftArrow.style.opacity = list.scrollLeft > 0 ? "1" : "0";
-        leftArrow.style.pointerEvents = list.scrollLeft > 0 ? "auto" : "none";
-        
-        const maxScroll = list.scrollWidth - list.clientWidth;
-        rightArrow.style.opacity = list.scrollLeft >= maxScroll - 5 ? "0" : "1";
-        rightArrow.style.pointerEvents = list.scrollLeft >= maxScroll - 5 ? "none" : "auto";
-    };
+    // Update arrows every time the user scrolls
+    list.onscroll = () => updateArrowVisibility();
 }
 
 // Search Logic

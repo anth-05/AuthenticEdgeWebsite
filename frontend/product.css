@@ -125,7 +125,7 @@
     display: flex;
     list-style: none;
     gap: 20px;
-    justify-content: center;
+    justify-content: flex-start;
     padding: 10px 40px;
     margin: 0;
     /* Enable horizontal scrolling for many tabs */
@@ -168,6 +168,22 @@
     width: 100%;
     height: 2px;
     background: #000;
+}
+.scroll-arrow {
+    transition: opacity 0.3s ease;
+    /* Ensure arrows sit on top of the padding */
+    z-index: 10;
+}
+
+.filter-list {
+    display: flex;
+    gap: 20px;
+    justify-content: flex-start; /* CRITICAL: Must be flex-start */
+    padding: 10px 40px;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    /* This ensures buttons don't shrink */
+    flex-wrap: nowrap; 
 }
 
 /* ========== SEARCH BAR REFINEMENT ========== */
