@@ -47,8 +47,7 @@ const handleImageToggle = (radioGroupName, urlRowId, uploadRowId) => {
 };
 
 handleImageToggle('imageType', 'image-url-row', 'image-upload-row');
-handleImageToggle('editImageType', 'edit-image-url-row', 'edit-upload-row');
-
+handleImageToggle('editImageType', 'edit-image-url-row', 'edit-image-upload-row'); // Fixed ID
 /* -------------------------------------------------------
     LOAD & RENDER
 ------------------------------------------------------- */
