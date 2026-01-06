@@ -9,7 +9,7 @@ const FIXED_BRANDS = [
     "Valentijn","NIKE", "ADIDAS", "ASICS", "LOUIS VUITTON", "PRADA", 
     "RICK OWENS", "CHANEL", "DIOR", "LANVIN", "MAISON MIHARA", 
     "PUMA", "TIMBERLAND", "AIRPODS", "DSN", "ALO", 
-    "OC", "LULULEMON", "ESSENTIALS", "Canada Goose", "Monlcer", "Raph Lauren","Burberry", "Parajumpers"
+    "OC", "LULULEMON", "ESSENTIALS", "Canada Goose", "Moncler", "Ralph Lauren","Burberry", "Parajumpers"
 ];
 
 async function loadProducts() {
