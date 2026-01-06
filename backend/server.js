@@ -209,20 +209,53 @@ const result = await pool.query(
 app.post('/api/admin/reply', authenticateToken, upload.single('imageFile'), async (req, res) => {
     try {
         const { userId, message } = req.body;
-        
-        // Use the same file handling logic as your products
-        // If your product logic saves to 'req.file.path' or 'req.file.location', do the same here
         const file_url = req.file ? req.file.path || req.file.location : null;
 
+        // 1. Insert message into DB
         const result = await pool.query(
-            "INSERT INTO messages (user_id, sender, message, file_url) VALUES ($1, $2, $3, $4) RETURNING *",
-            [userId, 'admin', message, file_url]
+            "INSERT INTO messages (user_id, sender, message, file_url, is_read) VALUES ($1, $2, $3, $4, $5) RETURNING *",
+            [userId, 'admin', message, file_url, false] // is_read false for the user
         );
 
-        // Return the whole row so renderBubble can use it
+        // 2. Fetch the specific user's email
+        const userQuery = await pool.query("SELECT email FROM users WHERE id = $1", [userId]);
+        const userEmail = userRes?.rows[0]?.email;
+
+        // 3. Send Notification Email (only if user exists)
+        if (userEmail) {
+            const loginUrl = "https://authenticedgewebsite-1.onrender.com/login.html";
+            
+            // We use a simplified version of your Valentijn logic here
+            transporter.sendMail({
+                from: `"Authentic Edge" <${process.env.CONTACT_EMAIL}>`,
+                to: userEmail,
+                subject: "📬 New Message from Authentic Edge",
+                html: `
+                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #eee; padding: 20px;">
+                        <h2 style="text-transform: uppercase; letter-spacing: 2px; text-align: center;">New Message</h2>
+                        <hr style="border: 0; border-top: 1px solid #000; margin: 20px 0;">
+                        <p>Hello,</p>
+                        <p>You have received a new private message from the <strong>Authentic Edge</strong> team.</p>
+                        <p style="background: #f9f9f9; padding: 15px; border-left: 4px solid #000; font-style: italic;">
+                            "${message.substring(0, 100)}${message.length > 100 ? '...' : ''}"
+                        </p>
+                        <div style="text-align: center; margin-top: 30px;">
+                            <a href="${loginUrl}" 
+                               style="background: #000; color: #fff; text-decoration: none; padding: 15px 30px; font-weight: bold; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; display: inline-block;">
+                               View Message & Reply
+                            </a>
+                        </div>
+                        <p style="margin-top: 40px; font-size: 0.7rem; color: #999; text-align: center;">
+                             2026 Authentic Edge
+                        </p>
+                    </div>
+                `
+            }).catch(mailErr => console.error("Mail failed to send:", mailErr));
+        }
+
         res.json(result.rows[0]);
     } catch (err) {
-        console.error(err);
+        console.error("Reply Error:", err);
         res.status(500).send("Server Error");
     }
 });
