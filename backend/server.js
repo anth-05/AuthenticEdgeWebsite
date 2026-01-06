@@ -218,7 +218,7 @@ app.post('/api/admin/reply', authenticateToken, upload.single('imageFile'), asyn
         );
 
         // 2. Fetch the specific user's email
-        const userQuery = await pool.query("SELECT email FROM users WHERE id = $1", [userId]);
+        const userRes = await pool.query("SELECT email FROM users WHERE id = $1", [userId]);
         const userEmail = userRes?.rows[0]?.email;
 
         // 3. Send Notification Email (only if user exists)
