@@ -1,32 +1,48 @@
 import { API_BASE_URL } from "./config.js";
-import { openModal } from "./modal.js"; // Adjust path if needed
+import { openModal } from "./modal.js"; 
 
 document.addEventListener("DOMContentLoaded", () => {
-    // Check if the user has already seen the popup this session (optional)
+    // 1. Stock Update Modal
     if (!sessionStorage.getItem("announcementSeen")) {
-        
         openModal(
             "Stock Update", 
             "Please note: Our stock is still being added. Not all physical stock has been listed yet. We are adding new pieces daily—thank you for your patience as we curate the collection. Explore what's live now!!",
             () => {
-                console.log("User acknowledged stock update.");
                 sessionStorage.setItem("announcementSeen", "true");
             },
             "Enter Archives"
         );
     }
-    createFallingHearts();
+
+    // 2. Hero Background Slideshow
+    const heroOverlay = document.querySelector(".hero-bg-overlay");
+    const images = [
+        'images/Homepage-Image.jpg',
+        'images/image1.png',
+        'images/image2.png',
+        'images/image3.png'
+    ];
+    let currentIndex = 0;
+
+    function changeBackground() {
+        if (!heroOverlay) return;
+        heroOverlay.style.backgroundImage = `url('${images[currentIndex]}')`;
+        currentIndex = (currentIndex + 1) % images.length;
+    }
+
+    changeBackground();
+    setInterval(changeBackground, 10000);
 });
+
+// 3. Load Products
 async function loadHomepageProducts() {
     try {
         const res = await fetch(`${API_BASE_URL}/api/products`);
         const allProducts = await res.json();
 
-        // 1. New Arrivals (Top 4 latest)
         const newArrivals = allProducts.slice(0, 4);
         renderGrid(document.getElementById('featured-product-grid'), newArrivals);
 
-        // 2. Most Wanted (Filtered by your admin choice)
         const mostWanted = allProducts.filter(p => p.is_most_wanted === true);
         renderGrid(document.getElementById('most-wanted-grid'), mostWanted);
     } 
@@ -35,7 +51,6 @@ async function loadHomepageProducts() {
     }
 }
 
-// Re-usable render function to keep your code clean
 function renderGrid(container, productList) {
     if (!container) return;
     if (productList.length === 0) {
@@ -57,61 +72,5 @@ function renderGrid(container, productList) {
         </div>
     `).join("");
 }
-document.addEventListener("DOMContentLoaded", () => {
-    const heroOverlay = document.querySelector(".hero-bg-overlay");
-    
-    // List your slideshow images here
-    const images = [
-        'images/Homepage-Image.jpg',
-        'images/image1.png',
-        'images/image2.png',
-        'images/image3.png'
-    ];
-
-    let currentIndex = 0;
-
-    function changeBackground() {
-        // Apply the new image
-        heroOverlay.style.backgroundImage = `url('${images[currentIndex]}')`;
-        
-        // Increment index, or reset to 0 if at the end
-        currentIndex = (currentIndex + 1) % images.length;
-    }
-
-    // Set initial image
-    changeBackground();
-
-    // Change image every 5 seconds (5000ms)
-    setInterval(changeBackground, 10000);
-});
-
-function createFallingHearts() {
-    const container = document.createElement('div');
-    container.className = 'hearts-container';
-    document.body.appendChild(container);
-
-    const heartIcons = ['❤️', '💖', '💘', '💝'];
-
-    setInterval(() => {
-        const heart = document.createElement('div');
-        heart.className = 'heart';
-        
-        // Randomize appearance
-        heart.innerText = heartIcons[Math.floor(Math.random() * heartIcons.length)];
-        heart.style.left = Math.random() * 100 + "vw";
-        heart.style.animationDuration = (Math.random() * 3 + 2) + "s"; // 2-5 seconds
-        heart.style.fontSize = (Math.random() * 10 + 15) + "px"; // 15-25px
-        
-        container.appendChild(heart);
-
-        // Remove heart from DOM after animation ends to save memory
-        setTimeout(() => {
-            heart.remove();
-        }, 5000);
-    }, 300); // Create a heart every 300ms
-}
-
-// Trigger it when the page loads
-document.addEventListener("DOMContentLoaded", createFallingHearts);
 
 document.addEventListener("DOMContentLoaded", loadHomepageProducts);
