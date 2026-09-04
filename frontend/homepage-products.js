@@ -14,24 +14,56 @@ document.addEventListener("DOMContentLoaded", () => {
         );
     }
 
-    // 2. Hero Background Slideshow
-    const heroOverlay = document.querySelector(".hero-bg-overlay");
+    // 2. Hero Background Slideshow (crossfade between two stacked layers)
+    const heroLayers = document.querySelectorAll(".hero-bg-layer");
     const images = [
         'images/Homepage-Image.jpg',
         'images/image1.png',
         'images/image2.png',
         'images/image3.png'
     ];
-    let currentIndex = 0;
 
-    function changeBackground() {
-        if (!heroOverlay) return;
-        heroOverlay.style.backgroundImage = `url('${images[currentIndex]}')`;
-        currentIndex = (currentIndex + 1) % images.length;
+    if (heroLayers.length === 2) {
+        let activeLayer = 0;
+        let nextIndex = 1;
+
+        // Preload so the crossfade never reveals a blank/half-loaded frame
+        images.forEach(src => { new Image().src = src; });
+
+        heroLayers[0].style.backgroundImage = `url('${images[0]}')`;
+
+        function crossfade() {
+            const incoming = heroLayers[activeLayer === 0 ? 1 : 0];
+            incoming.style.backgroundImage = `url('${images[nextIndex]}')`;
+            heroLayers[activeLayer].classList.remove("active");
+            incoming.classList.add("active");
+            activeLayer = activeLayer === 0 ? 1 : 0;
+            nextIndex = (nextIndex + 1) % images.length;
+        }
+
+        setInterval(crossfade, 6000);
     }
 
-    changeBackground();
-    setInterval(changeBackground, 10000);
+    // 3. Reveal-on-scroll for sections/cards
+    const revealTargets = document.querySelectorAll(".reveal");
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    if (revealTargets.length) {
+        if (prefersReducedMotion || !("IntersectionObserver" in window)) {
+            revealTargets.forEach(el => el.classList.add("is-visible"));
+        } else {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add("is-visible");
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.15 });
+
+            revealTargets.forEach(el => observer.observe(el));
+        }
+    }
 });
 
 // 3. Load Products

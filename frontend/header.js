@@ -71,17 +71,31 @@ function setupLogout() {
 function setupMobileMenu() {
     const menuToggle = document.querySelector(".menu-toggle");
     const navMenu = document.querySelector(".nav-menu");
-    
+
     if (menuToggle && navMenu) {
-        menuToggle.onclick = () => {
-            navMenu.classList.toggle("active");
-            menuToggle.innerHTML = navMenu.classList.contains("active") ? "&times;" : "&#9776;";
+        menuToggle.setAttribute("role", "button");
+        menuToggle.setAttribute("tabindex", "0");
+        menuToggle.setAttribute("aria-expanded", "false");
+
+        const toggleMenu = () => {
+            const isOpen = navMenu.classList.toggle("active");
+            menuToggle.innerHTML = isOpen ? "&times;" : "&#9776;";
+            menuToggle.setAttribute("aria-expanded", String(isOpen));
         };
-        
+
+        menuToggle.addEventListener("click", toggleMenu);
+        menuToggle.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                toggleMenu();
+            }
+        });
+
         navMenu.querySelectorAll('a').forEach(link => {
             link.addEventListener('click', () => {
                 navMenu.classList.remove("active");
                 menuToggle.innerHTML = "&#9776;";
+                menuToggle.setAttribute("aria-expanded", "false");
             });
         });
     }

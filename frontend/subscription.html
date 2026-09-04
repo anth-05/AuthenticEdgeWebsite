@@ -5,9 +5,185 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Authentic Edge | Membership Tiers</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap">
-  <link rel="stylesheet" href="theme.css">
-  <link rel="stylesheet" href="mobile-header.css">
-  <link rel="stylesheet" href="subscription.css">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="tailwind-config.js"></script>
+<style type="text/tailwindcss">
+@layer base {
+  a { @apply no-underline text-black relative; }
+  body, html { @apply m-0 p-0 w-full overflow-x-hidden font-sans; }
+}
+
+@layer components {
+  /* ===== LAYOUT ===== */
+  .container { @apply w-full max-w-full m-0 p-0; }
+
+  /* ===== NAVIGATION: EDITORIAL STYLE ===== */
+  header { @apply border-b border-black/5 px-[5%] py-[1.1rem]; }
+  .header-container { @apply flex justify-between items-center max-w-[1400px] mx-auto; }
+  .logo { @apply font-sans font-extrabold uppercase text-[1.2rem] tracking-[0.1em]; }
+  .logo a { @apply no-underline text-black; }
+  .nav-menu a { @apply text-[0.8rem] uppercase font-semibold tracking-[0.05em] no-underline px-4; }
+
+  /* ===== EDITORIAL FOOTER ===== */
+  .site-footer {
+    @apply w-full bg-white flex flex-col items-center justify-center text-center gap-[30px] border-t border-line box-border;
+    padding: 60px 0 40px 0;
+  }
+  .footer-left { @apply w-full flex justify-center; }
+  .footer-left .brand { @apply text-[1.2rem] font-extrabold uppercase tracking-[0.2em] text-black m-0 block w-full; }
+  .footer-right { @apply flex flex-col items-center gap-[15px] w-full; }
+  .footer-right a {
+    @apply text-black no-underline text-[0.75rem] font-semibold uppercase tracking-[0.1em] relative inline-block transition-opacity duration-300 ease-in-out;
+  }
+  .footer-right a::after {
+    content: '';
+    @apply absolute h-px bg-black left-1/2 -translate-x-1/2 transition-[width] duration-300 ease-in-out w-0;
+    bottom: -4px;
+  }
+  .footer-right a:hover::after { @apply w-full; }
+
+  @media (max-width: 768px) {
+    .site-footer { @apply gap-[25px]; padding: 60px 5% 100px 5%; }
+    .footer-right { @apply gap-5; }
+  }
+
+  /* ===== MOBILE HEADER / NAV ===== */
+  @media (min-width: 769px) {
+    .menu-toggle { @apply !hidden; }
+    .nav-menu {
+      @apply !flex !flex-row !static !opacity-100 !pointer-events-auto !transform-none !bg-transparent !shadow-none !w-auto !max-w-none !p-0 !backdrop-blur-none gap-6;
+    }
+    .nav-menu a {
+      @apply !p-0 !border-b-0 !text-[0.8rem] !text-black !font-semibold uppercase tracking-[0.05em] transition-opacity duration-200;
+    }
+    .nav-menu a:hover { @apply !bg-transparent opacity-50; }
+  }
+
+  @media (max-width: 768px) {
+    header { @apply sticky top-0 bg-white; z-index: 10001; }
+    .menu-toggle { @apply block text-[1.2rem] cursor-pointer text-black p-2 transition-transform duration-300; }
+    .nav-menu {
+      @apply hidden flex-col absolute top-full left-0 w-full bg-white border-b border-line;
+      padding: 20px 0;
+      z-index: 10000;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    }
+    .nav-menu.active { @apply flex; animation: slideIn 0.4s cubic-bezier(0.165, 0.84, 0.44, 1); }
+    .nav-menu a {
+      @apply text-[0.9rem] font-bold text-black no-underline uppercase tracking-[0.1em] border-b border-hairline;
+      padding: 18px 10%;
+    }
+    .nav-menu a:last-child { @apply border-b-0; }
+    .nav-menu a:hover { @apply bg-surface; padding-left: 12%; }
+  }
+
+  @media (max-width: 650px) {
+    .bottom-tabs {
+      @apply flex fixed bottom-0 left-0 w-full justify-around items-center border-t border-black/5;
+      height: 65px;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      z-index: 9999;
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+    .bottom-tabs a { @apply text-faint text-[0.65rem] font-bold uppercase tracking-[0.05em] flex flex-col items-center gap-1.5 no-underline transition-colors duration-300; }
+    .bottom-tabs a svg, .bottom-tabs a i { @apply w-5 h-5; }
+    .bottom-tabs a.active { @apply text-black; }
+    body { @apply !pb-[75px]; }
+  }
+
+  /* ===== BACK TO TOP ===== */
+  .back-to-top {
+    @apply fixed bottom-10 w-[50px] h-[50px] bg-black text-white border-none flex items-center justify-center cursor-pointer opacity-0 invisible;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    z-index: 2000;
+    transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  }
+  .back-to-top i { @apply text-[1.4rem]; }
+  .back-to-top.active { @apply opacity-100 visible; transform: translateX(-50%) translateY(0); }
+  .back-to-top:hover { @apply bg-charcoal; }
+
+  @media (max-width: 900px) {
+    .back-to-top { @apply w-[45px] h-[45px]; bottom: 90px; }
+  }
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+</style>
+<style type="text/tailwindcss">
+@layer components {
+  .subscriptions-page { @apply bg-white; }
+  .subscriptions-hero { @apply max-w-[1400px] mx-auto text-center; padding: 140px 5% 80px; }
+
+  .eyebrow { @apply block uppercase tracking-[0.3em] text-[0.7rem] font-bold text-faint mb-[1.2rem]; }
+  .section-header h2 { @apply text-5xl font-extrabold uppercase tracking-[-0.02em] mb-6; }
+
+  .sub-grid { @apply grid grid-cols-4 gap-6 w-full; margin-top: 60px; }
+  .sub-card {
+    @apply border border-line text-left flex flex-col bg-white;
+    padding: 60px 40px;
+    transition: all 0.3s ease;
+  }
+  .sub-card:hover { @apply border-black; }
+  .sub-card.highlight { @apply bg-hairline border-black; }
+
+  .plan-label { @apply text-[0.65rem] uppercase font-extrabold mb-5; }
+  .sub-card h3 { @apply text-[1.8rem] uppercase mb-4; }
+  .sub-card p { @apply text-muted leading-[1.6] mb-10 text-[0.95rem]; }
+  .sub-card .price { @apply text-2xl font-extrabold mt-auto; }
+  .sub-card .price span { @apply text-[0.9rem] text-faint font-normal; }
+
+  .btn-select {
+    @apply bg-black text-white border-none font-bold uppercase tracking-[0.1em] cursor-pointer;
+    margin-top: 30px;
+    padding: 18px;
+    transition: opacity 0.2s;
+  }
+  .btn-select:hover { @apply opacity-80; }
+
+  /* UNIVERSAL MODAL STYLING */
+  .modal-overlay {
+    @apply hidden fixed inset-0 w-full h-full bg-black/90 justify-center items-center backdrop-blur-[4px];
+    z-index: 10000;
+  }
+  .modal-content { @apply bg-white w-[90%] max-w-[450px] text-center border border-black; padding: 50px; }
+  .modal-content h3 { @apply uppercase font-extrabold text-[1.2rem] mb-[15px]; }
+  .modal-content p { @apply text-muted text-[0.9rem] leading-[1.5] mb-[30px]; }
+  .modal-actions { @apply flex gap-[10px]; }
+
+  .btn-primary, .btn-secondary {
+    @apply flex-1 font-bold uppercase text-xs cursor-pointer border-none text-center no-underline;
+    padding: 15px;
+  }
+  .btn-primary { @apply bg-black text-white; }
+  .btn-secondary { @apply bg-line text-black; }
+
+  #auth-links .btn-primary,
+  #auth-links .btn-secondary { @apply w-full block box-border; }
+
+  .btn-link-cancel {
+    @apply bg-transparent border-none text-faint uppercase text-[0.7rem] tracking-[0.1em] font-extrabold cursor-pointer mt-[10px];
+    transition: color 0.2s;
+  }
+  .btn-link-cancel:hover { @apply text-black; }
+
+  @media (max-width: 1100px) { .sub-grid { @apply grid-cols-2; } }
+
+  @media (max-width: 650px) {
+    .sub-grid { @apply grid-cols-1; }
+    .subscriptions-hero { padding-top: 100px; }
+    .section-header h2 { @apply text-[2.2rem]; }
+    .modal-content { padding: 30px; }
+    .modal-actions { @apply flex-col; }
+  }
+}
+</style>
 </head>
 <body class="subscriptions-page">
 

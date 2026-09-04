@@ -108,11 +108,11 @@ function renderGrid(products) {
     const grid = document.getElementById("product-grid");
     if (!grid) return;
     
-    grid.innerHTML = products.map(p => `
+    grid.innerHTML = products.map((p, i) => `
         <a href="single-product.html?id=${p.id}" class="product-card-link">
             <div class="product-card">
                 <div class="product-img-frame">
-                    <img src="${p.image}" alt="${p.name}">
+                    <img src="${p.image}" alt="${p.name}" loading="${i < 8 ? 'eager' : 'lazy'}" decoding="async">
                 </div>
                 <div class="product-details">
                     <span class="product-cat">${p.quality}</span>
