@@ -142,9 +142,26 @@
     filter: drop-shadow(0 20px 30px rgba(0, 0, 0, 0.05));
   }
 
+  .product-info-column { @apply flex flex-col; }
+  .info-header { @apply mb-[10px]; }
+  .product-status-tag {
+    @apply inline-block text-[10px] uppercase tracking-[0.2em] font-bold text-[#888888] border border-line rounded-full mb-[15px];
+    padding: 6px 16px;
+  }
   .product-name { @apply text-[clamp(2rem,5vw,3.5rem)] font-extrabold uppercase tracking-[-0.03em] leading-none; margin: 0 0 10px; }
   .product-price { @apply text-2xl font-medium mb-[30px] text-[#444444]; }
   .section-label { @apply text-[10px] uppercase tracking-[0.2em] text-[#888888] mb-[15px] block; }
+  .product-description-section { @apply mb-[30px]; }
+  .description-text { @apply text-[0.95rem] leading-[1.7] text-[#444444]; }
+
+  .product-meta-grid {
+    @apply grid grid-cols-2 gap-[25px] border-t border-line;
+    margin-top: 30px;
+    padding-top: 30px;
+  }
+  .meta-item { @apply flex flex-col gap-1; }
+  .meta-label { @apply text-[10px] uppercase tracking-[0.15em] text-[#888888] font-bold; }
+  .meta-value { @apply text-[0.9rem] text-black; }
 
   .primary-btn {
     @apply w-full bg-black text-white border-none rounded-full font-bold uppercase tracking-[0.15em] cursor-pointer;
@@ -332,6 +349,7 @@
 <header>
   <div class="header-container">
     <h1 class="logo"><a href="index.html">Authentic Edge</a></h1>
+    <div class="menu-toggle" aria-label="Toggle navigation">☰</div>
     <nav class="nav-menu" id="header-buttons"></nav>
   </div>
 </header>

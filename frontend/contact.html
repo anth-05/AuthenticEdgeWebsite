@@ -194,30 +194,30 @@
     <form id="contactForm" class="contact-form">
       <div class="form-row">
         <div class="form-group">
-          <label>Full Name</label>
+          <label for="contactName">Full Name</label>
           <input type="text" id="contactName" placeholder="Your Name" required>
         </div>
         <div class="form-group">
-          <label>Email Address</label>
-          <input type="email" placeholder="email@example.com" required>
+          <label for="contactEmail">Email Address</label>
+          <input type="email" id="contactEmail" placeholder="email@example.com" required>
         </div>
       </div>
 
       <div class="form-group">
-        <label>Phone Number</label>
+        <label for="contactPhone">Phone Number</label>
         <div class="phone-group">
-          <select class="country-code" required>
+          <select class="country-code" id="contactCountryCode" aria-label="Country code" required>
             <option value="+31">🇳🇱 +31</option>
             <option value="+1">🇺🇸 +1</option>
             <option value="+44">🇬🇧 +44</option>
             <option value="+49">🇩🇪 +49</option>
             </select>
-          <input type="tel" class="phone-input" placeholder="00 000 0000" required>
+          <input type="tel" id="contactPhone" class="phone-input" placeholder="00 000 0000" required>
         </div>
       </div>
 
       <div class="form-group">
-        <label>Message</label>
+        <label for="contactDescription">Message</label>
         <textarea id="contactDescription" placeholder="How can we help you?" required></textarea>
       </div>
 

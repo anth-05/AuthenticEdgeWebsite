@@ -151,6 +151,27 @@
   .status.in-stock { @apply text-[#111111]; }
   .status.sold-out { @apply text-[#cccccc]; }
 
+  /* Sold-out indicator on grid cards */
+  .product-card.is-sold-out .product-img-frame { @apply opacity-50; }
+  .sold-out-tag {
+    @apply absolute top-3 left-3 bg-white text-black text-[9px] font-bold uppercase tracking-[0.1em] border border-black z-10;
+    padding: 4px 10px;
+  }
+
+  /* Loading / empty / no-results messaging */
+  .grid-loader, .empty-msg {
+    @apply text-center w-full py-16 text-[0.85rem] uppercase tracking-[0.1em] text-muted;
+    grid-column: 1 / -1;
+  }
+  .empty-msg .clear-link {
+    @apply block mt-3 text-black underline underline-offset-4 normal-case tracking-normal cursor-pointer;
+  }
+
+  /* Results count above the grid */
+  #resultsMeta {
+    @apply text-center w-full text-[10px] uppercase tracking-[0.15em] text-faint mb-6;
+  }
+
   /* Skeleton loading placeholders (shown while products are fetched) */
   .skeleton-card {
     aspect-ratio: 3 / 4;
@@ -208,11 +229,17 @@
     .filter-btn { @apply text-[10px]; padding: 6px 2px; }
   }
 
-  .search-container { @apply max-w-[400px] mx-auto; margin-top: 0; margin-bottom: 40px; }
+  .search-container { @apply max-w-[400px] mx-auto relative; margin-top: 0; margin-bottom: 40px; }
   #archiveSearch {
     @apply w-full border-none border-b border-[#e0e0e0] text-xs uppercase tracking-[0.15em] text-center outline-none;
-    padding: 10px 0;
+    padding: 10px 24px;
   }
+  .clear-search-btn {
+    @apply hidden absolute right-0 top-1/2 -translate-y-1/2 bg-transparent border-none text-faint cursor-pointer text-base leading-none;
+    padding: 4px 6px;
+  }
+  .clear-search-btn:hover { @apply text-black; }
+  .clear-search-btn.show { @apply block; }
 
   .nav-link { @apply no-underline; color: inherit; }
   .nav-cta { @apply no-underline; color: inherit; }
@@ -431,6 +458,7 @@
 <main>
   <div class="search-container">
     <input type="text" id="archiveSearch" placeholder="SEARCH ARCHIVES (E.G. 'JORDAN', 'VINTAGE')..." />
+    <button type="button" id="clearSearch" class="clear-search-btn" aria-label="Clear search">&times;</button>
 </div>
 
 <nav class="filter-nav">
@@ -450,6 +478,7 @@
 
   <section class="collection-grid-section">
     <div class="container">
+      <p id="resultsMeta" aria-live="polite"></p>
       <div id="product-grid" class="product-grid">
         <div class="skeleton-card" aria-hidden="true"></div>
         <div class="skeleton-card" aria-hidden="true"></div>

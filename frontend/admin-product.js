@@ -165,12 +165,18 @@ document.getElementById("add-product-form")?.addEventListener("submit", async (e
             headers: { Authorization: `Bearer ${token}` },
             body: fd
         });
-        if (res.ok) { 
-            alert("Product published."); 
-            e.target.reset(); 
-            loadProducts(); 
+        if (res.ok) {
+            alert("Product published.");
+            e.target.reset();
+            loadProducts();
+        } else {
+            const errorData = await res.json().catch(() => ({}));
+            alert(`Publish failed: ${errorData.error || 'Unknown error'}`);
         }
-    } catch (error) { console.error("Add failed:", error); }
+    } catch (error) {
+        console.error("Add failed:", error);
+        alert("Server communication error.");
+    }
 });
 
 // EDIT PRODUCT (Includes Most Wanted)

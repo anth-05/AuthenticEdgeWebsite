@@ -86,9 +86,13 @@ document.getElementById("update-email-btn")
   ?.addEventListener("click", async () => {
     const email = document.getElementById("new-email").value;
     if (!email) return alert("Enter a new email.");
-    await api("/api/user/email", "PUT", { email });
-    alert("Email updated.");
-    location.reload();
+    try {
+      await api("/api/user/email", "PUT", { email });
+      alert("Email updated.");
+      location.reload();
+    } catch (err) {
+      alert("Error updating email: " + err.message);
+    }
   });
 
 /* =========================
@@ -98,9 +102,13 @@ document.getElementById("update-password-btn")
   ?.addEventListener("click", async () => {
     const password = document.getElementById("new-password").value;
     if (!password) return alert("Enter a new password.");
-    await api("/api/user/password", "PUT", { password });
-    alert("Password updated.");
-    document.getElementById("new-password").value = "";
+    try {
+      await api("/api/user/password", "PUT", { password });
+      alert("Password updated.");
+      document.getElementById("new-password").value = "";
+    } catch (err) {
+      alert("Error updating password: " + err.message);
+    }
   });
 /* =========================
    CANCEL SUBSCRIPTION
@@ -126,8 +134,12 @@ document.getElementById("cancel-sub-btn")
 document.getElementById("delete-account-btn")
   ?.addEventListener("click", async () => {
     if (!confirm("This will permanently delete your account. Continue?")) return;
-    await api("/api/user", "DELETE");
-    logout();
+    try {
+      await api("/api/user", "DELETE");
+      logout();
+    } catch (err) {
+      alert("Error deleting account: " + err.message);
+    }
   });
 
 /* =========================

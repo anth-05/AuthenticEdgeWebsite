@@ -43,8 +43,12 @@ cards.forEach(card => {
 
       // STATE 2: Already Subscribed
       if (userData.status === 'active') {
-        alert(`You already have an active ${userData.current_plan} plan.`);
-        window.location.href = "user-dashboard.html";
+        openModal(
+          "Already a Member",
+          `You already have an active ${userData.current_plan} plan.`,
+          () => { window.location.href = "user-dashboard.html"; },
+          "Go to Dashboard"
+        );
         return;
       }
 
@@ -64,8 +68,12 @@ cards.forEach(card => {
           });
 
           if (subRes.ok) {
-            alert("Request Sent! Redirecting to dashboard...");
-            window.location.href = "user-dashboard.html";
+            openModal(
+              "Request Sent",
+              "Your membership request has been submitted. We'll review it shortly.",
+              () => { window.location.href = "user-dashboard.html"; },
+              "View Dashboard"
+            );
           }
         },
         "Submit Request"
